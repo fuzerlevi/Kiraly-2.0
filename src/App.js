@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import AudioPlayer from './components/subcomponent/AudioPlayer';
 import CreateGameForm from './components/CreateGameForm';
-import CardGameBoard from './components/CardGameBoard';
+import Game from './components/Game';
 import WaitingPage from './components/WaitingPage';
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
         <Routes>
           <Route exact path="/" element={< CreateGameForm />} />
           <Route path="/waiting/:roomID" element={< WaitingPage />} />
-          <Route path="/game/:roomID" element={< CardGameBoard />} />
+          <Route path="/game/:roomID" element={< Game />} />
         </Routes>
       </BrowserRouter>
     </div>

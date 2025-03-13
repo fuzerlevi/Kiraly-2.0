@@ -1,4 +1,4 @@
-const { initializeGame, createGameState, createPlayerState, calculateTrickPoints, Draw, Return, updateGameState } = require('./api.js');
+const {  createGameState, createPlayerState } = require('./api.js');
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -70,19 +70,7 @@ const delay = (ms) => {
   });
 };
 
-// Sends two updates of game state to each client; an ongoing game state (for animation) and then the final complete game state
-const sendUpdate = async (gameID, deckID, gameState, ongoingGameState, ongoingBoardState) => {
-  const { completeGameState, winnerID } = await updateGameState(gameID, deckID, ongoingGameState, ongoingBoardState);
-  games[gameID] = { ...completeGameState, currentTurnIndex: gameState.turnOrder.indexOf(winnerID) };
 
-  io.to(gameID).emit('getGameStateResponse', { gameState: { ...ongoingGameState,  currentTurnIndex: gameState.turnOrder.indexOf(winnerID) }, success: true });        
-  io.to(gameID).emit('getGameStateResponse', { gameState: { ...completeGameState, currentTurnIndex: gameState.turnOrder.indexOf(winnerID) }, success: true });
-
-  // Check if all players have empty hands and emit event for winning state if applicable
-  if (Object.values(completeGameState.players).every(player => player.hand?.every(card => card == null))) {
-    io.to(gameID).emit('getWinningStateResponse', { gameState: { ...completeGameState, currentTurnIndex: gameState.turnOrder.indexOf(winnerID) }, success: true });
-  };
-}
 
 const games = {};
 const socketToGameMap = {};
@@ -122,102 +110,6 @@ io.on('connection', (socket) => {
     }
 
     socket.emit("joinRoomResponse", { gameID: gameID, success: true });
-  });
-
-  // Event handler for when a player has joined a room and is ready
-  socket.on("onPlayerReady", async (data) => {
-    const gameID = socketToGameMap[socket.id];
-    const gameState = games[gameID];
-    const playerState = games[gameID]?.players[socket.id];
-    
-    if (!gameID || !gameState || !playerState) {
-      console.error(`Error: Invalid gameID ${gameID} or player ${socket.id}`);
-      return;
-    }
-  
-    playerState.name = data.name;
-    playerState.isReady = true;
-    const numReadyPlayers = Object.values(gameState.players).filter(playerState => playerState.isReady).length;
-    
-    if (numReadyPlayers === 2 && !gameState.hasStarted) {
-      gameState.hasStarted = true;
-      await initializeGame(gameState);
-      io.to(gameID).emit('startGameSession', { success: true });
-    }
-  });
-
-  // Event handler for when a game has reached an end state
-  socket.on("gameEnd", (data) => {
-    const gameID = socketToGameMap[socket.id];
-    const gameState = games[gameID];
-    const playerState = games[gameID]?.players[socket.id];
-
-    playerState.isReady = false;
-    gameState.hasStarted = false;
-  });
-
-  // Event handler for getting the game state
-  socket.on("getGameState", (data) => {
-    const gameID = data.gameID;
-    const gameState = games[gameID];
-
-    if (!gameID || !gameState) {
-      console.error(`Error: Invalid gameID ${gameID} or player ${socket.id}`);
-      return;
-    }
-
-    socket.emit("getGameStateResponse", { gameState: gameState, success: true });
-  });
-
-  // Event handler for when a client selects a card
-  socket.on("onCardSelected", async (data) => {
-    const { card, index, gameID } = data;
-    
-    const gameState = games[gameID];
-    const boardState = gameState.board;
-    const deckID = boardState.deckID;
-    const currentTurnIndex = gameState.currentTurnIndex;
-    const socketPlayerIndex = gameState.turnOrder.indexOf(socket.id);
-
-    if (socketPlayerIndex !== gameState.currentTurnIndex || boardState.currentTrick.every((card) => card !== null)) {
-      console.error('ERROR NOT PLAYER TURN')
-      return;
-    }
-    
-    const newHand = [ ...gameState.players[socket.id].hand ];
-    newHand[index] = null;
-
-    const newPlayers = { ...gameState.players };
-    newPlayers[socket.id] = { ...newPlayers[socket.id], hand: newHand };
-
-    const newTrick = [...boardState.currentTrick];
-    newTrick[newTrick.findIndex((element) => element === null)] = { ...card, index };
-
-    const trumpCard = boardState.trumpCard;
-    const newRemainingCards = boardState.remainingCards;
-    const newTurnIndex = (newTrick.every((card) => card !== null)) ? currentTurnIndex : (currentTurnIndex + 1) % Object.keys(gameState.players).length;
-
-    const ongoingBoardState = {
-      deckID: deckID,
-      trumpCard: trumpCard,
-      remainingCards: newRemainingCards,
-      currentTrick: newTrick
-    }
-
-    const ongoingGameState = {
-      ...gameState,
-      board: ongoingBoardState,
-      players: newPlayers,
-      currentTurnIndex: newTurnIndex
-    }
-    
-    games[gameID] = ongoingGameState;
-    io.to(gameID).emit('getGameStateResponse', { gameState: ongoingGameState, success: true });
-
-    if (newTrick.every((card) => card !== null)) {      
-      await delay(1500);
-      await sendUpdate(gameID, deckID, gameState, ongoingGameState, ongoingBoardState);
-    }
   });
 
   // Event handler for when a socket disconnects
