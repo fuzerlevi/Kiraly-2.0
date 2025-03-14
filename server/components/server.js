@@ -1,4 +1,3 @@
-const {  createGameState, createPlayerState } = require('./api.js');
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -6,7 +5,7 @@ const crypto = require("crypto");
 const path = require('path');
 const bodyParser = require('body-parser');
 
-const app = express()
+const app = express();
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,65 +20,27 @@ const io = require('socket.io')(server, {
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, '../build')));
 
-app.use(express.static('build', { 
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
-
-// Define a route that serves static JS files
-app.use('/static/js', express.static(path.join(__dirname, '../build/static/js'), {
-  setHeaders: function (res, path) {
-    if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
-
-// Define a route that serves mp3 file
-app.get('/background-music.mp3', (req, res) => {
-  const filePath = path.resolve(__dirname, '../audio/background-music.mp3');
-  res.setHeader('Content-Type', 'audio/mpeg');
-  res.sendFile(filePath);
-});
-
-// Define a route that serves mp3 file
-app.get('/placeholder.png', (req, res) => {
-  const filePath = path.resolve(__dirname, '../audio/placeholder.png');
-  res.setHeader('Content-Type', 'image/png');
-  res.sendFile(filePath);
-});
-
-// Define a route that serves the index.html file
-//__dirname : It will resolve to your project folder
-app.get('/*', function(req, res) {
-  res.sendFile(path.join(__dirname, '../../build', 'index.html'));
-});
-
-// Catch-all route that serves the index.html file for any other routes
-app.get('*', function(req, res) {
-  res.sendFile(path.join(__dirname, '../../build', 'index.html'));
-});
-
-// Delays code by a specificed amount (in miliseconds)
-const delay = (ms) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-};
-
-
-
 const games = {};
 const socketToGameMap = {};
 
-// IO handler for new socket connection
+// Simple game state creator
+const createGameState = (gameID) => ({
+  gameID,
+  hasStarted: false,
+  players: {}
+});
+
+// Simple player state creator
+const createPlayerState = (socketID) => ({
+  socketID,
+  name: null,
+  isHost: false
+});
+
 io.on('connection', (socket) => {
   console.log(`Socket ${socket.id} connected.`);
 
-  // Event handler for creating a game room
+  // Create a new game room
   socket.on("createGameRoom", () => {
     const gameID = crypto.randomBytes(3).toString('hex');
     const gameState = createGameState(gameID);
@@ -92,34 +53,47 @@ io.on('connection', (socket) => {
     socket.emit("createRoomResponse", { gameID: gameID, success: true });
   });
 
-  // Event handler for joining a game room
+  // Join an existing game room
   socket.on("joinGameRoom", (data) => {
-    const gameID = data.gameID;
+    const { gameID, playerName } = data;
     const gameState = games[gameID];
 
     if (!gameID || !gameState) {
-      socket.emit("joinRoomResponse", { error: "Game does not exist." });
-      return;
+        socket.emit("joinRoomResponse", { error: "Game does not exist." });
+        return;
     }
 
-    gameState.players[socket.id] = createPlayerState(socket.id);
+    const isHost = Object.keys(gameState.players).length === 0; // First player is host
+    gameState.players[socket.id] = { name: playerName, isHost };
+
+    io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
+
     socketToGameMap[socket.id] = gameID;
-    
-    if (!socket.rooms.has(gameID)) {
-      socket.join(gameID);
-    }
+    socket.join(gameID);
 
-    socket.emit("joinRoomResponse", { gameID: gameID, success: true });
+    socket.emit("joinRoomResponse", { gameID, success: true });
   });
 
-  // Event handler for when a socket disconnects
+  // Start the game (only host can start)
+  socket.on("startGame", ({ roomID }) => {
+    console.log(`Received startGame event for room: ${roomID}`);
+    const gameState = games[roomID];
+    if (!gameState) return;
+    
+    console.log(`Game ${roomID} started.`);
+    
+    // Notify all players to navigate to the game page
+    io.to(roomID).emit("gameStarted", { roomID });
+  });
+
+  // Handle player disconnection
   socket.on('disconnect', () => {
     const gameID = socketToGameMap[socket.id];
     const gameState = games[gameID];
     if (gameID) {
-      delete games[gameID].players[socket.id]
-      if (Object.keys(gameState.players).length == 0) {
-        delete games[gameID]
+      delete games[gameID].players[socket.id];
+      if (Object.keys(gameState.players).length === 0) {
+        delete games[gameID];
       }
       delete socketToGameMap[socket.id];
     }

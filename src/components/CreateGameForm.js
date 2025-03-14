@@ -74,14 +74,14 @@ const CreateGameForm = () => {
       setTimeout(() => { setShowErrorMessage(false); }, 2500);
       return;
     }
-
+  
     // Send user data to create the room (with host flag)
     const user = { name, isHost: true };
     socket.emit('createGameRoom', user, (response) => {
       if (response.success) {
         const roomID = response.gameID;
-        // Set the players context with the current player (host) information
-        setPlayers([{ name, isHost: true }]); // Store the current player as the host
+        // Add current player as the host to the existing players list
+        setPlayers((prevPlayers) => [...prevPlayers, { name, isHost: true }]);
         navigate(`/waiting/${roomID}`, { state: name });
       } else {
         setErrorMessage('Failed to create a game room.');
@@ -89,8 +89,7 @@ const CreateGameForm = () => {
       }
     });
   };
-
-  // Handle the response for joining a room
+  
   const handleJoinSubmit = (event) => {
     event.preventDefault();
     if (name.trim() === '' || gameID.trim() === '') {
@@ -99,13 +98,13 @@ const CreateGameForm = () => {
       setTimeout(() => { setShowErrorMessage(false); }, 2500);
       return;
     }
-
+  
     // Send user data to join the room (with host flag set to false)
     const user = { name, isHost: false };
     socket.emit('joinGameRoom', { gameID, user }, (response) => {
       if (response.success) {
-        // Set the players context with the current player (not the host) information
-        setPlayers([{ name, isHost: false }]); // Store the current player as a non-host
+        // Add current player as a non-host to the existing players list
+        setPlayers((prevPlayers) => [...prevPlayers, { name, isHost: false }]);
         navigate(`/waiting/${gameID}`, { state: name });
       } else {
         setErrorMessage('Game code does not exist.');
@@ -147,7 +146,7 @@ const CreateGameForm = () => {
           <Form onSubmit={handleHostSubmit} style={{ maxWidth: '200px', minHeight: '200px' }}>
             <Form.Group className="mb-2 text-left">
               <Form.Label className="create-game-form-label float-start">
-                Név (host):
+                Név:
               </Form.Label>
               <Form.Control 
                 type="text" 
@@ -169,7 +168,7 @@ const CreateGameForm = () => {
           <Form onSubmit={handleJoinSubmit} style={{ maxWidth: '200px' }}>
             <Form.Group className="mb-2 mb-sm-4 text-left">
               <Form.Label className="create-game-form-label float-start">
-                Név (Mindenki más):
+                Név:
               </Form.Label>
               <Form.Control 
                 type="text" 

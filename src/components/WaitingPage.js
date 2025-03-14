@@ -21,26 +21,30 @@ const WaitingPage = () => {
   const timeoutRef = useRef(null);
 
   useEffect(() => {
-    // Let the backend know this player is ready
-    socket.emit('onPlayerReady', { name });
+    // Emitting the join event with player name and room ID
+    socket.emit('joinGameRoom', { gameID: roomID, playerName: name });
 
-    // Listen for updated player list and host name (from backend)
+    // Listen for updated player list from the server
     socket.on('updatePlayers', (updatedPlayers) => {
-      setPlayers(updatedPlayers); // Directly update the players list
+        setPlayers(updatedPlayers);
     });
 
-    // Listen for start game session
-    socket.on('startGameSession', () => {
-      if (players.length > 1) {
-        navigate(`/game/${roomID}`);
-      }
+    // Listen for when the game starts
+    socket.on('gameStarted', () => {
+      console.log("Navigating to game page with players:", players);
+      navigate(`/game/${roomID}`, { state: { players } });
     });
 
     return () => {
-      socket.off('startGameSession');
-      socket.off('updatePlayers'); // Clean up the listener
+        socket.off('updatePlayers'); // Cleanup the listener
+        socket.off('gameStarted');   // Cleanup the listener
     };
-  }, [name, roomID, players.length, setPlayers, navigate]);
+  }, [name, roomID, setPlayers, navigate]); // Only rerun if dependencies change
+
+  // Separate useEffect to log player updates
+  useEffect(() => {
+      console.log("Updated players state:", players);
+  }, [players]);
 
   const handleCopy = () => {
     if (timeoutRef.current !== null) {
@@ -56,6 +60,7 @@ const WaitingPage = () => {
   const startGame = () => {
     console.log('Start Game clicked');
     // Emit event to start the game
+    console.log('Start Game clicked, emitting event...');
     socket.emit('startGame', { roomID });
   };
 
@@ -95,14 +100,14 @@ const WaitingPage = () => {
           <ul>
           {players.map((player, index) => (
             <li key={index}>
-              {player.name === name ? `${player.name}` : player.name}
+              {player.name} {player.isHost && "(Host)"}
             </li>
           ))}
           </ul>
         </div>
 
         {/* Start Game Button (Only for Host) */}
-        {players[0] === name && (
+        {players[0]?.name === name && (
           <Button onClick={startGame} className="mt-3" variant="primary">
             Start Game
           </Button>
