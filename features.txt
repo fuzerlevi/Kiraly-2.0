@@ -1,0 +1,18 @@
+fix game logic
+fiú lány mechanic for 6
+
+Names have a specific color on UI 
+Kártyák száma a pakliban
+
+UI IDEA:
+Jobb sarokban joker ikon: jokered
+Medieval paper icon: aktív 10es szabályok
+Korona ikon számmal: hány király van a pakliban
+Abacus icon: drink calculator
+gamelog in corner?
+chat?
+fix font
+custom cardback settings for each player
+rejoin feature after losing connection
+
+graph data structure?

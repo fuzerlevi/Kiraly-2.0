@@ -1,0 +1,76 @@
+/* 
+@font-face {
+    font-family: 'balatro';
+    src: url('/fonts/balatro.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+*/
+
+body {
+    background-color: rgb(255, 255, 255);
+    font-size: 20px;
+/*    font-family: 'balatro', sans-serif;
+*/
+}
+
+.game-container {
+  display: flex;
+  justify-content: center;
+}
+
+.deck-panel {
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 10px;
+  margin-right: 20px;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.game-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.deck-panel h3 {
+  text-align: center;
+}
+
+.deck-panel ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.deck-panel li {
+  padding: 5px;
+  border-bottom: 1px solid #ddd;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.game-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  position: absolute;
+  bottom: 10%;
+  left: 53%;
+  width: 150px;
+}
+
+.cardContainer{
+  
+}
+
+.drawn-card{
+  width: 300px;
+}
+
+.cardback{
+  width: 320px;
+  margin-top: 29px;
+}
