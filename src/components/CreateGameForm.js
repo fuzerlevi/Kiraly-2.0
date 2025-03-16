@@ -24,8 +24,6 @@ const CreateGameForm = () => {
     socket.on('createRoomResponse', (response) => {
       if (response.success) {
         const roomID = response.gameID;
-        // Set the players context with the current player (host) information
-        setPlayers([{ name, isHost: true }]); // Store the current player as the host
         navigate(`/waiting/${roomID}`, { state: name });
       } else {
         console.error(response.error);
@@ -36,7 +34,6 @@ const CreateGameForm = () => {
       if (response.success) {
         const roomID = response.gameID;
         // Set the players context with the current player (not the host) information
-        setPlayers([{ name, isHost: false }]); // Store the current player as a non-host
         navigate(`/waiting/${roomID}`, { state: name });
       } else {
         setErrorMessage('Game room does not exist.');
@@ -80,8 +77,6 @@ const CreateGameForm = () => {
     socket.emit('createGameRoom', user, (response) => {
       if (response.success) {
         const roomID = response.gameID;
-        // Add current player as the host to the existing players list
-        setPlayers((prevPlayers) => [...prevPlayers, { name, isHost: true }]);
         navigate(`/waiting/${roomID}`, { state: name });
       } else {
         setErrorMessage('Failed to create a game room.');
@@ -104,7 +99,6 @@ const CreateGameForm = () => {
     socket.emit('joinGameRoom', { gameID, user }, (response) => {
       if (response.success) {
         // Add current player as a non-host to the existing players list
-        setPlayers((prevPlayers) => [...prevPlayers, { name, isHost: false }]);
         navigate(`/waiting/${gameID}`, { state: name });
       } else {
         setErrorMessage('Game code does not exist.');

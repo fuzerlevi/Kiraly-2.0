@@ -30,9 +30,10 @@ const WaitingPage = () => {
     });
 
     // Listen for when the game starts
-    socket.on('gameStarted', () => {
-      console.log("Navigating to game page with players:", players);
-      navigate(`/game/${roomID}`, { state: { players } });
+    socket.on('gameStarted', ({ roomID, players: updatedPlayers }) => {
+      setPlayers(updatedPlayers); // Optional but useful
+      console.log("Navigating to game page with players:", updatedPlayers);
+      navigate(`/game/${roomID}`, { state: { players: updatedPlayers } });
     });
 
     return () => {

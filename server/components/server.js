@@ -81,9 +81,11 @@ io.on('connection', (socket) => {
     if (!gameState) return;
     
     console.log(`Game ${roomID} started.`);
-    
-    // Notify all players to navigate to the game page
-    io.to(roomID).emit("gameStarted", { roomID });
+
+    const playersArray = Object.values(gameState.players);
+
+    // Send roomID + latest players array
+    io.to(roomID).emit("gameStarted", { roomID, players: playersArray });
   });
 
   // Handle player disconnection
