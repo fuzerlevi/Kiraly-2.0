@@ -13,7 +13,7 @@ const WaitingPage = () => {
   const navigate = useNavigate();
   const { roomID } = useParams();
   const location = useLocation();
-  const name = location.state;
+  const { name, gender } = location.state; // Destructure both correctly
 
   const { players, setPlayers } = useGameContext();
 
@@ -22,7 +22,7 @@ const WaitingPage = () => {
 
   useEffect(() => {
     // Emitting the join event with player name and room ID
-    socket.emit('joinGameRoom', { gameID: roomID, playerName: name });
+    socket.emit('joinGameRoom', { gameID: roomID, playerName: name, playerGender: gender });
 
     // Listen for updated player list from the server
     socket.on('updatePlayers', (updatedPlayers) => {
@@ -40,7 +40,7 @@ const WaitingPage = () => {
         socket.off('updatePlayers'); // Cleanup the listener
         socket.off('gameStarted');   // Cleanup the listener
     };
-  }, [name, roomID, setPlayers, navigate]); // Only rerun if dependencies change
+  }, [name, gender, roomID, setPlayers, navigate]); // Only rerun if dependencies change
 
   // Separate useEffect to log player updates
   useEffect(() => {
@@ -101,7 +101,7 @@ const WaitingPage = () => {
           <ul>
           {players.map((player, index) => (
             <li key={index}>
-              {player.name} {player.isHost && "(Host)"}
+              {player.name} - {player.gender === 'boy' ? 'Fiúk' : 'Lányok'}
             </li>
           ))}
           </ul>

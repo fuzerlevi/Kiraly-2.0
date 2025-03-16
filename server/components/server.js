@@ -34,6 +34,7 @@ const createGameState = (gameID) => ({
 const createPlayerState = (socketID) => ({
   socketID,
   name: null,
+  team: null,
   isHost: false
 });
 
@@ -55,16 +56,16 @@ io.on('connection', (socket) => {
 
   // Join an existing game room
   socket.on("joinGameRoom", (data) => {
-    const { gameID, playerName } = data;
+    const { gameID, playerName, playerGender } = data; // added playerGender to the data
     const gameState = games[gameID];
 
     if (!gameID || !gameState) {
-        socket.emit("joinRoomResponse", { error: "Game does not exist." });
-        return;
+      socket.emit("joinRoomResponse", { error: "Game does not exist." });
+      return;
     }
 
     const isHost = Object.keys(gameState.players).length === 0; // First player is host
-    gameState.players[socket.id] = { name: playerName, isHost };
+    gameState.players[socket.id] = { name: playerName, gender: playerGender, isHost }; // added gender to the player object
 
     io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
 
