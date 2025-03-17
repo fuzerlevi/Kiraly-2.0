@@ -26,25 +26,43 @@ const WaitingPage = () => {
 
     // Listen for updated player list from the server
     socket.on('updatePlayers', (updatedPlayers) => {
-        setPlayers(updatedPlayers);
+      // Add empty arrays for cardsDrawn and brothers to each player
+      const updatedPlayersWithArrays = updatedPlayers.map(player => ({
+        ...player,
+        cardsDrawn: [],  // Empty array for cards drawn
+        brothers: []     // Empty array for brothers
+      }));
+
+      // Update the players state with the modified player objects
+      setPlayers(updatedPlayersWithArrays);
     });
 
     // Listen for when the game starts
     socket.on('gameStarted', ({ roomID, players: updatedPlayers }) => {
-      setPlayers(updatedPlayers); // Optional but useful
-      console.log("Navigating to game page with players:", updatedPlayers);
-      navigate(`/game/${roomID}`, { state: { players: updatedPlayers } });
+      // Make sure to include the empty arrays for cardsDrawn and brothers
+      const updatedPlayersWithArrays = updatedPlayers.map(player => ({
+        ...player,
+        cardsDrawn: [],
+        brothers: []
+      }));
+
+      // Update the players state with the modified player objects
+      setPlayers(updatedPlayersWithArrays);
+
+      // Log and navigate to the game page
+      console.log("Navigating to game page with players:", updatedPlayersWithArrays);
+      navigate(`/game/${roomID}`, { state: { players: updatedPlayersWithArrays } });
     });
 
     return () => {
-        socket.off('updatePlayers'); // Cleanup the listener
-        socket.off('gameStarted');   // Cleanup the listener
+      socket.off('updatePlayers'); // Cleanup the listener
+      socket.off('gameStarted');   // Cleanup the listener
     };
   }, [name, gender, roomID, setPlayers, navigate]); // Only rerun if dependencies change
 
   // Separate useEffect to log player updates
   useEffect(() => {
-      console.log("Updated players state:", players);
+    console.log("Updated players state:", players);
   }, [players]);
 
   const handleCopy = () => {
@@ -98,12 +116,12 @@ const WaitingPage = () => {
         {/* Current Players Section */}
         <div className="current-players mt-4">
           <h5>Current Players:</h5>
-          <ul>
-          {players.map((player, index) => (
-            <li key={index}>
-              {player.name} - {player.gender === 'boy' ? 'Fiúk' : 'Lányok'}
-            </li>
-          ))}
+          <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
+            {players.map((player, index) => (
+              <li key={index}>
+                {player.name} - {player.gender === 'boy' ? 'Fiúk' : 'Lányok'}
+              </li>
+            ))}
           </ul>
         </div>
 

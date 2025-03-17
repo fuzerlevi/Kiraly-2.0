@@ -35,7 +35,9 @@ const createPlayerState = (socketID) => ({
   socketID,
   name: null,
   team: null,
-  isHost: false
+  isHost: false,
+//  cardsDrawn: [],   // Initialize as empty array
+//  brothers: []      // Initialize as empty array
 });
 
 io.on('connection', (socket) => {
