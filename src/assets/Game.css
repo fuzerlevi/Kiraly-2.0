@@ -74,3 +74,16 @@ body {
   width: 320px;
   margin-top: 29px;
 }
+
+.turn-order-panel li {
+  padding: 5px;
+}
+
+.turn-order-panel li:hover {
+  cursor: pointer;
+}
+
+.turn-order-panel li.bold {
+  font-weight: bold;
+  color: blue;
+}
