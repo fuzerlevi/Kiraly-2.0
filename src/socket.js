@@ -1,9 +1,9 @@
-import io from 'socket.io-client';
+import { io } from "socket.io-client";
 
-const hostname = window.location.hostname;
-const port = process.env.PORT || 8000;
-
-const socket = io.connect(`http://${hostname}:${port}`);
-//const socket = io.connect(`https://${hostname}`);
+const socket = io("http://localhost:8000", {
+    autoConnect: true, // Automatically connect when imported
+    reconnectionAttempts: 3, // Retry if it fails
+    timeout: 5000, // Wait up to 5s before failing
+  });
 
 export default socket;

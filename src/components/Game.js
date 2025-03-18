@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGameContext } from '../components/GameContext';
-import io from 'socket.io-client';
+import socket from "../socket.js"; // Import the shared instance
 import "../assets/Game.css";
-
-const socket = io(); // Automatically connects to the backend
 
 const DeckPanel = ({ deck }) => (
   <div className="deck-panel">
@@ -44,7 +42,12 @@ const Game = () => {
   const [cardDrawn, setCardDrawn] = useState(null);
   const [isTurnEnded, setIsTurnEnded] = useState(false);
 
+
   useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
+    
     console.log("whosTurnIsIt:", whosTurnIsIt);
     console.log("Players:", players);
     console.log("Current Player socketID:", players[whosTurnIsIt]?.socketID);
@@ -68,6 +71,7 @@ const Game = () => {
     return () => {
       socket.off('updateGameState');
       socket.off('cardDrawn');
+      socket.disconnect();
     };
   }, [roomID, setDeck, setPlayers, setWhosTurnIsIt, whosTurnIsIt, players]);
 
@@ -106,7 +110,7 @@ const Game = () => {
             {deck.length > 0 && cardDrawn === null && 
               players.length > 0 && whosTurnIsIt !== null &&
               players[whosTurnIsIt]?.socketID === socket.id && (
-              <button className="game-button" onClick={drawACard}>Draw Card</button>
+                <button className="game-button" onClick={drawACard}>Draw Card</button>
             )}
 
             {cardDrawn && !isTurnEnded && (
