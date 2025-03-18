@@ -1,89 +1,51 @@
-/* 
-@font-face {
-    font-family: 'balatro';
-    src: url('/fonts/balatro.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-*/
-
-body {
-    background-color: rgb(255, 255, 255);
-    font-size: 20px;
-/*    font-family: 'balatro', sans-serif;
-*/
-}
-
 .game-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;  /* Stack content vertically */
+  align-items: center;     /* Center everything */
+  justify-content: flex-start;
+  padding: 20px;
+}
+
+.game-header {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 20px; /* Space between header and game content */
+}
+
+.turn-message {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff5733; /* Custom color for emphasis */
+  margin-top: 5px;
+}
+
+.game-content {
+  display: flex;
+  flex-grow: 1;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .deck-panel {
   width: 250px;
   background-color: #f4f4f4;
   padding: 10px;
-  margin-right: 20px;
   height: 100vh;
   overflow-y: auto;
 }
 
-.game-content {
-  flex: 1;
-  padding: 20px;
-}
-
-.deck-panel h3 {
-  text-align: center;
-}
-
-.deck-panel ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.deck-panel li {
-  padding: 5px;
-  border-bottom: 1px solid #ddd;
-}
-
-.button-container {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.game-button {
-  padding: 10px 20px;
-  font-size: 16px;
+.right-panel {
   position: absolute;
-  bottom: 10%;
-  left: 53%;
-  width: 150px;
+  top: 20px;
+  right: 20px;
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 10px;
+  height: 100vh;
+  overflow-y: auto;
 }
 
-.cardContainer{
-  
-}
-
-.drawn-card{
-  width: 300px;
-}
-
-.cardback{
-  width: 320px;
-  margin-top: 29px;
-}
-
-.turn-order-panel li {
-  padding: 5px;
-}
-
-.turn-order-panel li:hover {
-  cursor: pointer;
-}
-
-.turn-order-panel li.bold {
-  font-weight: bold;
-  color: blue;
+.game-controls {
+  text-align: center;
+  margin-top: 20px;
 }

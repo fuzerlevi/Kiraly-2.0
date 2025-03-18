@@ -15,7 +15,7 @@ const WaitingPage = () => {
   const location = useLocation();
   const { name, gender } = location.state; // Destructure both correctly
 
-  const { players, setPlayers } = useGameContext();
+  const { players, setPlayers, setDeck, setWhosTurnIsIt } = useGameContext();
 
   const [showCopyMessage, setShowCopyMessage] = useState(false);
   const timeoutRef = useRef(null);
@@ -26,39 +26,35 @@ const WaitingPage = () => {
 
     // Listen for updated player list from the server
     socket.on('updatePlayers', (updatedPlayers) => {
-      // Add empty arrays for cardsDrawn and brothers to each player
       const updatedPlayersWithArrays = updatedPlayers.map(player => ({
         ...player,
         cardsDrawn: [],  // Empty array for cards drawn
         brothers: []     // Empty array for brothers
       }));
-
-      // Update the players state with the modified player objects
       setPlayers(updatedPlayersWithArrays);
     });
 
     // Listen for when the game starts
-    socket.on('gameStarted', ({ roomID, players: updatedPlayers }) => {
-      // Make sure to include the empty arrays for cardsDrawn and brothers
+    socket.on('gameStarted', ({ roomID, players: updatedPlayers, deck, whosTurnIsIt }) => {
       const updatedPlayersWithArrays = updatedPlayers.map(player => ({
         ...player,
         cardsDrawn: [],
         brothers: []
       }));
-
-      // Update the players state with the modified player objects
       setPlayers(updatedPlayersWithArrays);
+      setDeck(deck);
+      setWhosTurnIsIt(whosTurnIsIt)
 
       // Log and navigate to the game page
-      console.log("Navigating to game page with players:", updatedPlayersWithArrays);
-      navigate(`/game/${roomID}`, { state: { players: updatedPlayersWithArrays } });
+      console.log("Navigating to game page");
+      navigate(`/game/${roomID}`);
     });
 
     return () => {
       socket.off('updatePlayers'); // Cleanup the listener
       socket.off('gameStarted');   // Cleanup the listener
     };
-  }, [name, gender, roomID, setPlayers, navigate]); // Only rerun if dependencies change
+  }, [name, gender, roomID, setPlayers, setDeck, setWhosTurnIsIt, navigate]); // Only rerun if dependencies change
 
   // Separate useEffect to log player updates
   useEffect(() => {
@@ -77,7 +73,6 @@ const WaitingPage = () => {
 
   // Start the game (only accessible by host)
   const startGame = () => {
-    console.log('Start Game clicked');
     // Emit event to start the game
     console.log('Start Game clicked, emitting event...');
     socket.emit('startGame', { roomID });
@@ -119,7 +114,7 @@ const WaitingPage = () => {
           <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
             {players.map((player, index) => (
               <li key={index}>
-                {player.name} - {player.gender === 'boy' ? 'Fiúk' : 'Lányok'}
+                {player.name} - {player.team === 'boy' ? 'Fiúk' : 'Lányok'}
               </li>
             ))}
           </ul>
