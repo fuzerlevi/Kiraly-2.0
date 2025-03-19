@@ -4,6 +4,23 @@ import { useGameContext } from "../components/GameContext";
 import socket from "../socket.js"; // Import the shared instance
 import "../assets/Game.css";
 
+const TurnOrderPanel = ({ players = [], whosTurnIsIt }) => (
+  <div className="turn-order-panel">
+    <h3 className="turn-order-title">Ki jön?</h3>
+    <ul className="turn-order-list">
+      {players.map((player, index) => (
+        <li
+          key={index}
+          className={`turn-order-item ${whosTurnIsIt === index ? "current-turn" : ""}`}
+        >
+          {player.name}
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+
 const Game = () => {
   const { players, deck, whosTurnIsIt, setDeck, setPlayers, setWhosTurnIsIt } =
     useGameContext();
@@ -61,12 +78,7 @@ const Game = () => {
   return (
     <div className="game-container">
       {/* Game Title */}
-      <h1 className="game-title">Game Page</h1>
-
-      {/* Current Turn Display */}
-      {players.length > 0 && (
-        <p className="turn-message">{players[whosTurnIsIt]?.name}'s turn!</p>
-      )}
+      <h1 className="game-title">KIRÁLY 2.0</h1>
 
       {/* Card Image - Shows drawn card or cardback */}
       <div className="card-container">
@@ -100,6 +112,12 @@ const Game = () => {
             </button>
           )
         )}
+
+      {/* Turn Order Panel (Top-Right) */}
+      <div className="turn-order-container">
+        <TurnOrderPanel players={players} whosTurnIsIt={whosTurnIsIt} />
+      </div>
+
     </div>
   );
 };

@@ -198,6 +198,7 @@ const CreateGameForm = () => {
                 placeholder="Enter your name" 
               />
             </Form.Group>
+            
             <Form.Group className="mb-2 mb-sm-5 text-left">
               <Form.Label className="create-game-form-label float-start">
                 Kód:
@@ -210,6 +211,23 @@ const CreateGameForm = () => {
                 id="gameID" 
                 placeholder="Pl: zdh3fj" 
               />
+            </Form.Group>
+
+            {/* 🟢 Gender Selection (✅ Added to Join Form) */}
+            <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container">
+              <Form.Label className="create-game-form-label">
+                Csapat:
+              </Form.Label>
+              <Form.Control 
+                as="select"
+                value={gender} 
+                onChange={(event) => setGender(event.target.value)} 
+                className="create-game-form-select"
+              >
+                <option value="" disabled>-Válassz csapatot-</option>
+                <option value="boy">Fiúk</option>
+                <option value="girl">Lányok</option>
+              </Form.Control>
             </Form.Group>
 
             <Button className="mb-3 btn join-game-form-button" type="submit">
