@@ -24,7 +24,8 @@ const Game = () => {
       setPlayers(Object.values(data.players) || []);
       setDeck(data.deck || []);
       setWhosTurnIsIt(data.currentPlayerIndex || 0);
-      setIsTurnEnded(false); // Reset turn status
+      setCardDrawn(null); // 🔥 Reset card for the new player
+      setIsTurnEnded(false); // 🔥 Reset turn flag
     });
 
     socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers }) => {
@@ -51,6 +52,7 @@ const Game = () => {
   };
 
   const endTurn = () => {
+    if (players[whosTurnIsIt]?.socketID !== mySocketID) return; // 🔥 Prevent others from pressing it
     setCardDrawn(null);
     setIsTurnEnded(true);
     socket.emit("endTurn", { roomID });
@@ -85,7 +87,7 @@ const Game = () => {
         )}
       </div>
 
-      {/* Floating Buttons */}
+      {/* Floating Buttons - Only Visible for Current Player */}
       {deck.length > 0 && players.length > 0 && whosTurnIsIt !== null &&
         players[whosTurnIsIt]?.socketID === mySocketID && (
           cardDrawn === null ? (
