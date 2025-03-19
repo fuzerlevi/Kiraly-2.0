@@ -122,7 +122,7 @@ const WaitingPage = () => {
 
         {/* Start Game Button (Only for Host) */}
         {players[0]?.name === name && (
-          <Button onClick={startGame} className="mt-3" variant="primary">
+          <Button onClick={startGame} className="mt-3 start-game-button" variant="primary">
             Start Game
           </Button>
         )}

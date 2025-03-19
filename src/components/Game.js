@@ -81,7 +81,7 @@ const Game = () => {
         ) : (
           <img
             src="/CardImages/cardbacks/BlackBack.png"
-            className="drawn-card"
+            className="drawn-card cardback"
             alt="Card Back"
           />
         )}

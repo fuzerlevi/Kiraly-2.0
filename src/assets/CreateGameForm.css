@@ -36,7 +36,7 @@
 .create-game-form-button {
   padding: 10px 20px;
   font-size: 20px;
-  background-color: #62b966;
+  background-color: #2ed573;
   color: white;
   border: none;
   border-radius: 5px;
@@ -47,13 +47,13 @@
 }
 
 .create-game-form-button:hover, .create-game-form-button:active, .create-game-form-button:focus {
-  background-color: #3d8b3c !important;
+  background-color: #7bed9f !important;
 }
 
 .join-game-form-button {
   padding: 10px 20px;
   font-size: 20px;
-  background-color:#6662b9;
+  background-color:#5352ed;
   color: white;
   border: none;
   border-radius: 5px;
@@ -64,13 +64,13 @@
 }
 
 .join-game-form-button:hover, .join-game-form-button:active, .join-game-form-button:focus {
-  background-color: #3c3d8b !important;
+  background-color: #70a1ff !important;
 }
 
 .help-game-form-button {
   padding: 10px 20px;
   font-size: 1.2rem;
-  background-color: #ff4e4e;
+  background-color: #ff4757;
   color: white;
   border: none;
   border-radius: 5px;
@@ -81,7 +81,7 @@
 }
 
 .help-game-form-button:hover, .help-game-form-button:active, .help-game-form-button:focus {
-  background-color: #bc3b3b !important;
+  background-color: #ff6b81 !important;
 }
 
 .full-screen-box {
@@ -90,7 +90,7 @@
   right: 10%;
   bottom: 5%;
   left: 10%;
-  background-color: #ff4e4e;
+  background-color: #ff4757;
   scrollbar-width: thin;
   overflow-y: scroll;
   /* Add other styles as needed */
@@ -108,7 +108,7 @@
 }
 
 .accordion-button {
-  background-color: #ff4e4e !important;
+  background-color: #ff4757 !important;
   color: white;
 }
 
@@ -237,7 +237,20 @@
   clear: both;
 }
 
+/* Back button - Same as other buttons but with a different color */
+.back-game-form-button {
+  padding: 10px 20px;
+  font-size: 20px;
+  background-color: #2f3542; /* A distinct but matching color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
 
-
-
-
+.back-game-form-button:hover, .back-game-form-button:active, .back-game-form-button:focus {
+  background-color: #57606f !important;
+}

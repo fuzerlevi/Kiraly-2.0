@@ -11,16 +11,15 @@ import '../assets/CreateGameForm.css';
 
 const CreateGameForm = () => {
   const navigate = useNavigate();
-  const { setPlayers } = useGameContext(); // Get the setPlayers function from context
+  const { setPlayers } = useGameContext();
 
   const [name, setName] = useState('');
   const [gameID, setGameID] = useState('');
-  const [gender, setGender] = useState(''); // New state for gender
+  const [gender, setGender] = useState('');
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [showForm, setShowForm] = useState(null); // State to control form visibility
+  const [showForm, setShowForm] = useState(null); 
 
-  // Handle receiving the response for create room and join room
   useEffect(() => {
     socket.on('createRoomResponse', (response) => {
       if (response.success) {
@@ -34,7 +33,6 @@ const CreateGameForm = () => {
     socket.on('joinRoomResponse', (response) => {
       if (response.success) {
         const roomID = response.gameID;
-        // Set the players context with the current player (not the host) information
         navigate(`/waiting/${roomID}`, { state: { name, gender } });
       } else {
         setErrorMessage('Game room does not exist.');
@@ -63,7 +61,6 @@ const CreateGameForm = () => {
     );
   };
 
-  // Handle the response for creating a room (for HOST button)
   const handleHostSubmit = (event) => {
     event.preventDefault();
     if (name.trim() === '' || gender.trim() === '') {
@@ -72,9 +69,8 @@ const CreateGameForm = () => {
       setTimeout(() => { setShowErrorMessage(false); }, 2500);
       return;
     }
-  
-    // Send user data to create the room (with host flag)
-    const user = { name, isHost: true, gender }; // Pass gender along with name
+
+    const user = { name, isHost: true, gender };
     socket.emit('createGameRoom', user, (response) => {
       if (response.success) {
         const roomID = response.gameID;
@@ -85,7 +81,7 @@ const CreateGameForm = () => {
       }
     });
   };
-  
+
   const handleJoinSubmit = (event) => {
     event.preventDefault();
     if (name.trim() === '' || gameID.trim() === '' || gender.trim() === '') {
@@ -94,12 +90,10 @@ const CreateGameForm = () => {
       setTimeout(() => { setShowErrorMessage(false); }, 2500);
       return;
     }
-  
-    // Send user data to join the room (with host flag set to false)
-    const user = { name, isHost: false, gender }; // Pass gender along with name
+
+    const user = { name, isHost: false, gender };
     socket.emit('joinGameRoom', { gameID, user }, (response) => {
       if (response.success) {
-        // Add current player as a non-host to the existing players list
         navigate(`/waiting/${gameID}`, { state: { name, gender } });
       } else {
         setErrorMessage('Game code does not exist.');
@@ -113,12 +107,13 @@ const CreateGameForm = () => {
   return (
     <Container className="create-game-form-container vh-100 d-flex align-items-center justify-content-center">
       {GameTitle()}
+
       <motion.div
         initial={{ opacity: 0, scale: 1 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Button Section */}
+        {/* Show Main Menu */}
         {showForm === null && (
           <>
             <Button 
@@ -133,10 +128,13 @@ const CreateGameForm = () => {
             >
               JOIN GAME
             </Button>
+
+            {/* 🟢 Show Guide button only in main menu */}
+            <AccordionMenu />
           </>
         )}
 
-        {/* Create Room Form (HOST) */}
+        {/* Host Game Form */}
         {showForm === 'host' && (
           <Form onSubmit={handleHostSubmit} style={{ maxWidth: '200px', minHeight: '200px' }}>
             <Form.Group className="mb-2 text-left">
@@ -170,13 +168,21 @@ const CreateGameForm = () => {
               </Form.Control>
             </Form.Group>
 
-            <Button className="mb-9 mb-sm-6 create-game-form-button" type="submit">
+            <Button className="mb-3 create-game-form-button" type="submit">
               HOST
+            </Button>
+
+            {/* 🔙 Back Button */}
+            <Button 
+              className="mb-3 back-game-form-button" 
+              onClick={() => setShowForm(null)}
+            >
+              ← Back
             </Button>
           </Form>
         )}
 
-        {/* Join Room Form */}
+        {/* Join Game Form */}
         {showForm === 'join' && (
           <Form onSubmit={handleJoinSubmit} style={{ maxWidth: '200px' }}>
             <Form.Group className="mb-2 mb-sm-4 text-left">
@@ -206,30 +212,20 @@ const CreateGameForm = () => {
               />
             </Form.Group>
 
-            {/* Gender Selection */}
-            <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container">
-              <Form.Label className="create-game-form-label">
-                Csapat:
-              </Form.Label>
-              <Form.Control 
-                as="select"
-                value={gender} 
-                onChange={(event) => setGender(event.target.value)} 
-                className="create-game-form-select"
-              >
-                <option value="" disabled>-Válassz csapatot-</option>
-                <option value="boy">Fiúk</option>
-                <option value="girl">Lányok</option>
-              </Form.Control>
-            </Form.Group>
-
             <Button className="mb-3 btn join-game-form-button" type="submit">
               JOIN VIA CODE
+            </Button>
+
+            {/* 🔙 Back Button */}
+            <Button 
+              className="mb-3 back-game-form-button" 
+              onClick={() => setShowForm(null)}
+            >
+              ← Back
             </Button>
           </Form>
         )}
 
-        <AccordionMenu></AccordionMenu>
         {showErrorMessage && (<div className="notification-alert notification-alert--error">{errorMessage}</div>)}
       </motion.div>
     </Container>
