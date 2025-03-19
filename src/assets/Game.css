@@ -95,7 +95,7 @@
 /* Floating Buttons for Draw & End Turn */
 .floating-button {
   position: fixed;
-  bottom: 20%;
+  bottom: 24%;
   left: 50%;
   transform: translateX(-50%);
   background-color: #ffcc00;
@@ -111,3 +111,42 @@
 .floating-button:hover {
   background-color: #ffa502;
 }
+
+
+
+
+
+
+
+/* My Cards Section (Bottom Box) */
+.my-cards-container {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center; /* Align normally */
+  justify-content: center;
+  width: 80%;
+  height: 150px;
+  max-width: 500px;
+  overflow: hidden;
+  background: white;
+  border: 3px solid #3E3F5B;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Individual Cards */
+.my-card {
+  height: 120px;
+  transition: transform 0.2s ease-in-out;
+  margin-top: 15px; /* 👈 Move the cards down */
+  margin-left: 4px;
+}
+
+/* Lift card on hover */
+.my-card:hover {
+  transform: translateY(-15px);
+}
+

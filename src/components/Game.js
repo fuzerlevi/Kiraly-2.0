@@ -20,7 +20,6 @@ const TurnOrderPanel = ({ players = [], whosTurnIsIt }) => (
   </div>
 );
 
-
 const Game = () => {
   const { players, deck, whosTurnIsIt, setDeck, setPlayers, setWhosTurnIsIt } =
     useGameContext();
@@ -41,8 +40,8 @@ const Game = () => {
       setPlayers(Object.values(data.players) || []);
       setDeck(data.deck || []);
       setWhosTurnIsIt(data.currentPlayerIndex || 0);
-      setCardDrawn(null); // 🔥 Reset card for the new player
-      setIsTurnEnded(false); // 🔥 Reset turn flag
+      setCardDrawn(null);
+      setIsTurnEnded(false);
     });
 
     socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers }) => {
@@ -69,11 +68,26 @@ const Game = () => {
   };
 
   const endTurn = () => {
-    if (players[whosTurnIsIt]?.socketID !== mySocketID) return; // 🔥 Prevent others from pressing it
+    if (players[whosTurnIsIt]?.socketID !== mySocketID) return;
     setCardDrawn(null);
     setIsTurnEnded(true);
     socket.emit("endTurn", { roomID });
   };
+
+  // Get current player's drawn cards
+  const myPlayer = players.find((player) => player.socketID === mySocketID);
+  const myCards = myPlayer?.cardsDrawn || [];
+
+  // **DYNAMIC SPACING FOR CARDS (OVERLAPPING BEHAVIOR)**
+  const containerWidth = 600; // Width of the hand box
+  const cardWidth = 100; // Individual card width
+  const totalCards = myCards.length;
+
+  // Calculate spacing to ensure even distribution
+  let spacing = cardWidth;
+  if (totalCards > 1) {
+    spacing = Math.min((containerWidth - cardWidth) / (totalCards - 1), cardWidth - 20);
+  }
 
   return (
     <div className="game-container">
@@ -118,6 +132,34 @@ const Game = () => {
         <TurnOrderPanel players={players} whosTurnIsIt={whosTurnIsIt} />
       </div>
 
+      {/* My Cards Section (Bottom) */}
+      <div className="my-cards-container">
+        {myCards.map((card, index) => {
+          const totalCards = myCards.length;
+          const containerWidth = 500; // Match max-width in CSS
+          const cardWidth = 80; // Width of each card
+          const baseSpacing = cardWidth; // Default spacing
+          const overlapThreshold = totalCards > Math.floor(containerWidth / cardWidth); 
+
+          // Dynamically calculate spacing
+          const spacing = overlapThreshold 
+            ? Math.min(baseSpacing, (containerWidth - cardWidth) / (totalCards - 1)) 
+            : baseSpacing;
+
+          return (
+            <img
+              key={index}
+              src={card.src}
+              alt={card.name}
+              className="my-card"
+              style={{
+                position: "absolute",
+                left: `${index * spacing}px`,
+              }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
