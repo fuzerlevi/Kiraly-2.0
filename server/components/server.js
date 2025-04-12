@@ -65,22 +65,71 @@ io.on('connection', (socket) => {
       return;
     }
   
+    // Check if this player already existed (reconnection case)
+    const existingSocketID = Object.keys(gameState.players).find(
+      sid => gameState.players[sid].name === playerName && gameState.players[sid].team === playerGender
+    );
+  
     const isHost = Object.keys(gameState.players).length === 0;
-    
-    gameState.players[socket.id] = {
-      ...createPlayerState(socket.id),
-      name: playerName,
-      team: playerGender,
-      isHost,
-      socketID: socket.id, // Ensure this is stored and sent
-    };
   
-    io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
-    socketToGameMap[socket.id] = gameID;
+    if (existingSocketID) {
+      // Reconnect logic
+      const oldPlayer = gameState.players[existingSocketID];
+      oldPlayer.socketID = socket.id;
+
+      // Reassign under new socket ID (preserve player object in memory)
+      gameState.players[socket.id] = oldPlayer;
+
+      // Remove only after reassignment (to prevent mutation issues)
+      if (existingSocketID !== socket.id) {
+        delete gameState.players[existingSocketID];
+      }
+
+
+      socketToGameMap[socket.id] = gameID;
+      delete socketToGameMap[existingSocketID];
+      console.log(`Player ${playerName} reconnected with new socket ${socket.id}`);
+    } else {
+      // Fresh join
+      gameState.players[socket.id] = {
+        ...createPlayerState(socket.id),
+        name: playerName,
+        team: playerGender,
+        isHost,
+        socketID: socket.id,
+      };
+      socketToGameMap[socket.id] = gameID;
+    }
+  
     socket.join(gameID);
-  
+
+    // Notify everyone with updated player list
+    io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
+
+    // Refresh full game state for everyone (safety)
+    io.to(gameID).emit("updateGameState", {
+      deck: gameState.deck,
+      players: gameState.players,
+      currentPlayerIndex: gameState.currentPlayerIndex
+    });
+
+    // If game already started, emit gameStarted only to this reconnecting socket
+    if (gameState.hasStarted) {
+      io.to(gameID).emit("playerReconnected", { playerName });
+      socket.emit("gameStarted", {
+        roomID: gameID,
+        players: Object.values(gameState.players),
+        deck: gameState.deck,
+        whosTurnIsIt: gameState.currentPlayerIndex,
+      });
+    }
+
+
+    // Response back to the reconnected player
     socket.emit("joinRoomResponse", { gameID, success: true });
+
   });
+  
   
 
   socket.on("startGame", ({ roomID }) => {
@@ -150,14 +199,30 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const gameID = socketToGameMap[socket.id];
     const gameState = games[gameID];
-    if (gameID && gameState) {
-      delete gameState.players[socket.id];
-      if (Object.keys(gameState.players).length === 0) {
-        delete games[gameID];
-      }
-      delete socketToGameMap[socket.id];
+  
+    if (!gameID || !gameState) return;
+  
+    const player = gameState.players[socket.id];
+    if (player) {
+      console.log(`Player ${player.name} disconnected (socket ${socket.id}).`);
+    } else {
+      console.log(`Unknown socket ${socket.id} disconnected.`);
     }
-    console.log(`Socket ${socket.id} disconnected.`);
+  
+    // Note: do NOT delete the player or game
+    // We keep the player data intact for reconnection
+  
+    delete socketToGameMap[socket.id];
+  });
+  
+
+  socket.on("checkGameStatus", ({ gameID }, callback) => {
+    const game = games[gameID];
+    if (!game) {
+      return callback({ error: "Game not found" });
+    }
+  
+    return callback({ hasStarted: game.hasStarted });
   });
 });
 

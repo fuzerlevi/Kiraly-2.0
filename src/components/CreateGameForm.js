@@ -5,7 +5,7 @@ import { Container, Form, Button } from 'react-bootstrap';
 
 import AccordionMenu from './subcomponent/AccordionMenu';
 import socket from '../socket.js';
-import { useGameContext } from '../components/GameContext'; // Import the useGameContext hook
+import { useGameContext } from '../components/GameContext';
 
 import '../assets/CreateGameForm.css';
 
@@ -18,7 +18,7 @@ const CreateGameForm = () => {
   const [gender, setGender] = useState('');
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [showForm, setShowForm] = useState(null); 
+  const [showForm, setShowForm] = useState(null);
 
   useEffect(() => {
     socket.on('createRoomResponse', (response) => {
@@ -48,18 +48,16 @@ const CreateGameForm = () => {
     };
   }, [name, gender, navigate, setPlayers]);
 
-  const GameTitle = () => {
-    return (
-      <motion.div
-        className="create-game-form-title"
-        initial={{ scale: 0 }}
-        animate={{ rotate: 360, scale: 1 }}
-        transition={{ type: "spring", stiffness: 200, damping: 17 }}
-      >
-        Király 2.0
-      </motion.div>
-    );
-  };
+  const GameTitle = () => (
+    <motion.div
+      className="create-game-form-title"
+      initial={{ scale: 0 }}
+      animate={{ rotate: 360, scale: 1 }}
+      transition={{ type: "spring", stiffness: 200, damping: 17 }}
+    >
+      Király 2.0
+    </motion.div>
+  );
 
   const handleHostSubmit = (event) => {
     event.preventDefault();
@@ -91,15 +89,34 @@ const CreateGameForm = () => {
       return;
     }
 
-    const user = { name, isHost: false, gender };
-    socket.emit('joinGameRoom', { gameID, user }, (response) => {
-      if (response.success) {
-        navigate(`/waiting/${gameID}`, { state: { name, gender } });
-      } else {
-        setErrorMessage('Game code does not exist.');
+    socket.emit('checkGameStatus', { gameID }, (response) => {
+      if (!response || response.error) {
+        setErrorMessage('Game not found.');
         setShowErrorMessage(true);
-        setTimeout(() => { setShowErrorMessage(false); }, 2500);
-        console.error(response.error);
+        return;
+      }
+
+      if (response.hasStarted) {
+        socket.emit('joinGameRoom', { gameID, playerName: name, playerGender: gender }, (res) => {
+          if (res.success) {
+            navigate(`/game/${gameID}`);
+          } else {
+            setErrorMessage('Failed to rejoin game.');
+            setShowErrorMessage(true);
+            console.error(res.error);
+          }
+        });
+      } else {
+        const user = { name, isHost: false, gender };
+        socket.emit('joinGameRoom', { gameID, user }, (res) => {
+          if (res.success) {
+            navigate(`/waiting/${gameID}`, { state: { name, gender } });
+          } else {
+            setErrorMessage('Game code does not exist.');
+            setShowErrorMessage(true);
+            console.error(res.error);
+          }
+        });
       }
     });
   };
@@ -113,53 +130,44 @@ const CreateGameForm = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Show Main Menu */}
         {showForm === null && (
           <>
-            <Button 
-              className="mb-3 btn create-game-form-button" 
+            <Button
+              className="mb-3 btn create-game-form-button"
               onClick={() => setShowForm('host')}
             >
               HOST GAME
             </Button>
-            <Button 
-              className="mb-3 btn join-game-form-button" 
+            <Button
+              className="mb-3 btn join-game-form-button"
               onClick={() => setShowForm('join')}
             >
               JOIN GAME
             </Button>
-
-            {/* 🟢 Show Guide button only in main menu */}
             <AccordionMenu />
           </>
         )}
 
-        {/* Host Game Form */}
         {showForm === 'host' && (
           <Form onSubmit={handleHostSubmit} style={{ maxWidth: '200px', minHeight: '200px' }}>
             <Form.Group className="mb-2 text-left">
-              <Form.Label className="create-game-form-label float-start">
-                Név:
-              </Form.Label>
-              <Form.Control 
-                type="text" 
-                value={name} 
-                onChange={(event) => setName(event.target.value)} 
-                className="create-game-form-input" 
-                id="name" 
-                placeholder="Pl: Kasi" 
+              <Form.Label className="create-game-form-label float-start">Név:</Form.Label>
+              <Form.Control
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                className="create-game-form-input"
+                id="name"
+                placeholder="Pl: Kasi"
               />
             </Form.Group>
 
-            {/* Gender Selection */}
             <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container">
-              <Form.Label className="create-game-form-label">
-                Csapat:
-              </Form.Label>
-              <Form.Control 
+              <Form.Label className="create-game-form-label">Csapat:</Form.Label>
+              <Form.Control
                 as="select"
-                value={gender} 
-                onChange={(event) => setGender(event.target.value)} 
+                value={gender}
+                onChange={(event) => setGender(event.target.value)}
                 className="create-game-form-select"
               >
                 <option value="" disabled>-Válassz csapatot-</option>
@@ -168,60 +176,43 @@ const CreateGameForm = () => {
               </Form.Control>
             </Form.Group>
 
-            <Button className="mb-3 create-game-form-button" type="submit">
-              HOST
-            </Button>
-
-            {/* 🔙 Back Button */}
-            <Button 
-              className="mb-3 back-game-form-button" 
-              onClick={() => setShowForm(null)}
-            >
-              ← Back
-            </Button>
+            <Button className="mb-3 create-game-form-button" type="submit">HOST</Button>
+            <Button className="mb-3 back-game-form-button" onClick={() => setShowForm(null)}>← Back</Button>
           </Form>
         )}
 
-        {/* Join Game Form */}
         {showForm === 'join' && (
           <Form onSubmit={handleJoinSubmit} style={{ maxWidth: '200px' }}>
             <Form.Group className="mb-2 mb-sm-4 text-left">
-              <Form.Label className="create-game-form-label float-start">
-                Név:
-              </Form.Label>
-              <Form.Control 
-                type="text" 
-                value={name} 
-                onChange={(event) => setName(event.target.value)} 
-                className="create-game-form-input" 
-                id="name" 
-                placeholder="Enter your name" 
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-2 mb-sm-5 text-left">
-              <Form.Label className="create-game-form-label float-start">
-                Kód:
-              </Form.Label>
-              <Form.Control 
-                type="text" 
-                value={gameID} 
-                onChange={(event) => setGameID(event.target.value)} 
-                className="create-game-form-input" 
-                id="gameID" 
-                placeholder="Pl: zdh3fj" 
+              <Form.Label className="create-game-form-label float-start">Név:</Form.Label>
+              <Form.Control
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                className="create-game-form-input"
+                id="name"
+                placeholder="Enter your name"
               />
             </Form.Group>
 
-            {/* 🟢 Gender Selection (✅ Added to Join Form) */}
+            <Form.Group className="mb-2 mb-sm-5 text-left">
+              <Form.Label className="create-game-form-label float-start">Kód:</Form.Label>
+              <Form.Control
+                type="text"
+                value={gameID}
+                onChange={(event) => setGameID(event.target.value)}
+                className="create-game-form-input"
+                id="gameID"
+                placeholder="Pl: zdh3fj"
+              />
+            </Form.Group>
+
             <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container">
-              <Form.Label className="create-game-form-label">
-                Csapat:
-              </Form.Label>
-              <Form.Control 
+              <Form.Label className="create-game-form-label">Csapat:</Form.Label>
+              <Form.Control
                 as="select"
-                value={gender} 
-                onChange={(event) => setGender(event.target.value)} 
+                value={gender}
+                onChange={(event) => setGender(event.target.value)}
                 className="create-game-form-select"
               >
                 <option value="" disabled>-Válassz csapatot-</option>
@@ -230,21 +221,14 @@ const CreateGameForm = () => {
               </Form.Control>
             </Form.Group>
 
-            <Button className="mb-3 btn join-game-form-button" type="submit">
-              JOIN VIA CODE
-            </Button>
-
-            {/* 🔙 Back Button */}
-            <Button 
-              className="mb-3 back-game-form-button" 
-              onClick={() => setShowForm(null)}
-            >
-              ← Back
-            </Button>
+            <Button className="mb-3 btn join-game-form-button" type="submit">JOIN VIA CODE</Button>
+            <Button className="mb-3 back-game-form-button" onClick={() => setShowForm(null)}>← Back</Button>
           </Form>
         )}
 
-        {showErrorMessage && (<div className="notification-alert notification-alert--error">{errorMessage}</div>)}
+        {showErrorMessage && (
+          <div className="notification-alert notification-alert--error">{errorMessage}</div>
+        )}
       </motion.div>
     </Container>
   );

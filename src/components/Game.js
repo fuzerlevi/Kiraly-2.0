@@ -26,15 +26,17 @@ const Game = () => {
   const { roomID } = useParams();
   const [cardDrawn, setCardDrawn] = useState(null);
   const [isTurnEnded, setIsTurnEnded] = useState(false);
-  const [mySocketID, setMySocketID] = useState(socket.id || null);
+  const [mySocketID, setMySocketID] = useState(null);
+
 
   useEffect(() => {
     if (!socket.connected) {
       socket.connect();
     }
-
+    setMySocketID(socket.id);
+    
     socket.emit("joinGamePage", { roomID });
-
+  
     socket.on("updateGameState", (data) => {
       console.log("Game State Updated:", data);
       setPlayers(Object.values(data.players) || []);
@@ -43,7 +45,7 @@ const Game = () => {
       setCardDrawn(null);
       setIsTurnEnded(false);
     });
-
+  
     socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers }) => {
       console.log("🃏 Card drawn:", drawnCard);
       setCardDrawn(drawnCard);
@@ -51,12 +53,33 @@ const Game = () => {
       setPlayers(Object.values(updatedPlayers) || []);
       setIsTurnEnded(false);
     });
+  
+    socket.on("playerDisconnected", ({ playerName }) => {
+      alert(`${playerName} disconnected. Waiting for reconnection...`);
+    });
+  
+    socket.on("playerReconnected", ({ playerName }) => {
+      console.log(`${playerName} has reconnected.`);
+    });
 
+    socket.on("gameStarted", (data) => {
+      console.log("Game started for this socket:", data);
+      setPlayers(data.players || []);
+      setDeck(data.deck || []);
+      setWhosTurnIsIt(data.whosTurnIsIt || 0);
+      setCardDrawn(null);
+      setIsTurnEnded(false);
+    });
+  
     return () => {
       socket.off("updateGameState");
       socket.off("cardDrawn");
+      socket.off("playerDisconnected"); // 👈 cleanup too
+      socket.off("playerReconnected");
+      socket.off("gameStarted");
     };
-  }, [roomID, setDeck, setPlayers, setWhosTurnIsIt]);
+  }, [roomID, setDeck, setPlayers, setWhosTurnIsIt, socket.id]);
+  
 
   if (!mySocketID) {
     return <div>Loading game...</div>;
