@@ -7,13 +7,13 @@ export const useGameContext = () => useContext(GameContext);
 export const GameProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
   const [deck, setDeck] = useState([]);
-  const [whosTurnIsIt, setWhosTurnIsIt] = useState(0); // Default to first player
+  const [currentPlayerName, setCurrentPlayerName] = useState(null); // NEW
 
   return (
     <GameContext.Provider value={{ 
       players, setPlayers, 
       deck, setDeck, 
-      whosTurnIsIt, setWhosTurnIsIt 
+      currentPlayerName, setCurrentPlayerName // CHANGED
     }}>
       {children}
     </GameContext.Provider>

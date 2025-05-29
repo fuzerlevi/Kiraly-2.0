@@ -29,7 +29,7 @@ const createGameState = (gameID) => {
     hasStarted: false,
     players: {},
     deck: deck,
-    currentPlayerIndex: 0
+    currentPlayerName: null // new
   };
 };
 
@@ -110,7 +110,7 @@ io.on('connection', (socket) => {
     io.to(gameID).emit("updateGameState", {
       deck: gameState.deck,
       players: gameState.players,
-      currentPlayerIndex: gameState.currentPlayerIndex
+      currentPlayerName: gameState.currentPlayerName
     });
 
     // If game already started, emit gameStarted only to this reconnecting socket
@@ -120,7 +120,7 @@ io.on('connection', (socket) => {
         roomID: gameID,
         players: Object.values(gameState.players),
         deck: gameState.deck,
-        whosTurnIsIt: gameState.currentPlayerIndex,
+        whosTurnIsIt: gameState.currentPlayerName,
       });
     }
 
@@ -137,17 +137,21 @@ io.on('connection', (socket) => {
     if (!gameState) return;
   
     gameState.hasStarted = true;
-    
+  
+    const playerList = Object.values(gameState.players); // keep join order
+    gameState.currentPlayerName = playerList[0]?.name || null;
+  
     io.to(roomID).emit("gameStarted", {
       roomID,
-      players: Object.values(gameState.players).map(player => ({
+      players: playerList.map(player => ({
         ...player,
-        socketID: player.socketID || null, // Make sure socketID is always included
+        socketID: player.socketID || null,
       })),
       deck: gameState.deck,
-      whosTurnIsIt: gameState.currentPlayerIndex
+      whosTurnIsIt: gameState.currentPlayerName
     });
   });
+  
   
 
   socket.on('joinGamePage', ({ roomID }) => {
@@ -156,7 +160,7 @@ io.on('connection', (socket) => {
       io.to(roomID).emit('updateGameState', {
         deck: gameState.deck,
         players: gameState.players,
-        currentPlayerIndex: gameState.currentPlayerIndex
+        currentPlayerName: gameState.currentPlayerName
       });
     }
   });
@@ -165,14 +169,13 @@ io.on('connection', (socket) => {
     const gameState = games[roomID];
     if (!gameState || gameState.deck.length === 0) return;
   
+    const currentPlayer = Object.values(gameState.players).find(p => p.name === gameState.currentPlayerName);
+    if (!currentPlayer) return;
+  
     const drawnCard = gameState.deck.shift();
-    const currentSocketID = Object.keys(gameState.players)[gameState.currentPlayerIndex];
-    
-    if (!gameState.players[currentSocketID]) return;
+    currentPlayer.cardsDrawn.push(drawnCard);
   
-    gameState.players[currentSocketID].cardsDrawn.push(drawnCard);
-  
-    console.log(`Player ${gameState.players[currentSocketID].name} drew ${drawnCard.name}`);
+    console.log(`Player ${currentPlayer.name} drew ${drawnCard.name}`);
   
     io.to(roomID).emit('cardDrawn', { 
       drawnCard, 
@@ -185,16 +188,22 @@ io.on('connection', (socket) => {
     const gameState = games[roomID];
     if (!gameState) return;
   
-    gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % Object.keys(gameState.players).length;
+    const playerList = Object.values(gameState.players); // keep join order
   
-    console.log(`Turn ended. Next turn: ${gameState.currentPlayerIndex}`);
+    const currentIndex = playerList.findIndex(p => p.name === gameState.currentPlayerName);
+    const nextIndex = (currentIndex + 1) % playerList.length;
+  
+    gameState.currentPlayerName = playerList[nextIndex]?.name || null;
+  
+    console.log(`Turn ended. Next: ${gameState.currentPlayerName}`);
   
     io.to(roomID).emit('updateGameState', {
       deck: gameState.deck,
-      players: Object.values(gameState.players),
-      currentPlayerIndex: gameState.currentPlayerIndex
+      players: playerList,
+      currentPlayerName: gameState.currentPlayerName
     });
   });
+  
 
   socket.on('disconnect', () => {
     const gameID = socketToGameMap[socket.id];

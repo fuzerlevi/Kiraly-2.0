@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGameContext } from "../components/GameContext";
-import socket from "../socket.js"; // Import the shared instance
+import socket from "../socket.js";
 import "../assets/Game.css";
 
-const TurnOrderPanel = ({ players = [], whosTurnIsIt }) => (
+const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
   <div className="turn-order-panel">
     <h3 className="turn-order-title">Ki jön?</h3>
     <ul className="turn-order-list">
       {players.map((player, index) => (
         <li
           key={index}
-          className={`turn-order-item ${whosTurnIsIt === index ? "current-turn" : ""}`}
+          className={`turn-order-item ${player.name === currentPlayerName ? "current-turn" : ""}`}
         >
           {player.name}
         </li>
@@ -21,43 +21,50 @@ const TurnOrderPanel = ({ players = [], whosTurnIsIt }) => (
 );
 
 const Game = () => {
-  const { players, deck, whosTurnIsIt, setDeck, setPlayers, setWhosTurnIsIt } =
-    useGameContext();
+  const {
+    players,
+    deck,
+    currentPlayerName,
+    setDeck,
+    setPlayers,
+    setCurrentPlayerName
+  } = useGameContext();
+
   const { roomID } = useParams();
   const [cardDrawn, setCardDrawn] = useState(null);
   const [isTurnEnded, setIsTurnEnded] = useState(false);
   const [mySocketID, setMySocketID] = useState(null);
-
 
   useEffect(() => {
     if (!socket.connected) {
       socket.connect();
     }
     setMySocketID(socket.id);
-    
+
     socket.emit("joinGamePage", { roomID });
-  
+
     socket.on("updateGameState", (data) => {
       console.log("Game State Updated:", data);
-      setPlayers(Object.values(data.players) || []);
+      const playerList = Object.values(data.players); // No sorting
+      setPlayers(playerList || []);
       setDeck(data.deck || []);
-      setWhosTurnIsIt(data.currentPlayerIndex || 0);
+      setCurrentPlayerName(data.currentPlayerName || null);
       setCardDrawn(null);
       setIsTurnEnded(false);
     });
-  
+
     socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers }) => {
       console.log("🃏 Card drawn:", drawnCard);
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
-      setPlayers(Object.values(updatedPlayers) || []);
+      setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
     });
-  
+
     socket.on("playerDisconnected", ({ playerName }) => {
       alert(`${playerName} disconnected. Waiting for reconnection...`);
     });
-  
+
     socket.on("playerReconnected", ({ playerName }) => {
       console.log(`${playerName} has reconnected.`);
     });
@@ -66,66 +73,74 @@ const Game = () => {
       console.log("Game started for this socket:", data);
       setPlayers(data.players || []);
       setDeck(data.deck || []);
-      setWhosTurnIsIt(data.whosTurnIsIt || 0);
+      setCurrentPlayerName(data.currentPlayerName || null);
       setCardDrawn(null);
       setIsTurnEnded(false);
     });
-  
+
     return () => {
       socket.off("updateGameState");
       socket.off("cardDrawn");
-      socket.off("playerDisconnected"); // 👈 cleanup too
+      socket.off("playerDisconnected");
       socket.off("playerReconnected");
       socket.off("gameStarted");
     };
-  }, [roomID, setDeck, setPlayers, setWhosTurnIsIt, socket.id]);
-  
+  }, [roomID, setDeck, setPlayers, setCurrentPlayerName]);
 
   if (!mySocketID) {
     return <div>Loading game...</div>;
   }
 
+  const myPlayer = players.find((player) => player.socketID === mySocketID);
+  const myCards = myPlayer?.cardsDrawn || [];
+
   const drawACard = () => {
-    if (cardDrawn || deck.length === 0 || players[whosTurnIsIt]?.socketID !== mySocketID) return;
+    if (
+      cardDrawn ||
+      deck.length === 0 ||
+      myPlayer?.name !== currentPlayerName
+    )
+      return;
     socket.emit("drawCard", { roomID });
   };
 
   const endTurn = () => {
-    if (players[whosTurnIsIt]?.socketID !== mySocketID) return;
+    if (myPlayer?.name !== currentPlayerName) return;
     setCardDrawn(null);
     setIsTurnEnded(true);
     socket.emit("endTurn", { roomID });
   };
 
-  // Get current player's drawn cards
-  const myPlayer = players.find((player) => player.socketID === mySocketID);
-  const myCards = myPlayer?.cardsDrawn || [];
-
-  // **DYNAMIC SPACING FOR CARDS (OVERLAPPING BEHAVIOR)**
-  const containerWidth = 600; // Width of the hand box
-  const cardWidth = 100; // Individual card width
+  const containerWidth = 600;
+  const cardWidth = 100;
   const totalCards = myCards.length;
-
-  // Calculate spacing to ensure even distribution
   let spacing = cardWidth;
+
   if (totalCards > 1) {
-    spacing = Math.min((containerWidth - cardWidth) / (totalCards - 1), cardWidth - 20);
+    spacing = Math.min(
+      (containerWidth - cardWidth) / (totalCards - 1),
+      cardWidth - 20
+    );
   }
 
   return (
     <div className="game-container">
-      {/* Game Title */}
       <h1 className="game-title">KIRÁLY 2.0</h1>
 
-      {/* Card Image - Shows drawn card or cardback */}
       <div className="card-container">
         {cardDrawn ? (
           <>
             <p className="card-text">
-              {players[whosTurnIsIt]?.name} drew {cardDrawn.name}!
+              {currentPlayerName} drew {cardDrawn.name}!
             </p>
-            <img src={cardDrawn.src} className="drawn-card" alt={cardDrawn.name} />
-            <p className="effect-text">Effect: {cardDrawn.effect || "No effect for now"}</p>
+            <img
+              src={cardDrawn.src}
+              className="drawn-card"
+              alt={cardDrawn.name}
+            />
+            <p className="effect-text">
+              Effect: {cardDrawn.effect || "No effect for now"}
+            </p>
           </>
         ) : (
           <img
@@ -136,37 +151,40 @@ const Game = () => {
         )}
       </div>
 
-      {/* Floating Buttons - Only Visible for Current Player */}
-      {deck.length > 0 && players.length > 0 && whosTurnIsIt !== null &&
-        players[whosTurnIsIt]?.socketID === mySocketID && (
-          cardDrawn === null ? (
-            <button className="floating-button" onClick={drawACard}>
-              Draw Card
-            </button>
-          ) : (
-            <button className="floating-button" onClick={endTurn}>
-              End Turn
-            </button>
-          )
-        )}
+      {deck.length > 0 &&
+        players.length > 0 &&
+        currentPlayerName &&
+        myPlayer?.name === currentPlayerName &&
+        (cardDrawn === null ? (
+          <button className="floating-button" onClick={drawACard}>
+            Draw Card
+          </button>
+        ) : (
+          <button className="floating-button" onClick={endTurn}>
+            End Turn
+          </button>
+        ))}
 
-      {/* Turn Order Panel (Top-Right) */}
       <div className="turn-order-container">
-        <TurnOrderPanel players={players} whosTurnIsIt={whosTurnIsIt} />
+        <TurnOrderPanel
+          players={players}
+          currentPlayerName={currentPlayerName}
+        />
       </div>
 
-      {/* My Cards Section (Bottom) */}
       <div className="my-cards-container">
         {myCards.map((card, index) => {
-          const totalCards = myCards.length;
-          const containerWidth = 500; // Match max-width in CSS
-          const cardWidth = 80; // Width of each card
-          const baseSpacing = cardWidth; // Default spacing
-          const overlapThreshold = totalCards > Math.floor(containerWidth / cardWidth); 
+          const containerWidth = 500;
+          const cardWidth = 80;
+          const baseSpacing = cardWidth;
+          const overlapThreshold =
+            totalCards > Math.floor(containerWidth / cardWidth);
 
-          // Dynamically calculate spacing
-          const spacing = overlapThreshold 
-            ? Math.min(baseSpacing, (containerWidth - cardWidth) / (totalCards - 1)) 
+          const spacing = overlapThreshold
+            ? Math.min(
+                baseSpacing,
+                (containerWidth - cardWidth) / (totalCards - 1)
+              )
             : baseSpacing;
 
           return (

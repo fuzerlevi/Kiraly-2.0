@@ -1,4 +1,8 @@
-fix game logic
+If a nonhost disconnects when it's not their turn, it WORKS
+If a nonhost disconnects when it's their turn, the next player draws for them but they get the card
+If a host disconnects when it's not their turn, it WORKS
+If a host disconnects when it's their turn, the next player draws for them but they get the card
+
 fiú lány mechanic for 6
 
 Names have a specific color on UI 
@@ -14,5 +18,3 @@ chat?
 fix font
 custom cardback settings for each player
 rejoin feature after losing connection
-
-graph data structure?

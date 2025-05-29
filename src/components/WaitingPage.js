@@ -15,7 +15,7 @@ const WaitingPage = () => {
   const location = useLocation();
   const { name, gender } = location.state; // Destructure both correctly
 
-  const { players, setPlayers, setDeck, setWhosTurnIsIt } = useGameContext();
+  const { players, setPlayers, setDeck, setCurrentPlayerName  } = useGameContext();
 
   const [showCopyMessage, setShowCopyMessage] = useState(false);
   const timeoutRef = useRef(null);
@@ -41,20 +41,21 @@ const WaitingPage = () => {
         cardsDrawn: [],
         brothers: []
       }));
+    
       setPlayers(updatedPlayersWithArrays);
+      setCurrentPlayerName(updatedPlayersWithArrays[whosTurnIsIt]?.name || null);
       setDeck(deck);
-      setWhosTurnIsIt(whosTurnIsIt)
-
-      // Log and navigate to the game page
+    
       console.log("Navigating to game page");
       navigate(`/game/${roomID}`);
     });
+    
 
     return () => {
       socket.off('updatePlayers'); // Cleanup the listener
       socket.off('gameStarted');   // Cleanup the listener
     };
-  }, [name, gender, roomID, setPlayers, setDeck, setWhosTurnIsIt, navigate]); // Only rerun if dependencies change
+  }, [name, gender, roomID, setPlayers, setDeck, navigate]); // Only rerun if dependencies change
 
   // Separate useEffect to log player updates
   useEffect(() => {
