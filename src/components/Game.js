@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { useGameContext } from "../components/GameContext";
 import socket from "../socket.js";
 import "../assets/Game.css";
+import "../assets/Coinflip.css";
+import "../assets/D20.css";
 
 const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
   <div className="turn-order-panel">
@@ -27,7 +29,7 @@ const Game = () => {
     currentPlayerName,
     setDeck,
     setPlayers,
-    setCurrentPlayerName
+    setCurrentPlayerName,
   } = useGameContext();
 
   const { roomID } = useParams();
@@ -35,17 +37,23 @@ const Game = () => {
   const [isTurnEnded, setIsTurnEnded] = useState(false);
   const [mySocketID, setMySocketID] = useState(null);
 
+  // Coinflip
+  const [coinflipOpen, setCoinflipOpen] = useState(false);
+  const [flipResult, setFlipResult] = useState(null);
+
+  // D20 Roller
+  const [d20Open, setD20Open] = useState(false);
+  const [rollResult, setRollResult] = useState(null);
+
   useEffect(() => {
     if (!socket.connected) {
       socket.connect();
     }
     setMySocketID(socket.id);
-
     socket.emit("joinGamePage", { roomID });
 
     socket.on("updateGameState", (data) => {
-      console.log("Game State Updated:", data);
-      const playerList = Object.values(data.players); // No sorting
+      const playerList = Object.values(data.players);
       setPlayers(playerList || []);
       setDeck(data.deck || []);
       setCurrentPlayerName(data.currentPlayerName || null);
@@ -54,7 +62,6 @@ const Game = () => {
     });
 
     socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers }) => {
-      console.log("🃏 Card drawn:", drawnCard);
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
       setPlayers(updatedPlayers || []);
@@ -70,7 +77,6 @@ const Game = () => {
     });
 
     socket.on("gameStarted", (data) => {
-      console.log("Game started for this socket:", data);
       setPlayers(data.players || []);
       setDeck(data.deck || []);
       setCurrentPlayerName(data.currentPlayerName || null);
@@ -87,19 +93,13 @@ const Game = () => {
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName]);
 
-  if (!mySocketID) {
-    return <div>Loading game...</div>;
-  }
+  if (!mySocketID) return <div>Loading game...</div>;
 
   const myPlayer = players.find((player) => player.socketID === mySocketID);
   const myCards = myPlayer?.cardsDrawn || [];
 
   const drawACard = () => {
-    if (
-      cardDrawn ||
-      deck.length === 0 ||
-      myPlayer?.name !== currentPlayerName
-    )
+    if (cardDrawn || deck.length === 0 || myPlayer?.name !== currentPlayerName)
       return;
     socket.emit("drawCard", { roomID });
   };
@@ -110,6 +110,22 @@ const Game = () => {
     setIsTurnEnded(true);
     socket.emit("endTurn", { roomID });
   };
+
+  // Coinflip handlers
+  const openCoinflip = () => {
+    setFlipResult(null);
+    setCoinflipOpen(true);
+  };
+  const closeCoinflip = () => setCoinflipOpen(false);
+  const flipCoin = () => setFlipResult(Math.floor(Math.random() * 2));
+
+  // D20 handlers
+  const openD20 = () => {
+    setRollResult(null);
+    setD20Open(true);
+  };
+  const closeD20 = () => setD20Open(false);
+  const rollD20 = () => setRollResult(Math.floor(Math.random() * 20) + 1);
 
   const containerWidth = 600;
   const cardWidth = 100;
@@ -171,6 +187,56 @@ const Game = () => {
           currentPlayerName={currentPlayerName}
         />
       </div>
+
+      {/* Coinflip Button */}
+      <button className="coinflip-button" onClick={openCoinflip} title="Coinflip">
+        <img src="/Icons/cflip.png" alt="Coinflip" className="coinflip-icon" />
+      </button>
+
+      {/* D20 Button (below Coinflip) */}
+      <button className="d20-button" onClick={openD20} title="Roll D20">
+        <img src="/Icons/d20.png" alt="Roll D20" className="d20-icon" />
+      </button>
+
+      {/* Coinflip Modal */}
+      {coinflipOpen && (
+        <div className="coinflip-modal-overlay">
+          <div className="coinflip-modal">
+            <button className="coinflip-close-button" onClick={closeCoinflip}>
+              ×
+            </button>
+            <h2>Coinflip</h2>
+            {flipResult === null ? (
+              <button className="coinflip-flip-button" onClick={flipCoin}>
+                Flip
+              </button>
+            ) : (
+              <p className="coinflip-result">
+                Result: {flipResult === 0 ? "Heads" : "Tails"}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* D20 Modal */}
+      {d20Open && (
+        <div className="d20-modal-overlay">
+          <div className="d20-modal">
+            <button className="d20-close-button" onClick={closeD20}>
+              ×
+            </button>
+            <h2>Roll D20</h2>
+            {rollResult === null ? (
+              <button className="d20-roll-button" onClick={rollD20}>
+                Roll
+              </button>
+            ) : (
+              <p className="d20-result">You rolled: {rollResult}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="my-cards-container">
         {myCards.map((card, index) => {

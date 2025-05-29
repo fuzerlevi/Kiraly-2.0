@@ -1,11 +1,11 @@
-If a nonhost disconnects when it's not their turn, it WORKS
-If a nonhost disconnects when it's their turn, the next player draws for them but they get the card
-If a host disconnects when it's not their turn, it WORKS
-If a host disconnects when it's their turn, the next player draws for them but they get the card
-
 fiú lány mechanic for 6
 
+fix font
+add character limit to Names
+add metal border to floating panels
+
 Names have a specific color on UI 
+Pakli on left
 Kártyák száma a pakliban
 
 UI IDEA:
@@ -15,6 +15,6 @@ Korona ikon számmal: hány király van a pakliban
 Abacus icon: drink calculator
 gamelog in corner?
 chat?
-fix font
+Add text to icons
+wooden table texture as background
 custom cardback settings for each player
-rejoin feature after losing connection
