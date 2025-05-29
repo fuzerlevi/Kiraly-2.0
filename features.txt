@@ -1,5 +1,6 @@
 fiú lány mechanic for 6
 
+cflip d20 animations
 fix font
 add character limit to Names
 add metal border to floating panels

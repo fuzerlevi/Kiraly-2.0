@@ -20,6 +20,11 @@
     transition: transform 0.2s ease;
 }
 
+.coinflip-gif {
+  width: 200px;
+  height: auto;
+}
+
 .coinflip-button:hover .coinflip-icon {
     transform: scale(1.1); /* Slight zoom on hover */
 }

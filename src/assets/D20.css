@@ -98,4 +98,41 @@
     color: #2f3542;
     user-select: none;
   }
+
+  /* GIF container with relative positioning */
+.d20-gif-container {
+  position: relative;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+/* D20 GIF display */
+.d20-gif {
+  width: 200px;
+  height: auto;
+  display: block;
+}
+
+/* Overlayed result number */
+.d20-result-overlay {
+  position: absolute;
+  top: 50%; /* Adjust this */
+  left: 54%; /* Adjust this */
+  transform: translate(-50%, -50%);
+  font-size: 45px; /* Adjust size as needed */
+  font-weight: bold;
+  color: white;
+  pointer-events: none;
+  user-select: none;
+
+  opacity: 0;
+  animation: fadeInOverlay 0.3s ease-in forwards;
+  animation-delay: 4s;
+}
+
+@keyframes fadeInOverlay {
+  to {
+    opacity: 1;
+  }
+}
   

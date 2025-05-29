@@ -212,7 +212,11 @@ const Game = () => {
               </button>
             ) : (
               <p className="coinflip-result">
-                Result: {flipResult === 0 ? "Heads" : "Tails"}
+                {flipResult === 0 ? (
+                <img src="/Coinflip/heads.gif" alt="Heads" className="coinflip-gif" />
+              ) : (
+                <img src="/Coinflip/tails.gif" alt="Tails" className="coinflip-gif" />
+              )}
               </p>
             )}
           </div>
@@ -226,13 +230,16 @@ const Game = () => {
             <button className="d20-close-button" onClick={closeD20}>
               ×
             </button>
-            <h2>Roll D20</h2>
+            <h2>D20</h2>
             {rollResult === null ? (
               <button className="d20-roll-button" onClick={rollD20}>
                 Roll
               </button>
             ) : (
-              <p className="d20-result">You rolled: {rollResult}</p>
+              <div className="d20-gif-container">
+                <img src="/Coinflip/d20.gif" alt="Rolling D20" className="d20-gif" />
+                <div className="d20-result-overlay">{rollResult}</div>
+              </div>
             )}
           </div>
         </div>
