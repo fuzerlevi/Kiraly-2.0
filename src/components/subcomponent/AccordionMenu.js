@@ -35,7 +35,7 @@ const AccordionMenu = () => {
   return (
       <div>
         <Form onClick={toggleMenu}>
-          <Button className="mb-3 help-game-form-button" type="button">GUIDE</Button>
+          <Button className="mb-3 help-game-form-button pixel-font" type="button">GUIDE</Button>
         </Form>
         <AnimatePresence>
           {showMenu && (

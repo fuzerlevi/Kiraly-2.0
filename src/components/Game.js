@@ -141,7 +141,7 @@ const Game = () => {
 
   return (
     <div className="game-container">
-      <h1 className="game-title">KIRÁLY 2.0</h1>
+      <h1 className="game-title">KIRALY 2.0</h1>
 
       <div className="card-container">
         {cardDrawn ? (

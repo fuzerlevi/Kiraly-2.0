@@ -50,7 +50,7 @@ const CreateGameForm = () => {
 
   const GameTitle = () => (
     <motion.div
-      className="create-game-form-title"
+      className="create-game-form-title pixel-font"
       initial={{ scale: 0 }}
       animate={{ rotate: 360, scale: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 17 }}
@@ -122,7 +122,7 @@ const CreateGameForm = () => {
   };
 
   return (
-    <Container className="create-game-form-container vh-100 d-flex align-items-center justify-content-center">
+    <Container className="create-game-form-container vh-100 d-flex align-items-center justify-content-center pixel-font">
       {GameTitle()}
 
       <motion.div
@@ -133,13 +133,13 @@ const CreateGameForm = () => {
         {showForm === null && (
           <>
             <Button
-              className="mb-3 btn create-game-form-button"
+              className="mb-3 btn create-game-form-button pixel-font"
               onClick={() => setShowForm('host')}
             >
               HOST GAME
             </Button>
             <Button
-              className="mb-3 btn join-game-form-button"
+              className="mb-3 btn join-game-form-button pixel-font"
               onClick={() => setShowForm('join')}
             >
               JOIN GAME
@@ -149,54 +149,54 @@ const CreateGameForm = () => {
         )}
 
         {showForm === 'host' && (
-          <Form onSubmit={handleHostSubmit} style={{ maxWidth: '200px', minHeight: '200px' }}>
-            <Form.Group className="mb-2 text-left">
-              <Form.Label className="create-game-form-label float-start">Név:</Form.Label>
+          <Form onSubmit={handleHostSubmit} style={{ maxWidth: '300px', minHeight: '200px' }}>
+            <Form.Group className="mb-2 text-left pixel-font">
+              <Form.Label className="create-game-form-label float-start pixel-font">Name:</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="create-game-form-input"
+                className="create-game-form-input pixel-font"
                 id="name"
                 placeholder="Pl: Kasi"
               />
             </Form.Group>
 
-            <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container">
-              <Form.Label className="create-game-form-label">Csapat:</Form.Label>
+            <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container pixel-font">
+              <Form.Label className="create-game-form-label pixel-font">Team:</Form.Label>
               <Form.Control
                 as="select"
                 value={gender}
                 onChange={(event) => setGender(event.target.value)}
-                className="create-game-form-select"
+                className="create-game-form-select pixel-font"
               >
-                <option value="" disabled>-Válassz csapatot-</option>
-                <option value="boy">Fiúk</option>
-                <option value="girl">Lányok</option>
+                <option value="" disabled>-Choose-</option>
+                <option value="boy">Boys</option>
+                <option value="girl">Girls</option>
               </Form.Control>
             </Form.Group>
 
-            <Button className="mb-3 create-game-form-button" type="submit">HOST</Button>
-            <Button className="mb-3 back-game-form-button" onClick={() => setShowForm(null)}>← Back</Button>
+            <Button className="mb-3 create-game-form-button pixel-font" type="submit">HOST</Button>
+            <Button className="mb-3 back-game-form-button pixel-font" onClick={() => setShowForm(null)}>← Back</Button>
           </Form>
         )}
 
         {showForm === 'join' && (
-          <Form onSubmit={handleJoinSubmit} style={{ maxWidth: '200px' }}>
-            <Form.Group className="mb-2 mb-sm-4 text-left">
-              <Form.Label className="create-game-form-label float-start">Név:</Form.Label>
+          <Form onSubmit={handleJoinSubmit} style={{ maxWidth: '300px' }}>
+            <Form.Group className="mb-2 mb-sm-4 text-left pixel-font">
+              <Form.Label className="create-game-form-label float-start pixel-font">Név:</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="create-game-form-input"
+                className="create-game-form-input pixel-font"
                 id="name"
                 placeholder="Enter your name"
               />
             </Form.Group>
 
-            <Form.Group className="mb-2 mb-sm-5 text-left">
-              <Form.Label className="create-game-form-label float-start">Kód:</Form.Label>
+            <Form.Group className="mb-2 mb-sm-5 text-left pixel-font">
+              <Form.Label className="create-game-form-label float-start pixel-font">Kód:</Form.Label>
               <Form.Control
                 type="text"
                 value={gameID}
@@ -207,22 +207,22 @@ const CreateGameForm = () => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container">
-              <Form.Label className="create-game-form-label">Csapat:</Form.Label>
+            <Form.Group className="mb-2 mb-sm-4 text-left create-game-form-input-container pixel-font">
+              <Form.Label className="create-game-form-label pixel-font">Csapat:</Form.Label>
               <Form.Control
                 as="select"
                 value={gender}
                 onChange={(event) => setGender(event.target.value)}
-                className="create-game-form-select"
+                className="create-game-form-select pixel-font"
               >
-                <option value="" disabled>-Válassz csapatot-</option>
-                <option value="boy">Fiúk</option>
-                <option value="girl">Lányok</option>
+                <option value="" disabled>-Choose-</option>
+                <option value="boy">Boys</option>
+                <option value="girl">Girls</option>
               </Form.Control>
             </Form.Group>
 
-            <Button className="mb-3 btn join-game-form-button" type="submit">JOIN VIA CODE</Button>
-            <Button className="mb-3 back-game-form-button" onClick={() => setShowForm(null)}>← Back</Button>
+            <Button className="mb-3 btn join-game-form-button pixel-font" type="submit">JOIN VIA CODE</Button>
+            <Button className="mb-3 back-game-form-button pixel-font" onClick={() => setShowForm(null)}>← Back</Button>
           </Form>
         )}
 
