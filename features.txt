@@ -1,20 +1,29 @@
+LOGIC:
 fiú lány mechanic for 6
+add new cards: 
 
-fix font
-add character limit to Names
-add metal border to floating panels
 
-Names have a specific color on UI 
-Pakli on left
-Kártyák száma a pakliban
 
-UI IDEA:
+
+UI:
 Jobb sarokban joker ikon: jokered
 Medieval paper icon: aktív 10es szabályok
 Korona ikon számmal: hány király van a pakliban
 Abacus icon: drink calculator
-gamelog in corner?
+
+fix font
+add character limit to Names, and give whosturnisit panel a fix width
+add metal border to all floating panels
+
+wooden table texture as background
+Pakli on left
+Kártyák száma a pakliban
+
+
+
+EXTRAS:
 chat?
 Add text to icons
-wooden table texture as background
+Names have a specific color on UI
+Choose color
 custom cardback settings for each player
