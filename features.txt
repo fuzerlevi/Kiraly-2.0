@@ -1,15 +1,21 @@
 LOGIC:
-fiú lány mechanic for 6
-add new cards: 
+fiú lány mechanic for 6? or rework 6?
+blood brothers graph tab
+drink fv tab
 
+deck looker tool for dev
 
+add new cards in this order: 
+SPECTRE -> 
+kör vége event
+Abacus icon: drink calculator
 
+a királyok equally legyenek elosztva a deckben (a végén legyen az utolsó)
 
 UI:
 Jobb sarokban joker ikon: jokered
 Medieval paper icon: aktív 10es szabályok
 Korona ikon számmal: hány király van a pakliban
-Abacus icon: drink calculator
 
 fix font
 add character limit to Names, and give whosturnisit panel a fix width
@@ -19,7 +25,8 @@ wooden table texture as background
 Pakli on left
 Kártyák száma a pakliban
 
-
+Small bugs to fix:
+d20 gif doesn't always roll? works tho
 
 EXTRAS:
 chat?
@@ -27,3 +34,4 @@ Add text to icons
 Names have a specific color on UI
 Choose color
 custom cardback settings for each player
+random apocalypse event that has a 0.000001% chance to trigger every 1s

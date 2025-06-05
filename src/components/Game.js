@@ -5,6 +5,7 @@ import socket from "../socket.js";
 import "../assets/Game.css";
 import "../assets/Coinflip.css";
 import "../assets/D20.css";
+import D20 from "../D20.js";
 
 const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
   <div className="turn-order-panel">
@@ -44,6 +45,7 @@ const Game = () => {
   // D20 Roller
   const [d20Open, setD20Open] = useState(false);
   const [rollResult, setRollResult] = useState(null);
+  const d20Effect = rollResult ? D20.find(entry => entry.id === rollResult)?.effect : null;
 
   useEffect(() => {
     if (!socket.connected) {
@@ -205,23 +207,26 @@ const Game = () => {
             <button className="coinflip-close-button" onClick={closeCoinflip}>
               ×
             </button>
-            <h2>Coinflip</h2>
             {flipResult === null ? (
-              <button className="coinflip-flip-button" onClick={flipCoin}>
+              <button className="coinflip-flip-button pixel-font" onClick={flipCoin}>
                 Flip
               </button>
             ) : (
-              <p className="coinflip-result">
-                {flipResult === 0 ? (
-                <img src="/Coinflip/heads.gif" alt="Heads" className="coinflip-gif" />
-              ) : (
-                <img src="/Coinflip/tails.gif" alt="Tails" className="coinflip-gif" />
-              )}
-              </p>
+              <div className="coinflip-gif-container">
+                <img
+                  src={flipResult === 0 ? "/Coinflip/heads.gif" : "/Coinflip/tails.gif"}
+                  alt={flipResult === 0 ? "Heads" : "Tails"}
+                  className="coinflip-gif"
+                />
+                <div className="coinflip-result-overlay">
+                  {flipResult === 0 ? "Fej" : "Írás"}
+                </div>
+              </div>
             )}
           </div>
         </div>
       )}
+
 
       {/* D20 Modal */}
       {d20Open && (
@@ -230,20 +235,25 @@ const Game = () => {
             <button className="d20-close-button" onClick={closeD20}>
               ×
             </button>
-            <h2>D20</h2>
             {rollResult === null ? (
-              <button className="d20-roll-button" onClick={rollD20}>
+              <button className="d20-roll-button pixel-font" onClick={rollD20}>
                 Roll
               </button>
             ) : (
-              <div className="d20-gif-container">
-                <img src="/Coinflip/d20.gif" alt="Rolling D20" className="d20-gif" />
-                <div className="d20-result-overlay">{rollResult}</div>
-              </div>
+              <>
+                <div className="d20-gif-container">
+                  <img src="/Coinflip/d20.gif" alt="Rolling D20" className="d20-gif" />
+                  <div className="d20-result-overlay">{rollResult}</div>
+                </div>
+                {d20Effect && (
+                  <p className="d20-effect-text pixel-font">Effect: {d20Effect}</p>
+                )}
+              </>
             )}
           </div>
         </div>
       )}
+
 
       <div className="my-cards-container">
         {myCards.map((card, index) => {

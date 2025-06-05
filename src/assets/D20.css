@@ -130,6 +130,13 @@
   animation-delay: 4s;
 }
 
+.d20-effect-text{
+  opacity: 0;
+  animation: fadeInOverlay 0.3s ease-in forwards;
+  animation-delay: 4s;
+  font-size: 10px;
+}
+
 @keyframes fadeInOverlay {
   to {
     opacity: 1;
