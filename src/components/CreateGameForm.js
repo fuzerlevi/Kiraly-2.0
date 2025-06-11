@@ -72,7 +72,7 @@ const CreateGameForm = () => {
     socket.emit('createGameRoom', user, (response) => {
       if (response.success) {
         const roomID = response.gameID;
-        navigate(`/waiting/${roomID}`, { state: { name, gender } });
+        navigate(`/waiting/${roomID}`, { state: { name, gender, isHost: true } });
       } else {
         setErrorMessage('Failed to create a game room.');
         console.error(response.error);
@@ -110,7 +110,7 @@ const CreateGameForm = () => {
         const user = { name, isHost: false, gender };
         socket.emit('joinGameRoom', { gameID, user }, (res) => {
           if (res.success) {
-            navigate(`/waiting/${gameID}`, { state: { name, gender } });
+            navigate(`/waiting/${gameID}`, { state: { name, gender, isHost: false } });
           } else {
             setErrorMessage('Game code does not exist.');
             setShowErrorMessage(true);

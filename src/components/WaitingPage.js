@@ -13,7 +13,7 @@ const WaitingPage = () => {
   const navigate = useNavigate();
   const { roomID } = useParams();
   const location = useLocation();
-  const { name, gender } = location.state; // Destructure both correctly
+  const { name, gender, isHost } = location.state; // Destructure both correctly
 
   const { players, setPlayers, setDeck, setCurrentPlayerName  } = useGameContext();
 
