@@ -6,14 +6,11 @@ import "../assets/Brothers.css";
 const radius = 200;
 
 const Brothers = () => {
-  const { players, setPlayers } = useGameContext();
+  const { players, setPlayers, brothersGraph } = useGameContext();
   const [fromPlayer, setFromPlayer] = useState("");
   const [toPlayer, setToPlayer] = useState("");
-  const [mySocketID, setMySocketID] = useState(null);
 
   useEffect(() => {
-    setMySocketID(socket.id);
-
     const handleUpdateBrothers = (updatedPlayers) => {
       setPlayers(updatedPlayers);
     };
@@ -25,7 +22,7 @@ const Brothers = () => {
     };
   }, [setPlayers]);
 
-
+  const mySocketID = socket.id;
   const myPlayer = players.find((p) => p.socketID === mySocketID);
 
   const centerX = 300;
@@ -39,31 +36,25 @@ const Brothers = () => {
   });
 
   const handleAddBrother = () => {
-  if (fromPlayer && toPlayer && fromPlayer !== toPlayer) {
-    socket.emit("addBrother", { fromPlayer, toPlayer });
-    setFromPlayer("");
-    setToPlayer("");
-  }
+    if (fromPlayer && toPlayer && fromPlayer !== toPlayer) {
+      socket.emit("addBrother", { fromPlayer, toPlayer });
+      setFromPlayer("");
+      setToPlayer("");
+    }
   };
 
   const handleRemoveBrother = () => {
-  if (fromPlayer && toPlayer && fromPlayer !== toPlayer) {
-    socket.emit("removeBrother", { fromPlayer, toPlayer });
-    setFromPlayer("");
-    setToPlayer("");
-  }
+    if (fromPlayer && toPlayer && fromPlayer !== toPlayer) {
+      socket.emit("removeBrother", { fromPlayer, toPlayer });
+      setFromPlayer("");
+      setToPlayer("");
+    }
   };
-
 
   return (
     <div className="brothers-container">
       <div className="brothers-layout">
-        <svg
-          className="brothers-svg"
-          width="600"
-          height="600"
-          viewBox="0 0 600 600"
-        >
+        <svg className="brothers-svg" width="600" height="600" viewBox="0 0 600 600">
           <defs>
             <marker
               id="arrowhead"
@@ -78,9 +69,10 @@ const Brothers = () => {
             </marker>
           </defs>
 
-          {players.map((p, i) => {
+          {players.map((player, i) => {
             const from = playerPositions[i];
-            return p.brothers.map((brotherName) => {
+            const brothers = brothersGraph?.[player.name] || [];
+            return brothers.map((brotherName) => {
               const toIndex = players.findIndex((x) => x.name === brotherName);
               if (toIndex === -1) return null;
               const to = playerPositions[toIndex];

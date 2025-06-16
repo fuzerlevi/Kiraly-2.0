@@ -6,7 +6,7 @@ import "../assets/Game.css";
 import "../assets/Coinflip.css";
 import "../assets/D20.css";
 import D20 from "../D20.js";
-import Brothers from "../Brothers";
+import Brothers from "./Brothers";
 
 
 const TurnOrderPanel = ({ players = [], currentPlayerName }) => (

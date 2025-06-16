@@ -28,8 +28,7 @@ const WaitingPage = () => {
     socket.on('updatePlayers', (updatedPlayers) => {
       const updatedPlayersWithArrays = updatedPlayers.map(player => ({
         ...player,
-        cardsDrawn: [],  // Empty array for cards drawn
-        brothers: []     // Empty array for brothers
+        cardsDrawn: [] 
       }));
       setPlayers(updatedPlayersWithArrays);
     });
@@ -38,8 +37,7 @@ const WaitingPage = () => {
     socket.on('gameStarted', ({ roomID, players: updatedPlayers, deck, whosTurnIsIt }) => {
       const updatedPlayersWithArrays = updatedPlayers.map(player => ({
         ...player,
-        cardsDrawn: [],
-        brothers: []
+        cardsDrawn: []
       }));
     
       setPlayers(updatedPlayersWithArrays);

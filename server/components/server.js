@@ -126,7 +126,7 @@ io.on('connection', (socket) => {
   io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
 
   // Refresh full game state for everyone (safety)
-  io.to(roomID).emit("updateGameState", {
+  io.to(gameID).emit("updateGameState", {
     deck: gameState.deck,
     players: gameState.players,
     currentPlayerName: gameState.currentPlayerName,

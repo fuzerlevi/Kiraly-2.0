@@ -7,13 +7,15 @@ export const useGameContext = () => useContext(GameContext);
 export const GameProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
   const [deck, setDeck] = useState([]);
-  const [currentPlayerName, setCurrentPlayerName] = useState(null); // NEW
+  const [currentPlayerName, setCurrentPlayerName] = useState(null);
+  const [brothersGraph, setBrothersGraph] = useState({}); // ✅ NEW
 
   return (
     <GameContext.Provider value={{ 
       players, setPlayers, 
       deck, setDeck, 
-      currentPlayerName, setCurrentPlayerName // CHANGED
+      currentPlayerName, setCurrentPlayerName,
+      brothersGraph, setBrothersGraph // ✅ ADDED
     }}>
       {children}
     </GameContext.Provider>
