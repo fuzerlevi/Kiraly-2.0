@@ -6,21 +6,21 @@ import "../assets/Brothers.css";
 const radius = 200;
 
 const Brothers = () => {
-  const { players, setPlayers, brothersGraph } = useGameContext();
+  const { players, setPlayers, brothersGraph, setBrothersGraph } = useGameContext();
   const [fromPlayer, setFromPlayer] = useState("");
   const [toPlayer, setToPlayer] = useState("");
 
   useEffect(() => {
-    const handleUpdateBrothers = (updatedPlayers) => {
-      setPlayers(updatedPlayers);
-    };
-
-    socket.on("updateBrothers", handleUpdateBrothers);
+    socket.on("updateBrothersGraph", (graph) => {
+      console.log("[CLIENT] Received updated brothersGraph:", graph);
+      setBrothersGraph(graph);
+    });
 
     return () => {
-      socket.off("updateBrothers", handleUpdateBrothers);
+      socket.off("updateBrothersGraph");
     };
-  }, [setPlayers]);
+  }, []);
+
 
   const mySocketID = socket.id;
   const myPlayer = players.find((p) => p.socketID === mySocketID);
@@ -37,19 +37,31 @@ const Brothers = () => {
 
   const handleAddBrother = () => {
     if (fromPlayer && toPlayer && fromPlayer !== toPlayer) {
-      socket.emit("addBrother", { fromPlayer, toPlayer });
+      const roomID = window.location.pathname.split("/").pop(); // or however you're storing it
+      socket.emit("addBrotherConnection", {
+        roomID,
+        sourceName: fromPlayer,
+        targetName: toPlayer
+      });
       setFromPlayer("");
       setToPlayer("");
     }
   };
 
+
   const handleRemoveBrother = () => {
     if (fromPlayer && toPlayer && fromPlayer !== toPlayer) {
-      socket.emit("removeBrother", { fromPlayer, toPlayer });
+      const roomID = window.location.pathname.split("/").pop(); // or however you're storing it
+      socket.emit("removeBrotherConnection", {
+        roomID,
+        sourceName: fromPlayer,
+        targetName: toPlayer,
+      });
       setFromPlayer("");
       setToPlayer("");
     }
   };
+
 
   return (
     <div className="brothers-container">

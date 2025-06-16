@@ -262,13 +262,33 @@ io.on('connection', (socket) => {
       gameState.brothersGraph[sourceName] = [];
     }
 
-    // Prevent duplicates
     if (!gameState.brothersGraph[sourceName].includes(targetName)) {
       gameState.brothersGraph[sourceName].push(targetName);
     }
 
+    console.log(`[BROTHERS] Updated brothersGraph for ${roomID}:`);
+    console.log(gameState.brothersGraph);
+
     io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph);
   });
+
+  socket.on('removeBrotherConnection', ({ roomID, sourceName, targetName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    if (gameState.brothersGraph[sourceName]) {
+      gameState.brothersGraph[sourceName] = gameState.brothersGraph[sourceName].filter(
+        (name) => name !== targetName
+      );
+    }
+
+    console.log(`[removeBrotherConnection] ${sourceName} ❌→ ${targetName}`);
+    console.log("[Updated brothersGraph]", gameState.brothersGraph);
+
+    io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph);
+  });
+
+
 
 });
 
