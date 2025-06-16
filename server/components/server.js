@@ -30,7 +30,8 @@ const createGameState = (gameID) => {
     players: {},
     deck: deck,
     currentPlayerName: null,
-    brothersGraph: {} // NEW
+    brothersGraph: {},
+    drinkEquation: {}
   };
 };
 
@@ -56,6 +57,13 @@ io.on('connection', (socket) => {
       team: user.gender,
       isHost: user.isHost,
     };
+
+    gameState.drinkEquation[user.name] = {
+      flats: 0,
+      multipliers: 1
+    };
+
+
     socketToGameMap[socket.id] = gameID;
     games[gameID] = gameState;
     socket.join(gameID);
@@ -117,6 +125,14 @@ io.on('connection', (socket) => {
       isHost,
       socketID: socket.id,
     };
+
+    if (!gameState.drinkEquation[playerName]) {
+      gameState.drinkEquation[playerName] = {
+        flats: 0,
+        multipliers: 1
+      };
+    }
+
     socketToGameMap[socket.id] = gameID;
   }
 
@@ -130,8 +146,10 @@ io.on('connection', (socket) => {
     deck: gameState.deck,
     players: gameState.players,
     currentPlayerName: gameState.currentPlayerName,
-    brothersGraph: gameState.brothersGraph // NEW
+    brothersGraph: gameState.brothersGraph,
+    drinkEquation: gameState.drinkEquation
   });
+
 
   // If game already started, emit gameStarted only to this reconnecting socket
   if (gameState.hasStarted) {
@@ -180,7 +198,8 @@ io.on('connection', (socket) => {
         deck: gameState.deck,
         players: gameState.players,
         currentPlayerName: gameState.currentPlayerName,
-        brothersGraph: gameState.brothersGraph
+        brothersGraph: gameState.brothersGraph,
+        drinkEquation: gameState.drinkEquation
       });
     }
   });

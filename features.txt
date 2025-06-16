@@ -1,20 +1,20 @@
-LOGIC:
-blood brothers graph tab
-drink fv tab
+BASEGAME
+Abacus icon: drink calculator
+9esnél automatic tesó adding feature
+Korona ikon számmal: hány király van a pakliban
+Medieval paper icon: aktív 10es szabályok (host szerkesztheti, többi nézheti)
 
-deck looker tool for dev
 
 add new cards in this order: 
+deck looker tool for dev
 SPECTRE -> 
 kör vége event
-Abacus icon: drink calculator
 
-a királyok equally legyenek elosztva a deckben (a végén legyen az utolsó)
+
 
 UI:
 Jobb sarokban joker ikon: jokered
-Medieval paper icon: aktív 10es szabályok
-Korona ikon számmal: hány király van a pakliban
+
 
 fix font
 add character limit to Names, and give whosturnisit panel a fix width
@@ -28,7 +28,9 @@ Small bugs to fix:
 d20 gif doesn't always roll? works tho
 
 EXTRAS:
+A deck alján legyen az utolsó király (utolsó 5 card mondjuk)
 chat?
+code d20 +- effects and only show d20 button when 8 is drawn
 Add text to icons
 Names have a specific color on UI
 Choose color
