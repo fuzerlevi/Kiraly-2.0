@@ -13,7 +13,18 @@ const Brothers = () => {
 
   useEffect(() => {
     setMySocketID(socket.id);
-  }, []);
+
+    const handleUpdateBrothers = (updatedPlayers) => {
+      setPlayers(updatedPlayers);
+    };
+
+    socket.on("updateBrothers", handleUpdateBrothers);
+
+    return () => {
+      socket.off("updateBrothers", handleUpdateBrothers);
+    };
+  }, [setPlayers]);
+
 
   const myPlayer = players.find((p) => p.socketID === mySocketID);
 

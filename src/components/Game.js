@@ -6,6 +6,8 @@ import "../assets/Game.css";
 import "../assets/Coinflip.css";
 import "../assets/D20.css";
 import D20 from "../D20.js";
+import Brothers from "../Brothers";
+
 
 const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
   <div className="turn-order-panel">
@@ -46,6 +48,10 @@ const Game = () => {
   const [d20Open, setD20Open] = useState(false);
   const [rollResult, setRollResult] = useState(null);
   const d20Effect = rollResult ? D20.find(entry => entry.id === rollResult)?.effect : null;
+
+  // Brothers
+  const [brothersOpen, setBrothersOpen] = useState(false);
+
 
   useEffect(() => {
     if (!socket.connected) {
@@ -189,6 +195,16 @@ const Game = () => {
           currentPlayerName={currentPlayerName}
         />
       </div>
+      {/* Brothers Button (below Turn Order) */}
+      <button
+        className="brothers-button"
+        onClick={() => setBrothersOpen(true)}
+        title="Manage Brothers"
+      >
+        <img src="/Icons/bro
+        thers.png" alt="Brothers" className="brothers-icon" />
+      </button>
+
 
       {/* Coinflip Button */}
       <button className="coinflip-button" onClick={openCoinflip} title="Coinflip">
@@ -253,6 +269,18 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {brothersOpen && (
+        <div className="brothers-modal-overlay">
+          <div className="brothers-modal">
+            <button className="brothers-close-button" onClick={() => setBrothersOpen(false)}>
+              ×
+            </button>
+            <Brothers />
+          </div>
+        </div>
+      )}
+
 
 
       <div className="my-cards-container">
