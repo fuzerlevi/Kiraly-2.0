@@ -29,9 +29,11 @@ const createGameState = (gameID) => {
     hasStarted: false,
     players: {},
     deck: deck,
-    currentPlayerName: null // new
+    currentPlayerName: null,
+    brothersGraph: {} // NEW
   };
 };
+
 
 const createPlayerState = (socketID) => ({
   socketID,
@@ -124,10 +126,11 @@ io.on('connection', (socket) => {
   io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
 
   // Refresh full game state for everyone (safety)
-  io.to(gameID).emit("updateGameState", {
+  io.to(roomID).emit("updateGameState", {
     deck: gameState.deck,
     players: gameState.players,
     currentPlayerName: gameState.currentPlayerName,
+    brothersGraph: gameState.brothersGraph // NEW
   });
 
   // If game already started, emit gameStarted only to this reconnecting socket
@@ -176,7 +179,8 @@ io.on('connection', (socket) => {
       io.to(roomID).emit('updateGameState', {
         deck: gameState.deck,
         players: gameState.players,
-        currentPlayerName: gameState.currentPlayerName
+        currentPlayerName: gameState.currentPlayerName,
+        brothersGraph: gameState.brothersGraph
       });
     }
   });
@@ -249,6 +253,23 @@ io.on('connection', (socket) => {
   
     return callback({ hasStarted: game.hasStarted });
   });
+
+  socket.on('addBrotherConnection', ({ roomID, sourceName, targetName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    if (!gameState.brothersGraph[sourceName]) {
+      gameState.brothersGraph[sourceName] = [];
+    }
+
+    // Prevent duplicates
+    if (!gameState.brothersGraph[sourceName].includes(targetName)) {
+      gameState.brothersGraph[sourceName].push(targetName);
+    }
+
+    io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph);
+  });
+
 });
 
 const port = process.env.PORT || 8000;
