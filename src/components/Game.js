@@ -30,9 +30,11 @@ const Game = () => {
     players,
     deck,
     currentPlayerName,
+    // brothersGraph,
     setDeck,
     setPlayers,
     setCurrentPlayerName,
+    setBrothersGraph,
   } = useGameContext();
 
   const { roomID } = useParams();
@@ -65,6 +67,7 @@ const Game = () => {
       setPlayers(playerList || []);
       setDeck(data.deck || []);
       setCurrentPlayerName(data.currentPlayerName || null);
+      setBrothersGraph(data.brothersGraph || {}); // ✅ listen to it
       setCardDrawn(null);
       setIsTurnEnded(false);
     });
@@ -92,14 +95,20 @@ const Game = () => {
       setIsTurnEnded(false);
     });
 
+    socket.on("updateBrothersGraph", (graph) => {
+      setBrothersGraph(graph);
+    });
+
+
     return () => {
       socket.off("updateGameState");
       socket.off("cardDrawn");
       socket.off("playerDisconnected");
       socket.off("playerReconnected");
       socket.off("gameStarted");
+      socket.off("updateBrothersGraph");
     };
-  }, [roomID, setDeck, setPlayers, setCurrentPlayerName]);
+  }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
 
   if (!mySocketID) return <div>Loading game...</div>;
 
