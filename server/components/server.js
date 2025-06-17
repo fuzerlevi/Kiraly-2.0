@@ -307,6 +307,22 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph);
   });
 
+  socket.on("updateDrinkValue", ({ roomID, playerName, field, delta }) => {
+    const gameState = games[roomID];
+    if (!gameState || !gameState.drinkEquation[playerName]) return;
+
+    const entry = gameState.drinkEquation[playerName];
+
+    if (field === "flats") {
+      entry.flats = Math.max(0, entry.flats + delta);
+    } else if (field === "multipliers") {
+      entry.multipliers = Math.max(1, entry.multipliers + delta);
+    }
+
+    io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+  });
+
+
 
 
 });

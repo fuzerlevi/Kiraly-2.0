@@ -7,6 +7,8 @@ import "../assets/Coinflip.css";
 import "../assets/D20.css";
 import D20 from "../D20.js";
 import Brothers from "./Brothers";
+import DrinkEquation from "./DrinkEquation";
+
 
 
 const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
@@ -53,6 +55,9 @@ const Game = () => {
 
   // Brothers
   const [brothersOpen, setBrothersOpen] = useState(false);
+
+  // Drink Equation
+  const [drinkEquationOpen, setDrinkEquationOpen] = useState(false);
 
 
   useEffect(() => {
@@ -214,6 +219,15 @@ const Game = () => {
         thers.png" alt="Brothers" className="brothers-icon" />
       </button>
 
+      <button
+        className="drink-equation-button"
+        onClick={() => setDrinkEquationOpen(true)}
+        title="Drink Equation"
+      >
+        <img src="/Icons/drink.png" alt="Drink Equation" className="drink-equation-icon" />
+      </button>
+
+
 
       {/* Coinflip Button */}
       <button className="coinflip-button" onClick={openCoinflip} title="Coinflip">
@@ -289,6 +303,21 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {drinkEquationOpen && (
+        <div className="drink-equation-modal-overlay">
+          <div className="drink-equation-modal">
+            <button
+              className="drink-equation-close-button"
+              onClick={() => setDrinkEquationOpen(false)}
+            >
+              ×
+            </button>
+            <DrinkEquation />
+          </div>
+        </div>
+      )}
+
 
 
 

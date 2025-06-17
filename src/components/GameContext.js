@@ -9,13 +9,16 @@ export const GameProvider = ({ children }) => {
   const [deck, setDeck] = useState([]);
   const [currentPlayerName, setCurrentPlayerName] = useState(null);
   const [brothersGraph, setBrothersGraph] = useState({});
+  const [drinkEquation, setDrinkEquation] = useState({});
+
 
   return (
     <GameContext.Provider value={{ 
       players, setPlayers, 
       deck, setDeck, 
       currentPlayerName, setCurrentPlayerName,
-      brothersGraph, setBrothersGraph
+      brothersGraph, setBrothersGraph,
+      drinkEquation, setDrinkEquation,
     }}>
       {children}
     </GameContext.Provider>

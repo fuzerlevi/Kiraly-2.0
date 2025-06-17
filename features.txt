@@ -1,5 +1,9 @@
 BASEGAME
-Abacus icon: drink calculator
+drink equation button:
+make sure flats and total can go into negatives
+plus and minuses only visible for host
+more space between -2+ -> - 2 +
+
 9esnél automatic tesó adding feature
 Korona ikon számmal: hány király van a pakliban
 Medieval paper icon: aktív 10es szabályok (host szerkesztheti, többi nézheti)
@@ -14,7 +18,7 @@ kör vége event
 
 UI:
 Jobb sarokban joker ikon: jokered
-
+Abacus icon: drink calculator
 
 fix font
 add character limit to Names, and give whosturnisit panel a fix width
