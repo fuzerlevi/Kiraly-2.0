@@ -8,6 +8,11 @@ const DrinkEquation = () => {
   const [baseSips, setBaseSips] = useState(1);
   const [computedSips, setComputedSips] = useState({});
 
+  const mySocketID = socket.id;
+  const myPlayer = players.find((p) => p.socketID === mySocketID);
+  const isHost = myPlayer?.isHost;
+
+
   useEffect(() => {
     const handleUpdateDrinkEquation = (newEquation) => {
       setDrinkEquation(newEquation);
@@ -47,7 +52,7 @@ const DrinkEquation = () => {
             <th>Name</th>
             <th>Multipliers</th>
             <th>Flats</th>
-            <th>Total Sips</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
@@ -56,18 +61,36 @@ const DrinkEquation = () => {
             return (
               <tr key={player.name}>
                 <td>{player.name}</td>
+
                 <td>
-                  <button onClick={() => adjustValue(player.name, "multipliers", -1)}>-</button>
-                  {entry.multipliers}
-                  <button onClick={() => adjustValue(player.name, "multipliers", 1)}>+</button>
+                    {isHost && (
+                        <button onClick={() => adjustValue(player.name, "multipliers", -0.5)}>-</button>
+                    )}
+                    <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
+                        {entry.multipliers}
+                    </span>
+                    {isHost && (
+                        <button onClick={() => adjustValue(player.name, "multipliers", 0.5)}>+</button>
+                )}
                 </td>
+
+
                 <td>
-                  <button onClick={() => adjustValue(player.name, "flats", -1)}>-</button>
-                  {entry.flats}
-                  <button onClick={() => adjustValue(player.name, "flats", 1)}>+</button>
+                    {isHost && (
+                        <button onClick={() => adjustValue(player.name, "flats", -1)}>-</button>
+                    )}
+                    <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
+                        {entry.flats}
+                    </span>
+                    {isHost && (
+                        <button onClick={() => adjustValue(player.name, "flats", 1)}>+</button>
+                    )}
                 </td>
+
+
                 <td>{computedSips[player.name] ?? "-"}</td>
-              </tr>
+                </tr>
+
             );
           })}
         </tbody>

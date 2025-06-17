@@ -314,10 +314,11 @@ io.on('connection', (socket) => {
     const entry = gameState.drinkEquation[playerName];
 
     if (field === "flats") {
-      entry.flats = Math.max(0, entry.flats + delta);
+      entry.flats += delta;
     } else if (field === "multipliers") {
-      entry.multipliers = Math.max(1, entry.multipliers + delta);
+      entry.multipliers = Math.max(0.5, entry.multipliers + delta);
     }
+
 
     io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
   });

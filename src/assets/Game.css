@@ -157,15 +157,34 @@
   z-index: 999;
 }
 
+.drink-equation-button {
+  position: absolute;
+  top: 230px; /* Adjust this to sit just below the turn order panel */
+  right: 20px;
+  height: 50px;
+  background-color: #ffcc00;
+  color: black;
+  border: 3px solid #2f3542;
+  border-radius: 10px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 16px;
+  user-select: none;
+  min-width: 120px;
+}
+
+.drink-equation-button:hover{
+  background-color: #ffa502;
+}
+
 .brothers-icon {
   width: 40px;
   height: 40px;
   filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3));
 }
 
-.brothers-button:hover .brothers-icon {
-  transform: scale(1.1);
-  transition: transform 0.2s ease-in-out;
+.brothers-button:hover {
+  background-color: #ffa502;
 }
 
 
