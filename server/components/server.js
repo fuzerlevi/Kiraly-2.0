@@ -15,7 +15,7 @@ const io = require('socket.io')(server, { cors: { origin: "*" } });
 
 app.use(express.static(path.join(__dirname, '../build')));
 
-const Cards = require('./Cards'); // <-- Or import your cards array from a file
+const Cards = require('./Cards');
 
 const games = {};
 const socketToGameMap = {};
