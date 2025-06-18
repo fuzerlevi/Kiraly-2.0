@@ -34,11 +34,14 @@ const Game = () => {
     deck,
     currentPlayerName,
     brothersGraph,
+    drinkEquation,
     setDeck,
     setPlayers,
     setCurrentPlayerName,
     setBrothersGraph,
+    setDrinkEquation,
   } = useGameContext();
+
 
   const { roomID } = useParams();
   const [cardDrawn, setCardDrawn] = useState(null);
@@ -149,6 +152,11 @@ const Game = () => {
       console.log("[CLIENT] Received updated brothersGraph:", graph);
       setBrothersGraph({ ...graph }); // 🔁 shallow clone to force re-render
     });
+
+    socket.on("updateDrinkEquation", (drinkData) => {
+      setDrinkEquation({ ...drinkData }); // force shallow clone to trigger re-render
+    });
+
 
 
 

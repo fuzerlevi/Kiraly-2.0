@@ -12,18 +12,6 @@ const DrinkEquation = () => {
   const myPlayer = players.find((p) => p.socketID === mySocketID);
   const isHost = myPlayer?.isHost;
 
-
-  useEffect(() => {
-    const handleUpdateDrinkEquation = (newEquation) => {
-      setDrinkEquation(newEquation);
-    };
-
-    socket.on("updateDrinkEquation", handleUpdateDrinkEquation);
-    return () => {
-      socket.off("updateDrinkEquation", handleUpdateDrinkEquation);
-    };
-  }, [setDrinkEquation]);
-
   const adjustValue = (playerName, field, delta) => {
     const roomID = window.location.pathname.split("/").pop();
     socket.emit("updateDrinkValue", {
