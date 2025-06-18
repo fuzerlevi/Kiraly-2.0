@@ -8,6 +8,7 @@ import "../assets/D20.css";
 import D20 from "../D20.js";
 import Brothers from "./Brothers";
 import DrinkEquation from "./DrinkEquation";
+import cardEffects from "./cardEffects";
 
 
 
@@ -59,6 +60,13 @@ const Game = () => {
   // Drink Equation
   const [drinkEquationOpen, setDrinkEquationOpen] = useState(false);
 
+  // 9
+  const [isChoosingBrother, setIsChoosingBrother] = useState(false);
+  const [chosenBrother, setChosenBrother] = useState("");
+  const [brotherModalOpen, setBrotherModalOpen] = useState(false);
+
+
+  
 
   useEffect(() => {
     if (!socket.connected) {
@@ -82,7 +90,19 @@ const Game = () => {
       setDeck(newDeck || []);
       setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
+
+      const myPlayer = updatedPlayers.find(p => p.socketID === socket.id);
+      if (myPlayer && drawnCard?.id && cardEffects[drawnCard.id]) {
+        cardEffects[drawnCard.id]({
+          player: myPlayer,
+          players: updatedPlayers,
+          roomID,
+          setIsChoosingBrother, // ✅ pass this function
+        });
+      }
     });
+
+
 
     socket.on("playerDisconnected", ({ playerName }) => {
       alert(`${playerName} disconnected. Waiting for reconnection...`);
@@ -197,11 +217,16 @@ const Game = () => {
           <button className="floating-button" onClick={drawACard}>
             Draw Card
           </button>
+        ) : isChoosingBrother ? (
+          <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
+            Choose Brother
+          </button>
         ) : (
           <button className="floating-button" onClick={endTurn}>
             End Turn
           </button>
         ))}
+
 
       <div className="turn-order-container">
         <TurnOrderPanel
@@ -292,6 +317,46 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {brotherModalOpen && (
+        <div className="brother-modal-overlay">
+          <div className="brother-modal">
+            <h3>Pick a brother</h3>
+            <select
+              value={chosenBrother}
+              onChange={(e) => setChosenBrother(e.target.value)}
+              className="brother-dropdown"
+            >
+              <option value="">- Pick -</option>
+              {players
+                .filter((p) => p.name !== myPlayer.name)
+                .map((p) => (
+                  <option key={p.socketID} value={p.name}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+            <button
+              onClick={() => {
+                if (chosenBrother) {
+                  socket.emit("addBrotherConnection", {
+                    roomID,
+                    sourceName: myPlayer.name,
+                    targetName: chosenBrother,
+                  });
+                  setBrotherModalOpen(false);
+                  setIsChoosingBrother(false);
+                  setChosenBrother("");
+                }
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+
 
       {brothersOpen && (
         <div className="brothers-modal-overlay">

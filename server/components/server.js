@@ -5,6 +5,8 @@ const crypto = require("crypto");
 const path = require('path');
 const bodyParser = require('body-parser');
 
+
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -16,6 +18,7 @@ const io = require('socket.io')(server, { cors: { origin: "*" } });
 app.use(express.static(path.join(__dirname, '../build')));
 
 const Cards = require('./Cards');
+const cardEffects = require('./cardEffects');
 
 const games = {};
 const socketToGameMap = {};
@@ -207,21 +210,44 @@ io.on('connection', (socket) => {
   socket.on('drawCard', ({ roomID }) => {
     const gameState = games[roomID];
     if (!gameState || gameState.deck.length === 0) return;
-  
-    const currentPlayer = Object.values(gameState.players).find(p => p.name === gameState.currentPlayerName);
+
+    const currentPlayer = Object.values(gameState.players).find(
+      (p) => p.name === gameState.currentPlayerName
+    );
     if (!currentPlayer) return;
-  
+
     const drawnCard = gameState.deck.shift();
     currentPlayer.cardsDrawn.push(drawnCard);
-  
+
     console.log(`Player ${currentPlayer.name} drew ${drawnCard.name}`);
-  
-    io.to(roomID).emit('cardDrawn', { 
-      drawnCard, 
-      newDeck: gameState.deck, 
-      updatedPlayers: Object.values(gameState.players) 
+
+    // Run any registered card effect
+    const effectFn = cardEffects[drawnCard.id];
+    if (effectFn) {
+      const result = effectFn({
+        player: currentPlayer,
+        roomID,
+      });
+
+      if (result?.action === "chooseBrother") {
+        // Only notify the current player
+        io.to(currentPlayer.socketID).emit("triggerChooseBrother", {
+          roomID,
+          playerName: currentPlayer.name,
+        });
+      }
+
+      // Future effects can be handled here using else if or switch
+    }
+
+    io.to(roomID).emit("cardDrawn", {
+      drawnCard,
+      newDeck: gameState.deck,
+      updatedPlayers: Object.values(gameState.players),
     });
   });
+
+
 
   socket.on('endTurn', ({ roomID }) => {
     const gameState = games[roomID];
@@ -322,6 +348,20 @@ io.on('connection', (socket) => {
 
     io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
   });
+
+  socket.on("triggerChooseBrother", ({ roomID, playerName }) => {
+  const gameState = games[roomID];
+  if (!gameState) return;
+
+  const playerSocketID = Object.keys(gameState.players).find(
+    sid => gameState.players[sid].name === playerName
+  );
+
+  if (playerSocketID) {
+    io.to(playerSocketID).emit("chooseBrotherPopup");
+  }
+});
+
 
 
 
