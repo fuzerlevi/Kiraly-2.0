@@ -2,7 +2,7 @@
 .turn-order-container {
   position: absolute;
   top: 20px;
-  right: 20px;
+  left: 20px;
   min-width: 110px;
   background-color: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
@@ -147,44 +147,49 @@
 
 
 .brothers-button {
+  position: fixed;
+  top: 32%;
+  right: 20px;
+  transform: translateY(-50%);
+  width: 105px;  
+  height: 105px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1000;
+}
+
+.brothers-button:hover .brothers-icon {
+  transform: scale(1.1);
+}
+
+.drink-equation-button {
   position: absolute;
-  top: 300px; /* Adjust this to sit just below the turn order panel */
+  top: 11%;
   right: 20px;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
-  z-index: 999;
 }
 
-.drink-equation-button {
-  position: absolute;
-  top: 230px; /* Adjust this to sit just below the turn order panel */
-  right: 20px;
-  height: 50px;
-  background-color: #ffcc00;
-  color: black;
-  border: 3px solid #2f3542;
-  border-radius: 10px;
-  padding: 0 12px;
-  cursor: pointer;
-  font-size: 16px;
-  user-select: none;
-  min-width: 120px;
+.drink-equation-icon {
+  width: 105px;
+  height: 105px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
 }
 
-.drink-equation-button:hover{
-  background-color: #ffa502;
+.drink-equation-button:hover .drink-equation-icon {
+  transform: scale(1.1);
 }
 
 .brothers-icon {
-  width: 40px;
-  height: 40px;
-  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3));
-}
-
-.brothers-button:hover {
-  background-color: #ffa502;
+  width: 105px;
+  height: 105px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
 }
 
 
@@ -217,17 +222,88 @@
 
 .king-counter {
   position: fixed;
-  bottom: 20px;
+  top: 82%;
   right: 20px;
   z-index: 1000;
 }
 
 .king-counter-image {
-  height: 150px;
+  height: 140px;
   width: auto;
 }
 
 
+.rules-button {
+  position: absolute;
+  top: 68%;
+  right: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
 
+.rules-icon {
+  width: 105px;
+  height: 105px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
 
+.rules-button:hover .rules-icon {
+  transform: scale(1.1);
+}
+
+.rules-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.rules-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 500px;
+  max-width: 90%;
+  position: relative;
+}
+
+.rules-close-button {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.rules-textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 11px;
+  resize: none;
+}
+
+.rules-display-box {
+  white-space: pre-wrap;
+  padding: 16px;
+  border: 2px solid #3E3F5B;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 11px;
+  line-height: 1.8; /* Increased line spacing */
+  max-height: 400px;
+  overflow-y: auto;
+  text-align: left;
+}
 

@@ -34,7 +34,8 @@ const createGameState = (gameID) => {
     deck: deck,
     currentPlayerName: null,
     brothersGraph: {},
-    drinkEquation: {}
+    drinkEquation: {},
+    rulesText: "",
   };
 };
 
@@ -350,17 +351,26 @@ io.on('connection', (socket) => {
   });
 
   socket.on("triggerChooseBrother", ({ roomID, playerName }) => {
-  const gameState = games[roomID];
-  if (!gameState) return;
+    const gameState = games[roomID];
+    if (!gameState) return;
 
-  const playerSocketID = Object.keys(gameState.players).find(
-    sid => gameState.players[sid].name === playerName
-  );
+    const playerSocketID = Object.keys(gameState.players).find(
+      sid => gameState.players[sid].name === playerName
+    );
 
-  if (playerSocketID) {
-    io.to(playerSocketID).emit("chooseBrotherPopup");
-  }
-});
+    if (playerSocketID) {
+      io.to(playerSocketID).emit("chooseBrotherPopup");
+    }
+  });
+
+  socket.on("updateRulesText", ({ roomID, text }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    gameState.rulesText = text;
+    io.to(roomID).emit("updateRulesText", text);
+  });
+
 
 
 

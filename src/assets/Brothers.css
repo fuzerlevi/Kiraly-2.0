@@ -83,19 +83,6 @@
   min-width: 100px;
 }
 
-.brothers-button {
-  height: 50px;
-  background-color: #ffcc00;
-  color: black;
-  border: 3px solid #2f3542;
-  border-radius: 10px;
-  padding: 0 12px;
-  cursor: pointer;
-  font-size: 16px;
-  user-select: none;
-  min-width: 120px;
-}
-
 .remove-btn {
   background-color: #ef4444;
 }

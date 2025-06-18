@@ -68,6 +68,11 @@ const Game = () => {
   // king counter
   const [kingsRemaining, setKingsRemaining] = useState(4);
 
+  // rules
+  const [rulesModalOpen, setRulesModalOpen] = useState(false);
+  const [rulesText, setRulesText] = useState("");
+
+
 
 
   
@@ -78,6 +83,10 @@ const Game = () => {
     }
     setMySocketID(socket.id);
     socket.emit("joinGamePage", { roomID });
+
+    socket.on("updateRulesText", (text) => {
+      setRulesText(text);
+    });
 
     socket.on("updateGameState", (data) => {
       const playerList = Object.values(data.players);
@@ -102,6 +111,7 @@ const Game = () => {
 
 
       const myPlayer = updatedPlayers.find(p => p.socketID === socket.id);
+
       if (myPlayer && drawnCard?.id && cardEffects[drawnCard.id]) {
         cardEffects[drawnCard.id]({
           player: myPlayer,
@@ -142,12 +152,14 @@ const Game = () => {
       socket.off("playerReconnected");
       socket.off("gameStarted");
       socket.off("updateBrothersGraph");
+      socket.off("updateRulesText");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
 
   if (!mySocketID) return <div>Loading game...</div>;
 
   const myPlayer = players.find((player) => player.socketID === mySocketID);
+  const isHost = myPlayer?.isHost;
   const myCards = myPlayer?.cardsDrawn || [];
 
   const drawACard = () => {
@@ -190,6 +202,12 @@ const Game = () => {
       cardWidth - 20
     );
   }
+
+  const handleRulesChange = (e) => {
+    const newText = e.target.value;
+    setRulesText(newText);
+    socket.emit("updateRulesText", { roomID, text: newText });
+  };
 
   return (
     <div className="game-container">
@@ -245,13 +263,8 @@ const Game = () => {
         />
       </div>
       {/* Brothers Button (below Turn Order) */}
-      <button
-        className="brothers-button"
-        onClick={() => setBrothersOpen(true)}
-        title="Manage Brothers"
-      >
-        <img src="/Icons/bro
-        thers.png" alt="Brothers" className="brothers-icon" />
+      <button className="brothers-button" onClick={() => setBrothersOpen(true)} title="Manage Brothers">
+        <img src="/Icons/brothers.png" alt="Brothers" className="brothers-icon" />
       </button>
 
       <button
@@ -259,8 +272,13 @@ const Game = () => {
         onClick={() => setDrinkEquationOpen(true)}
         title="Drink Equation"
       >
-        <img src="/Icons/drink.png" alt="Drink Equation" className="drink-equation-icon" />
+        <img src="/Icons/drink2.png" alt="Drink Equation" className="drink-equation-icon" />
       </button>
+
+      <button className="rules-button" onClick={() => setRulesModalOpen(true)} title="Rules">
+        <img src="/Icons/rules.png" alt="Rules" className="rules-icon" />
+      </button>
+
 
 
 
@@ -392,6 +410,32 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {rulesModalOpen && (
+        <div className="rules-modal-overlay">
+          <div className="rules-modal">
+            <button className="rules-close-button" onClick={() => setRulesModalOpen(false)}>×</button>
+            <h3>Rules</h3>
+            {isHost ? (
+              <textarea
+                value={rulesText}
+                onChange={(e) => {
+                  const newText = e.target.value;
+                  setRulesText(newText);
+                  socket.emit("updateRulesText", { roomID, text: newText });
+                }}
+                placeholder="Type rules here..."
+                className="rules-textarea"
+                rows={10}
+              />
+            ) : (
+              <div className="rules-display-box">{rulesText || "No rules set."}</div>
+            )}
+          </div>
+        </div>
+      )}
+
+
 
 
 

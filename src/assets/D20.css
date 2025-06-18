@@ -1,7 +1,7 @@
 /* D20 button positioned below coinflip button */
 .d20-button {
     position: fixed;
-    top: calc(50% + 120px);
+    top: 54%;
     right: 20px;
     width: 105px;
     height: 105px;

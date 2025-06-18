@@ -1,7 +1,7 @@
 /* Floating yellow circular button on the right */
 .coinflip-button {
     position: fixed;
-    top: 50%;
+    top: 46%;
     right: 20px;
     transform: translateY(-50%);
     width: 105px;  
