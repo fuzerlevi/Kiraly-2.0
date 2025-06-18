@@ -36,6 +36,7 @@ const createGameState = (gameID) => {
     brothersGraph: {},
     drinkEquation: {},
     rulesText: "",
+    kingsRemaining: 4,
   };
 };
 
@@ -151,7 +152,8 @@ io.on('connection', (socket) => {
     players: gameState.players,
     currentPlayerName: gameState.currentPlayerName,
     brothersGraph: gameState.brothersGraph,
-    drinkEquation: gameState.drinkEquation
+    drinkEquation: gameState.drinkEquation,
+    rulesText: gameState.rulesText,
   });
 
 
@@ -163,8 +165,14 @@ io.on('connection', (socket) => {
       players: Object.values(gameState.players),
       deck: gameState.deck,
       whosTurnIsIt: gameState.currentPlayerName,
+      kingsRemaining: gameState.kingsRemaining,
     });
   }
+
+  // Also restore rules text and drink equation for the reconnecting client
+  socket.emit("updateRulesText", gameState.rulesText);
+  socket.emit("updateDrinkEquation", gameState.drinkEquation);
+
 
   // Response back to the reconnected player
   socket.emit("joinRoomResponse", { gameID, success: true });
@@ -203,8 +211,12 @@ io.on('connection', (socket) => {
         players: gameState.players,
         currentPlayerName: gameState.currentPlayerName,
         brothersGraph: gameState.brothersGraph,
-        drinkEquation: gameState.drinkEquation
+        drinkEquation: gameState.drinkEquation,
+        rulesText: gameState.rulesText,
+        kingsRemaining: gameState.kingsRemaining,
       });
+      socket.emit("updateRulesText", gameState.rulesText);
+      socket.emit("updateDrinkEquation", gameState.drinkEquation);
     }
   });
 
@@ -220,11 +232,20 @@ io.on('connection', (socket) => {
     const drawnCard = gameState.deck.shift();
     currentPlayer.cardsDrawn.push(drawnCard);
 
+    // Decrease kingsRemaining if a king is drawn
+    const kingIDs = [13, 26, 39, 52];
+    if (kingIDs.includes(drawnCard.id)) {
+      gameState.kingsRemaining = Math.max(0, gameState.kingsRemaining - 1);
+      console.log(`[KING] Drew a King! Kings remaining: ${gameState.kingsRemaining}`);
+    }
+
+
     console.log(`Player ${currentPlayer.name} drew ${drawnCard.name}`);
 
     // Run any registered card effect
     const effectFn = cardEffects[drawnCard.id];
     if (effectFn) {
+      console.log("Triggering card effect for:", drawnCard.name);
       const result = effectFn({
         player: currentPlayer,
         roomID,
@@ -245,6 +266,7 @@ io.on('connection', (socket) => {
       drawnCard,
       newDeck: gameState.deck,
       updatedPlayers: Object.values(gameState.players),
+      kingsRemaining: gameState.kingsRemaining,
     });
   });
 
@@ -266,7 +288,11 @@ io.on('connection', (socket) => {
     io.to(roomID).emit('updateGameState', {
       deck: gameState.deck,
       players: playerList,
-      currentPlayerName: gameState.currentPlayerName
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: cloneGraph(gameState.brothersGraph),
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      kingsRemaining: gameState.kingsRemaining,
     });
   });
   
@@ -300,6 +326,14 @@ io.on('connection', (socket) => {
     return callback({ hasStarted: game.hasStarted });
   });
 
+  const cloneGraph = (graph) => {
+    const newGraph = {};
+    for (const key in graph) {
+      newGraph[key] = [...graph[key]];
+    }
+    return newGraph;
+  };
+
   socket.on('addBrotherConnection', ({ roomID, sourceName, targetName }) => {
     const gameState = games[roomID];
     if (!gameState) return;
@@ -310,13 +344,24 @@ io.on('connection', (socket) => {
 
     if (!gameState.brothersGraph[sourceName].includes(targetName)) {
       gameState.brothersGraph[sourceName].push(targetName);
+      console.log(`[BROTHERS] Added ${sourceName} → ${targetName}`);
+    } else {
+      console.log(`[BROTHERS] Duplicate ${sourceName} → ${targetName}, skipping add.`);
     }
 
-    console.log(`[BROTHERS] Updated brothersGraph for ${roomID}:`);
-    console.log(gameState.brothersGraph);
+    // Always emit a fresh clone
+    io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
 
-    io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph);
+
+    console.log(`[BROTHERS] Re-added ${sourceName} → ${targetName}`);
+    console.log("[Updated brothersGraph]", gameState.brothersGraph);
+
+    // Deep clone without JSON
+    const clonedGraph = cloneGraph(gameState.brothersGraph);
+    io.to(roomID).emit("updateBrothersGraph", clonedGraph);
   });
+
+
 
   socket.on('removeBrotherConnection', ({ roomID, sourceName, targetName }) => {
     const gameState = games[roomID];

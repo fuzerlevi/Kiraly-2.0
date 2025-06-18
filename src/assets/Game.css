@@ -86,11 +86,21 @@
   margin-bottom: 10px;
 }
 
-.effect-text {
-  font-size: 18px;
-  font-style: italic;
-  margin-top: 10px;
+.effect-container {
+  max-width: 500px;     /* or ~1/3 of typical screen width */
+  margin: 0 auto;       /* centers it horizontally */
+  padding: 0 20px;      /* optional: horizontal padding */
+  text-align: center;     /* better readability */
 }
+
+.effect-text {
+  font-size: 14px;
+  
+  margin-top: 10px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
 
 /* Floating Buttons for Draw & End Turn */
 .floating-button {

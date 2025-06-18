@@ -10,18 +10,6 @@ const Brothers = () => {
   const [fromPlayer, setFromPlayer] = useState("");
   const [toPlayer, setToPlayer] = useState("");
 
-  useEffect(() => {
-    socket.on("updateBrothersGraph", (graph) => {
-      console.log("[CLIENT] Received updated brothersGraph:", graph);
-      setBrothersGraph(graph);
-    });
-
-    return () => {
-      socket.off("updateBrothersGraph");
-    };
-  }, []);
-
-
   const mySocketID = socket.id;
   const myPlayer = players.find((p) => p.socketID === mySocketID);
 

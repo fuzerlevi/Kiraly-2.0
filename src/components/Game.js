@@ -33,7 +33,7 @@ const Game = () => {
     players,
     deck,
     currentPlayerName,
-    // brothersGraph,
+    brothersGraph,
     setDeck,
     setPlayers,
     setCurrentPlayerName,
@@ -64,6 +64,8 @@ const Game = () => {
   const [isChoosingBrother, setIsChoosingBrother] = useState(false);
   const [chosenBrother, setChosenBrother] = useState("");
   const [brotherModalOpen, setBrotherModalOpen] = useState(false);
+  const [forceOpenBrothers, setForceOpenBrothers] = useState(false);
+
 
   // king counter
   const [kingsRemaining, setKingsRemaining] = useState(4);
@@ -93,21 +95,24 @@ const Game = () => {
       setPlayers(playerList || []);
       setDeck(data.deck || []);
       setCurrentPlayerName(data.currentPlayerName || null);
-      setBrothersGraph(data.brothersGraph || {}); // ✅ listen to it
+
+      if (data.brothersGraph) {
+        setBrothersGraph(data.brothersGraph);
+      }
+
+      setKingsRemaining(data.kingsRemaining ?? 4);
+
       setCardDrawn(null);
       setIsTurnEnded(false);
     });
 
-    socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers }) => {
+    socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers, kingsRemaining }) => {
+      setIsChoosingBrother(false);
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
       setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
-
-      const kingIDs = [13, 26, 39, 52];
-      if (kingIDs.includes(drawnCard.id)) {
-        setKingsRemaining(prev => Math.max(0, prev - 1));
-      }
+      setKingsRemaining(kingsRemaining);
 
 
       const myPlayer = updatedPlayers.find(p => p.socketID === socket.id);
@@ -117,7 +122,7 @@ const Game = () => {
           player: myPlayer,
           players: updatedPlayers,
           roomID,
-          setIsChoosingBrother, // ✅ pass this function
+          setIsChoosingBrother, // ✅ frontend-specific
         });
       }
     });
@@ -141,8 +146,11 @@ const Game = () => {
     });
 
     socket.on("updateBrothersGraph", (graph) => {
-      setBrothersGraph(graph);
+      console.log("[CLIENT] Received updated brothersGraph:", graph);
+      setBrothersGraph({ ...graph }); // 🔁 shallow clone to force re-render
     });
+
+
 
 
     return () => {
@@ -224,9 +232,12 @@ const Game = () => {
               className="drawn-card"
               alt={cardDrawn.name}
             />
-            <p className="effect-text">
-              Effect: {cardDrawn.effect || "No effect for now"}
-            </p>
+            <div className="effect-container">
+              <p className="effect-text">
+                Effect: {cardDrawn.effect || "No effect for now"}
+              </p>
+            </div>
+
           </>
         ) : (
           <img
@@ -366,17 +377,32 @@ const Game = () => {
             </select>
             <button
               onClick={() => {
-                if (chosenBrother) {
-                  socket.emit("addBrotherConnection", {
-                    roomID,
-                    sourceName: myPlayer.name,
-                    targetName: chosenBrother,
-                  });
-                  setBrotherModalOpen(false);
-                  setIsChoosingBrother(false);
-                  setChosenBrother("");
-                }
+                if (!chosenBrother) return;
+
+                const alreadyConnected =
+                  players &&
+                  players.length > 0 &&
+                  players.some(
+                    (p) =>
+                      p.name === myPlayer.name &&
+                      brothersGraph?.[p.name]?.includes(chosenBrother)
+                  );
+
+                if (!alreadyConnected) {
+                setForceOpenBrothers(true);
+                socket.emit("addBrotherConnection", {
+                  roomID,
+                  sourceName: myPlayer.name,
+                  targetName: chosenBrother,
+                });
+              }
+
+
+                setBrotherModalOpen(false);
+                setIsChoosingBrother(false);
+                setChosenBrother("");
               }}
+
             >
               Confirm
             </button>

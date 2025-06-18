@@ -57,7 +57,28 @@ const Cards = [
   { id: 49, cardType: "French", name: "♣10", effect: "Új szabály", color: "black", src: "/CardImages/clubs/10OfClubs.png" },
   { id: 50, cardType: "French", name: "♣Jack", effect: "Annyi korty minden fiúnak, ahány fiú van", color: "black", src: "/CardImages/clubs/11JackOfClubs.png" },
   { id: 51, cardType: "French", name: "♣Queen", effect: "Annyi korty minden lánynak, ahány lány van", color: "black", src: "/CardImages/clubs/12QueenOfClubs.png" },
-  { id: 52, cardType: "French", name: "♣King", effect: "Király", color: "black", src: "/CardImages/clubs/13KingOfClubs.png" }
+  { id: 52, cardType: "French", name: "♣King", effect: "Király", color: "black", src: "/CardImages/clubs/13KingOfClubs.png" },
+
+  // SPECTRAL
+  { id: 53, cardType: "SPECTRAL", name: "Ankh", effect: "A szorzód 1-re, a plusz kortyaid pedig 0-ra állítódnak (ha negatívak a plusz kortyaid, akkor változatlanul maradnak)", color: "-", src: "/CardImages/SPECTRAL/ankh.png" },
+  { id: 54, cardType: "SPECTRAL", name: "Aura", effect: "Mindenki akinek eddig a tesója voltál, mostantól a tesód", color: "-", src: "/CardImages/SPECTRAL/aura.png" },
+  { id: 55, cardType: "SPECTRAL", name: "Black hole", effect: "Mindenki befejezi az italát, viszont aki felhúzta, az előtte újratölti az övét", color: "-", src: "/CardImages/SPECTRAL/black hole.png" },
+  { id: 56, cardType: "SPECTRAL", name: "Cryptid", effect: "Általad válaszott játékos dob egyet a D20-al, ha nem 20-ast dobott akkor iszik egy kortyot, addig ismétli amég nem sikerül 20-ast dobnia", color: "-", src: "/CardImages/SPECTRAL/cryptid.png" },
+  { id: 57, cardType: "SPECTRAL", name: "Deja vu", effect: "Az előző körben játszott lapodat újra kijátszod", color: "-", src: "/CardImages/SPECTRAL/deja vu.png" },
+  { id: 58, cardType: "SPECTRAL", name: "Ectoplasm", effect: "Igyál annyi kortyot, ahány éves vagy /2", color: "-", src: "/CardImages/SPECTRAL/ectoplasm.png" },
+  { id: 59, cardType: "SPECTRAL", name: "Familiar", effect: "Keverj egy italt, majd válassz valakit akivel elfelezed", color: "-", src: "/CardImages/SPECTRAL/familiar.png" },
+  { id: 60, cardType: "SPECTRAL", name: "Grim", effect: "Dobj egyet egy D6-al, majd idd meg a dobott szám négyzetét", color: "-", src: "/CardImages/SPECTRAL/grim.png" },
+  { id: 61, cardType: "SPECTRAL", name: "Hex", effect: "Sózd meg az italod (ízlés szerint xd)", color: "-", src: "/CardImages/SPECTRAL/hex.png" },
+  { id: 62, cardType: "SPECTRAL", name: "Immolate", effect: "Rakj valami csípőset az italodba xd", color: "-", src: "/CardImages/SPECTRAL/immolate.png" },
+  { id: 63, cardType: "SPECTRAL", name: "Incantation", effect: "A következő 5 lapot te húzod fel", color: "-", src: "/CardImages/SPECTRAL/incantation.png" },
+  { id: 64, cardType: "SPECTRAL", name: "Medium", effect: "Választhatsz egy francia kártyát amiből 3 db belekeveredik a pakliba", color: "-", src: "/CardImages/SPECTRAL/medium.png" },
+  { id: 65, cardType: "SPECTRAL", name: "Ouija", effect: "Választhatsz egy lapot az általad kijátszott lapok közül, amit megkapsz megint", color: "-", src: "/CardImages/SPECTRAL/ouija.png" },
+  { id: 66, cardType: "SPECTRAL", name: "Sigil", effect: "Húzhatsz mégegy lapot, ami 2x játszódik ki", color: "-", src: "/CardImages/SPECTRAL/sigil.png" },
+  { id: 67, cardType: "SPECTRAL", name: "Soul", effect: "A következő italodba nem rakhatsz alkoholt, pihenj egy picit", color: "-", src: "/CardImages/SPECTRAL/soul.png" },
+  { id: 68, cardType: "SPECTRAL", name: "Talisman", effect: "A kör végén kapsz 2 random SPECTRAL lapot", color: "-", src: "/CardImages/SPECTRAL/talisman.png" },
+  { id: 69, cardType: "SPECTRAL", name: "Trance", effect: "Minden kártya amit a játék alatt felhúztál visszakeveredik a pakliba", color: "-", src: "/CardImages/SPECTRAL/trance.png" },
+  { id: 70, cardType: "SPECTRAL", name: "Wraith", effect: "Tölts ki 1 shotnyi vizet és 1 shotnyi átlátszó alkoholt, majd válassz valakit aki eldöntheti hogy melyiket issza meg, te pedig idd meg a másikat", color: "-", src: "/CardImages/SPECTRAL/wraith.png" },
+
 ];
 
 module.exports = Cards;
