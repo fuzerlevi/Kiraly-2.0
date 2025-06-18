@@ -215,6 +215,19 @@
   width: 200px;
 }
 
+.king-counter {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.king-counter-image {
+  height: 150px;
+  width: auto;
+}
+
+
 
 
 

@@ -65,6 +65,10 @@ const Game = () => {
   const [chosenBrother, setChosenBrother] = useState("");
   const [brotherModalOpen, setBrotherModalOpen] = useState(false);
 
+  // king counter
+  const [kingsRemaining, setKingsRemaining] = useState(4);
+
+
 
   
 
@@ -90,6 +94,12 @@ const Game = () => {
       setDeck(newDeck || []);
       setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
+
+      const kingIDs = [13, 26, 39, 52];
+      if (kingIDs.includes(drawnCard.id)) {
+        setKingsRemaining(prev => Math.max(0, prev - 1));
+      }
+
 
       const myPlayer = updatedPlayers.find(p => p.socketID === socket.id);
       if (myPlayer && drawnCard?.id && cardEffects[drawnCard.id]) {
@@ -415,6 +425,14 @@ const Game = () => {
           );
         })}
       </div>
+
+      <div className="king-counter">
+        <img
+          src={`/CardImages/kingCounters/kingCounter${kingsRemaining}.png`}
+          className="king-counter-image"
+        />
+      </div>
+
     </div>
   );
 };
