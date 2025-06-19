@@ -34,10 +34,14 @@ const createGameState = (gameID) => {
   // TEST DECK
   const deck = [
     ...Array(2).fill().map(() => Cards.find(card => card.id === 1)), // 2 aces
-    Cards.find(card => card.id === 64), // Trance Spectral card
+
+    Cards.find(card => card.id === 64), // MEDIUM Spectral card
+
     ...Array(2).fill().map(() => Cards.find(card => card.id === 2)), // 2 2s
-    Cards.find(card => card.id === 69), // Trance Spectral card
-    ...Array(2).fill().map(() => Cards.find(card => card.id === 2)), // 2 2s
+
+    Cards.find(card => card.id === 69), // TRANCE Spectral card
+
+    ...Array(2).fill().map(() => Cards.find(card => card.id === 9)), // 2 9s
     
   ];
 
@@ -58,6 +62,7 @@ const createGameState = (gameID) => {
     drinkEquation: {},
     rulesText: "",
     kingsRemaining: kingsInDeck,
+    lastDrawnCard: null,
   };
 };
 
@@ -67,7 +72,13 @@ const createPlayerState = (socketID) => ({
   name: null,
   team: null,
   isHost: false,
-  cardsDrawn: []
+  cardsDrawn: [],
+  effectState: {
+  isChoosingBrother: false,
+  isChoosingMediumCard: false,
+  isTranceActive: false
+}
+
 });
 
 io.on('connection', (socket) => {
@@ -107,105 +118,131 @@ io.on('connection', (socket) => {
 
 
   socket.on("joinGameRoom", (data) => {
-  const gameID = data.roomID || data.gameID;
-  const gameState = games[gameID];
+    const gameID = data.roomID || data.gameID;
+    const gameState = games[gameID];
 
-  if (!gameID || !gameState) {
-    socket.emit("joinRoomResponse", { error: "Game does not exist." });
-    return;
-  }
-
-  let playerName, playerGender, isHost;
-  if (data.user) {
-    playerName = data.user.name;
-    playerGender = data.user.gender;
-    isHost = data.user.isHost;
-  } else {
-    // Fallback for reconnecting players
-    playerName = data.playerName;
-    playerGender = data.playerGender;
-    isHost = Object.keys(gameState.players).length === 0;
-  }
-
-  // Check if this player already existed (reconnection case)
-  const existingSocketID = Object.keys(gameState.players).find(
-    sid =>
-      gameState.players[sid].name === playerName &&
-      gameState.players[sid].team === playerGender
-  );
-
-  if (existingSocketID) {
-    // Reconnect logic
-    const oldPlayer = gameState.players[existingSocketID];
-    oldPlayer.socketID = socket.id;
-
-    // Reassign under new socket ID (preserve player object in memory)
-    gameState.players[socket.id] = oldPlayer;
-
-    // Remove only after reassignment (to prevent mutation issues)
-    if (existingSocketID !== socket.id) {
-      delete gameState.players[existingSocketID];
+    if (!gameID || !gameState) {
+      socket.emit("joinRoomResponse", { error: "Game does not exist." });
+      return;
     }
 
-    socketToGameMap[socket.id] = gameID;
-    delete socketToGameMap[existingSocketID];
-    console.log(`Player ${playerName} reconnected with new socket ${socket.id}`);
-  } else {
-    // Fresh join
-    gameState.players[socket.id] = {
-      ...createPlayerState(socket.id),
-      name: playerName,
-      team: playerGender,
-      isHost,
-      socketID: socket.id,
-    };
+    let playerName, playerGender, isHost;
+    if (data.user) {
+      playerName = data.user.name;
+      playerGender = data.user.gender;
+      isHost = data.user.isHost;
+    } else {
+      // Fallback for reconnecting players
+      playerName = data.playerName;
+      playerGender = data.playerGender;
+      isHost = Object.keys(gameState.players).length === 0;
+    }
 
-    if (!gameState.drinkEquation[playerName]) {
-      gameState.drinkEquation[playerName] = {
-        flats: 0,
-        multipliers: 1
+    // Check if this player already existed (reconnection case)
+    const existingSocketID = Object.keys(gameState.players).find(
+      sid =>
+        gameState.players[sid].name === playerName &&
+        gameState.players[sid].team === playerGender
+    );
+
+    if (existingSocketID) {
+      // Reconnect logic
+      const oldPlayer = gameState.players[existingSocketID];
+      oldPlayer.socketID = socket.id;
+
+      // Reassign under new socket ID (preserve player object in memory)
+      gameState.players[socket.id] = oldPlayer;
+
+      // Remove only after reassignment (to prevent mutation issues)
+      if (existingSocketID !== socket.id) {
+        delete gameState.players[existingSocketID];
+      }
+
+      socketToGameMap[socket.id] = gameID;
+      delete socketToGameMap[existingSocketID];
+      console.log(`Player ${playerName} reconnected with new socket ${socket.id}`);
+    } else {
+      // Fresh join
+      gameState.players[socket.id] = {
+        ...createPlayerState(socket.id),
+        name: playerName,
+        team: playerGender,
+        isHost,
+        socketID: socket.id,
       };
+
+      if (!gameState.drinkEquation[playerName]) {
+        gameState.drinkEquation[playerName] = {
+          flats: 0,
+          multipliers: 1
+        };
+      }
+
+      socketToGameMap[socket.id] = gameID;
     }
 
-    socketToGameMap[socket.id] = gameID;
-  }
+    socket.join(gameID);
 
-  socket.join(gameID);
+    const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
 
-  // Notify everyone with updated player list
-  io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
-
-  // Refresh full game state for everyone (safety)
-  io.to(gameID).emit("updateGameState", {
-    deck: gameState.deck,
-    players: gameState.players,
-    currentPlayerName: gameState.currentPlayerName,
-    brothersGraph: gameState.brothersGraph,
-    drinkEquation: gameState.drinkEquation,
-    rulesText: gameState.rulesText,
-  });
+    // Notify everyone with updated player list
+    io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
 
 
-  // If game already started, emit gameStarted only to this reconnecting socket
-  if (gameState.hasStarted) {
-    io.to(gameID).emit("playerReconnected", { playerName });
-    socket.emit("gameStarted", {
-      roomID: gameID,
-      players: Object.values(gameState.players),
+    const currentPlayer = Object.values(gameState.players).find(p => p.name === gameState.currentPlayerName);
+    const lastDrawnCard = currentPlayer?.cardsDrawn?.slice(-1)[0] || null;
+
+    // Refresh full game state for everyone (safety)
+    io.to(gameID).emit("updateGameState", {
       deck: gameState.deck,
-      whosTurnIsIt: gameState.currentPlayerName,
-      kingsRemaining: gameState.kingsRemaining,
+      players: Object.fromEntries(
+        Object.entries(gameState.players).map(([sid, player]) => [
+          sid,
+          {
+            ...player,
+            effectState: { ...player.effectState },
+          },
+        ])
+      ),
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: gameState.brothersGraph,
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      lastDrawnCard,
     });
-  }
+    
+    if (player?.effectState?.isChoosingMediumCard) {
+      socket.emit("triggerMediumChooseCard", { roomID: gameID, playerName: player.name });
+    }
+    if (player?.effectState?.isTranceActive) {
+      socket.emit("triggerTrance", { roomID: gameID, playerName: player.name });
+    }
+    if (player?.effectState?.isChoosingBrother) {
+      socket.emit("chooseBrotherPopup", { roomID: gameID, playerName: player.name });
+    }
 
-  // Also restore rules text and drink equation for the reconnecting client
-  socket.emit("updateRulesText", gameState.rulesText);
-  socket.emit("updateDrinkEquation", gameState.drinkEquation);
 
 
-  // Response back to the reconnected player
-  socket.emit("joinRoomResponse", { gameID, success: true });
-});
+    // If game already started, emit gameStarted only to this reconnecting socket
+    if (gameState.hasStarted) {
+      io.to(gameID).emit("playerReconnected", { playerName });
+      socket.emit("gameStarted", {
+        roomID: gameID,
+        players: Object.values(gameState.players),
+        deck: gameState.deck,
+        whosTurnIsIt: gameState.currentPlayerName,
+        kingsRemaining: gameState.kingsRemaining,
+      });
+    }
+
+    // Also restore rules text and drink equation for the reconnecting client
+    socket.emit("updateRulesText", gameState.rulesText);
+    socket.emit("updateDrinkEquation", gameState.drinkEquation);
+
+
+    // Response back to the reconnected player
+    socket.emit("joinRoomResponse", { gameID, success: true });
+  });
 
   socket.on("startGame", ({ roomID }) => {
     const gameState = games[roomID];
@@ -240,11 +277,29 @@ io.on('connection', (socket) => {
         drinkEquation: gameState.drinkEquation,
         rulesText: gameState.rulesText,
         kingsRemaining: gameState.kingsRemaining,
+        lastDrawnCard: gameState.lastDrawnCard,
       });
+
+      const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
+
+      if (player?.effectState?.isChoosingBrother) {
+        socket.emit("chooseBrotherPopup", { roomID, playerName: player.name });
+      }
+
+      if (player?.effectState?.isChoosingMediumCard) {
+        socket.emit("triggerMediumChooseCard", { roomID, playerName: player.name });
+      }
+
+      if (player?.effectState?.isTranceActive) {
+        socket.emit("triggerTrance", { roomID, playerName: player.name });
+      }
+
+
       socket.emit("updateRulesText", gameState.rulesText);
       socket.emit("updateDrinkEquation", gameState.drinkEquation);
     }
   });
+
 
   socket.on('drawCard', ({ roomID }) => {
     const gameState = games[roomID];
@@ -256,7 +311,12 @@ io.on('connection', (socket) => {
     if (!currentPlayer) return;
 
     const drawnCard = gameState.deck.shift();
+    
+    gameState.lastDrawnCard = drawnCard;
+
     currentPlayer.cardsDrawn.push(drawnCard);
+
+    
 
     // Decrease kingsRemaining if a king is drawn
     const kingIDs = [13, 26, 39, 52];
@@ -278,17 +338,20 @@ io.on('connection', (socket) => {
       });
 
       if (result?.action === "chooseBrother") {
+        currentPlayer.effectState = { isChoosingBrother: true };
         io.to(currentPlayer.socketID).emit("triggerChooseBrother", {
           roomID,
           playerName: currentPlayer.name,
         });
       } else if (result?.action === "mediumChooseCard") {
+        currentPlayer.effectState = { isChoosingMediumCard: true };
         io.to(currentPlayer.socketID).emit("triggerMediumChooseCard", {
           roomID,
           playerName: currentPlayer.name,
         });
       }
       else if (result?.action === "trance") {
+        currentPlayer.effectState = { isTranceActive: true };
         io.to(currentPlayer.socketID).emit("triggerTrance", {
           roomID,
           playerName: currentPlayer.name,
@@ -317,7 +380,17 @@ io.on('connection', (socket) => {
     const nextIndex = (currentIndex + 1) % playerList.length;
   
     gameState.currentPlayerName = playerList[nextIndex]?.name || null;
-  
+
+    gameState.lastDrawnCard = null;
+
+    for (const player of Object.values(gameState.players)) {
+      player.effectState = {
+        isChoosingBrother: false,
+        isChoosingMediumCard: false,
+        isTranceActive: false,
+      };
+    }
+
     console.log(`Turn ended. Next: ${gameState.currentPlayerName}`);
   
     io.to(roomID).emit('updateGameState', {
@@ -328,6 +401,7 @@ io.on('connection', (socket) => {
       drinkEquation: gameState.drinkEquation,
       rulesText: gameState.rulesText,
       kingsRemaining: gameState.kingsRemaining,
+      lastDrawnCard: gameState.lastDrawnCard,
     });
   });
   
@@ -394,6 +468,13 @@ io.on('connection', (socket) => {
     // Deep clone without JSON
     const clonedGraph = cloneGraph(gameState.brothersGraph);
     io.to(roomID).emit("updateBrothersGraph", clonedGraph);
+
+    const sourcePlayer = Object.values(gameState.players).find(p => p.name === sourceName);
+    if (sourcePlayer) {
+      sourcePlayer.effectState.isChoosingBrother = false;
+    }
+
+
   });
 
 
@@ -468,7 +549,14 @@ io.on('connection', (socket) => {
 
     console.log(`[MEDIUM] Added ${count} copies of ${card.name} (ID ${cardID})`);
     console.log("[MEDIUM] Updated deck:", gameState.deck.map(c => c.id));
+
+    // ✅ Fix: look up the player using their name
+    const player = Object.values(gameState.players).find(p => p.name === sourcePlayer);
+    if (player?.effectState) {
+      player.effectState.isChoosingMediumCard = false;
+    }
   });
+
 
   socket.on("tranceShuffleCards", ({ roomID, playerName }) => {
     const gameState = games[roomID];
@@ -496,7 +584,15 @@ io.on('connection', (socket) => {
 
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
-      players: Object.values(gameState.players),
+      players: Object.fromEntries(
+        Object.entries(gameState.players).map(([sid, player]) => [
+          sid,
+          {
+            ...player,
+            effectState: { ...player.effectState },
+          },
+        ])
+      ),
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
       drinkEquation: gameState.drinkEquation,
@@ -509,6 +605,8 @@ io.on('connection', (socket) => {
     if (socketID) {
       io.to(socketID).emit("tranceShuffleComplete");
     }
+
+    player.effectState.isTranceActive = false;
   });
 
 

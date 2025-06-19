@@ -40,12 +40,19 @@ const Game = () => {
     setCurrentPlayerName,
     setBrothersGraph,
     setDrinkEquation,
+    isChoosingBrother,
+    setIsChoosingBrother,
+    isChoosingMediumCard,
+    setIsChoosingMediumCard,
+    isTranceActive,
+    setIsTranceActive,
+    cardDrawn, setCardDrawn,
+    isTurnEnded, setIsTurnEnded,
+    readyToEndTurn, setReadyToEndTurn,
   } = useGameContext();
 
 
   const { roomID } = useParams();
-  const [cardDrawn, setCardDrawn] = useState(null);
-  const [isTurnEnded, setIsTurnEnded] = useState(false);
   const [mySocketID, setMySocketID] = useState(null);
 
   // Cards
@@ -70,7 +77,6 @@ const Game = () => {
   const [drinkEquationOpen, setDrinkEquationOpen] = useState(false);
 
   // 9
-  const [isChoosingBrother, setIsChoosingBrother] = useState(false);
   const [chosenBrother, setChosenBrother] = useState("");
   const [brotherModalOpen, setBrotherModalOpen] = useState(false);
   const [forceOpenBrothers, setForceOpenBrothers] = useState(false);
@@ -84,16 +90,16 @@ const Game = () => {
   const [rulesText, setRulesText] = useState("");
 
   // MEDIUM
-  const [isChoosingMediumCard, setIsChoosingMediumCard] = useState(false);
   const [selectedCardID, setSelectedCardID] = useState(1);
   const [mediumModalOpen, setMediumModalOpen] = useState(false);
 
   // TRANCE
-  const [isTranceActive, setIsTranceActive] = useState(false);
-  const [readyToEndTurn, setReadyToEndTurn] = useState(false);
+  
 
 
-
+  const myPlayer = players.find((player) => player.socketID === mySocketID);
+  const isHost = myPlayer?.isHost;
+  const myCards = myPlayer?.cardsDrawn || [];
 
 
 
@@ -118,25 +124,43 @@ const Game = () => {
     });
 
     socket.on("updateGameState", (data) => {
-      const playerList = Object.values(data.players);
-      setPlayers(playerList || []);
-      setDeck(data.deck || []);
-      setCurrentPlayerName(data.currentPlayerName || null);
+    const playerList = Object.values(data.players);
+    setPlayers(playerList || []);
+    setDeck(data.deck || []);
+    setCurrentPlayerName(data.currentPlayerName || null);
+    setKingsRemaining(data.kingsRemaining ?? 4);
 
-      if (data.brothersGraph) {
-        setBrothersGraph(data.brothersGraph);
-      }
+    if (data.brothersGraph) {
+      setBrothersGraph(data.brothersGraph);
+    }
 
-      setKingsRemaining(data.kingsRemaining ?? 4);
+    const me = playerList.find(p => p.socketID === socket.id);
 
-      setCardDrawn(null);
-      setIsTurnEnded(false);
-    });
+    // ✅ Always set the drawn card from server state
+    setCardDrawn(data.lastDrawnCard || null);
+
+    // ✅ Always reset these turn-related flags
+    setIsTurnEnded(false);
+    setReadyToEndTurn(false);
+
+    if (me?.effectState) {
+      setIsChoosingBrother(me.effectState.isChoosingBrother || false);
+      setIsChoosingMediumCard(me.effectState.isChoosingMediumCard || false);
+      setIsTranceActive(me.effectState.isTranceActive || false);
+    }
+
+    console.log("[RECONNECT] cardDrawn:", data.lastDrawnCard);
+    console.log("[RECONNECT] isChoosingBrother:", isChoosingBrother);
+    console.log("[RECONNECT] isChoosingMediumCard:", isChoosingMediumCard);
+    console.log("[RECONNECT] isTranceActive:", isTranceActive);
+    console.log("[RECONNECT] currentPlayerName:", data.currentPlayerName);
+    console.log("[RECONNECT] myPlayerName:", me?.name);
+  });
+
+
+
 
     socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers, kingsRemaining }) => {
-      setIsChoosingBrother(false);
-      setIsTranceActive(false);
-      setIsChoosingMediumCard(false);
 
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
@@ -192,22 +216,43 @@ const Game = () => {
       setDrinkEquation({ ...drinkData }); // force shallow clone to trigger re-render
     });
 
-    socket.on("triggerMediumChooseCard", ({ roomID, playerName }) => {
-      setIsChoosingMediumCard(true);
+    socket.on("triggerMediumChooseCard", ({ playerName }) => {
+      const me = players.find(p => p.socketID === socket.id);
+      if (me?.name === playerName) {
+        setIsChoosingMediumCard(true);
+        const lastCard = me.cardsDrawn?.slice(-1)[0];
+        if (lastCard) setCardDrawn(lastCard);
+      }
     });
 
-    socket.on("triggerTrance", ({ roomID, playerName }) => {
-      console.log("[TRANCE] triggerTrance received from server");
-      setIsTranceActive(true);
+
+    socket.on("triggerTrance", ({ playerName }) => {
+      const me = players.find(p => p.socketID === socket.id);
+      if (me?.name === playerName) {
+        console.log("[TRANCE] triggerTrance received from server");
+        setIsTranceActive(true);
+        const lastCard = me.cardsDrawn?.slice(-1)[0];
+        if (lastCard) setCardDrawn(lastCard);
+      }
     });
+
+
+    socket.on("triggerChooseBrother", ({ playerName }) => {
+      const me = players.find(p => p.socketID === socket.id);
+      if (me?.name === playerName) {
+        setIsChoosingBrother(true);
+        const lastCard = me.cardsDrawn?.slice(-1)[0];
+        if (lastCard) setCardDrawn(lastCard);
+      }
+    });
+
 
     socket.on("tranceShuffleComplete", () => {
       setIsTranceActive(false);
+      setCardDrawn(null);  // <-- ✅ reset the drawn card
+      setReadyToEndTurn(true);  // <-- ✅ show End Turn
+
     });
-
-
-
-
 
 
 
@@ -219,14 +264,16 @@ const Game = () => {
       socket.off("gameStarted");
       socket.off("updateBrothersGraph");
       socket.off("updateRulesText");
+      socket.off("triggerTrance");
+      socket.off("triggerMediumChooseCard");
+      socket.off("triggerChooseBrother");
+
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
 
   if (!mySocketID) return <div>Loading game...</div>;
 
-  const myPlayer = players.find((player) => player.socketID === mySocketID);
-  const isHost = myPlayer?.isHost;
-  const myCards = myPlayer?.cardsDrawn || [];
+  
 
   const drawACard = () => {
     if (cardDrawn || deck.length === 0 || myPlayer?.name !== currentPlayerName)
@@ -281,12 +328,21 @@ const Game = () => {
       roomID,
       playerName: myPlayer?.name,
     });
-    setIsTranceActive(false); // hide shuffle button immediately
-    setReadyToEndTurn(true);  // allow End Turn
+    setIsTranceActive(false);      // ✅ hide Shuffle
+    setReadyToEndTurn(true);       // ✅ show End Turn
+    setCardDrawn(null);            // ✅ hide the old Trance card
   };
 
 
+
   console.log("[Render] isTranceActive:", isTranceActive);
+  console.log("[Render] cardDrawn:", cardDrawn);
+  console.log("[Render] isChoosingBrother:", isChoosingBrother);
+  console.log("[Render] isChoosingMediumCard:", isChoosingMediumCard);
+  console.log("[Render] readyToEndTurn:", readyToEndTurn);
+  console.log("[Render] isGameFinished:", isGameFinished);
+  console.log("[Render] myPlayer?.name === currentPlayerName:", myPlayer?.name === currentPlayerName);
+
 
 
   return (
@@ -495,6 +551,9 @@ const Game = () => {
                 setBrotherModalOpen(false);
                 setIsChoosingBrother(false);
                 setChosenBrother("");
+
+                setReadyToEndTurn(true);
+                setCardDrawn(null);
               }}
 
             >
@@ -587,6 +646,9 @@ const Game = () => {
                 setMediumModalOpen(false);
                 setIsChoosingMediumCard(false);
                 setSelectedCardID(1);
+                setCardDrawn(null);  // <-- ✅ reset the drawn card
+                setReadyToEndTurn(true);  // <-- ✅ show End Turn
+
               }}
             >
               Confirm
