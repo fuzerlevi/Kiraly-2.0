@@ -58,9 +58,6 @@ const Game = () => {
   // Cards
   const [allCardMetadata, setAllCardMetadata] = useState([]);
 
-  // End Game button
-  const [isGameFinished, setIsGameFinished] = useState(false);
-
   // Coinflip
   const [coinflipOpen, setCoinflipOpen] = useState(false);
   const [flipResult, setFlipResult] = useState(null);
@@ -164,11 +161,6 @@ const Game = () => {
 
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
-      if (newDeck.length === 0) {
-        console.log("[GAME] Last card drawn – waiting for effect resolution");
-        setIsGameFinished(true);
-      }
-
       setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
       setKingsRemaining(kingsRemaining);
@@ -254,6 +246,9 @@ const Game = () => {
 
     });
 
+    socket.on("gameOver", () => {
+      alert("No more cards in the deck, GG");
+    });
 
 
     return () => {
@@ -267,7 +262,7 @@ const Game = () => {
       socket.off("triggerTrance");
       socket.off("triggerMediumChooseCard");
       socket.off("triggerChooseBrother");
-
+      socket.off("gameOver");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
 
@@ -276,7 +271,7 @@ const Game = () => {
   
 
   const drawACard = () => {
-    if (cardDrawn || deck.length === 0 || myPlayer?.name !== currentPlayerName)
+    if (cardDrawn || myPlayer?.name !== currentPlayerName)
       return;
     socket.emit("drawCard", { roomID });
   };
@@ -333,18 +328,6 @@ const Game = () => {
     setCardDrawn(null);            // ✅ hide the old Trance card
   };
 
-
-
-  console.log("[Render] isTranceActive:", isTranceActive);
-  console.log("[Render] cardDrawn:", cardDrawn);
-  console.log("[Render] isChoosingBrother:", isChoosingBrother);
-  console.log("[Render] isChoosingMediumCard:", isChoosingMediumCard);
-  console.log("[Render] readyToEndTurn:", readyToEndTurn);
-  console.log("[Render] isGameFinished:", isGameFinished);
-  console.log("[Render] myPlayer?.name === currentPlayerName:", myPlayer?.name === currentPlayerName);
-
-
-
   return (
     <div className="game-container">
       <h1 className="game-title">KIRALY 2.0</h1>
@@ -362,7 +345,7 @@ const Game = () => {
             />
             <div className="effect-container">
               <p className="effect-text">
-                Effect: {cardDrawn.effect || "No effect for now"}
+                <strong>Effect:</strong> {cardDrawn.effect || "No effect for now"}
               </p>
               {cardDrawn?.Source && (
                 <p className="source-text">
@@ -386,11 +369,7 @@ const Game = () => {
       currentPlayerName &&
       myPlayer?.name === currentPlayerName && (
         <>
-          {isGameFinished ? (
-            <button className="floating-button" onClick={() => alert("Game Over!")}>
-              Finish Game
-            </button>
-          ) : cardDrawn === null && !readyToEndTurn ? (
+          {cardDrawn === null && !readyToEndTurn ? (
             <button className="floating-button" onClick={drawACard}>
               Draw Card
             </button>

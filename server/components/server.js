@@ -33,16 +33,9 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    ...Array(2).fill().map(() => Cards.find(card => card.id === 1)), // 2 aces
+    Cards.find(card => card.id === 1), // ace
 
-    Cards.find(card => card.id === 64), // MEDIUM Spectral card
-
-    ...Array(2).fill().map(() => Cards.find(card => card.id === 2)), // 2 2s
-
-    Cards.find(card => card.id === 69), // TRANCE Spectral card
-
-    ...Array(2).fill().map(() => Cards.find(card => card.id === 9)), // 2 9s
-    
+    Cards.find(card => card.id === 9), // Brother
   ];
 
   
@@ -303,7 +296,13 @@ io.on('connection', (socket) => {
 
   socket.on('drawCard', ({ roomID }) => {
     const gameState = games[roomID];
-    if (!gameState || gameState.deck.length === 0) return;
+    if (!gameState) return;
+
+    if (gameState.deck.length === 0) {
+      console.log("[DRAW] No cards left — game over.");
+      io.to(roomID).emit("gameOver");
+      return;
+    }
 
     const currentPlayer = Object.values(gameState.players).find(
       (p) => p.name === gameState.currentPlayerName
