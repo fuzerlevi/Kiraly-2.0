@@ -48,6 +48,9 @@ const Game = () => {
   const [isTurnEnded, setIsTurnEnded] = useState(false);
   const [mySocketID, setMySocketID] = useState(null);
 
+  // Cards
+  const [allCardMetadata, setAllCardMetadata] = useState([]);
+
   // Coinflip
   const [coinflipOpen, setCoinflipOpen] = useState(false);
   const [flipResult, setFlipResult] = useState(null);
@@ -77,6 +80,12 @@ const Game = () => {
   const [rulesModalOpen, setRulesModalOpen] = useState(false);
   const [rulesText, setRulesText] = useState("");
 
+  // MEDIUM
+  const [isChoosingMediumCard, setIsChoosingMediumCard] = useState(false);
+  const [selectedCardID, setSelectedCardID] = useState(1);
+  const [mediumModalOpen, setMediumModalOpen] = useState(false);
+
+
 
 
 
@@ -86,6 +95,12 @@ const Game = () => {
     if (!socket.connected) {
       socket.connect();
     }
+
+    socket.emit("getAllCardMetadata", (metadata) => {
+      setAllCardMetadata(metadata);
+    });
+
+
     setMySocketID(socket.id);
     socket.emit("joinGamePage", { roomID });
 
@@ -125,12 +140,13 @@ const Game = () => {
           player: myPlayer,
           players: updatedPlayers,
           roomID,
-          setIsChoosingBrother, // ✅ frontend-specific
+          setIsChoosingBrother,
+          setIsChoosingMediumCard,
         });
       }
     });
 
-
+    
 
     socket.on("playerDisconnected", ({ playerName }) => {
       alert(`${playerName} disconnected. Waiting for reconnection...`);
@@ -156,6 +172,11 @@ const Game = () => {
     socket.on("updateDrinkEquation", (drinkData) => {
       setDrinkEquation({ ...drinkData }); // force shallow clone to trigger re-render
     });
+
+    socket.on("triggerMediumChooseCard", ({ roomID, playerName }) => {
+      setIsChoosingMediumCard(true);
+    });
+
 
 
 
@@ -244,6 +265,12 @@ const Game = () => {
               <p className="effect-text">
                 Effect: {cardDrawn.effect || "No effect for now"}
               </p>
+              {cardDrawn?.Source && (
+                <p className="source-text">
+                  Source: {cardDrawn.Source}
+                </p>
+              )}
+
             </div>
 
           </>
@@ -257,22 +284,27 @@ const Game = () => {
       </div>
 
       {deck.length > 0 &&
-        players.length > 0 &&
-        currentPlayerName &&
-        myPlayer?.name === currentPlayerName &&
-        (cardDrawn === null ? (
-          <button className="floating-button" onClick={drawACard}>
-            Draw Card
-          </button>
-        ) : isChoosingBrother ? (
-          <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
-            Choose Brother
-          </button>
-        ) : (
-          <button className="floating-button" onClick={endTurn}>
-            End Turn
-          </button>
-        ))}
+      players.length > 0 &&
+      currentPlayerName &&
+      myPlayer?.name === currentPlayerName &&
+      (cardDrawn === null ? (
+        <button className="floating-button" onClick={drawACard}>
+          Draw Card
+        </button>
+      ) : isChoosingBrother ? (
+        <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
+          Choose Brother
+        </button>
+      ) : isChoosingMediumCard ? (
+        <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
+          Choose Card
+        </button>
+      ) : (
+        <button className="floating-button" onClick={endTurn}>
+          End Turn
+        </button>
+      ))}
+
 
 
       <div className="turn-order-container">
@@ -297,8 +329,6 @@ const Game = () => {
       <button className="rules-button" onClick={() => setRulesModalOpen(true)} title="Rules">
         <img src="/Icons/rules.png" alt="Rules" className="rules-icon" />
       </button>
-
-
 
 
       {/* Coinflip Button */}
@@ -468,6 +498,48 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {mediumModalOpen && (
+        <div className="brother-modal-overlay">
+          <div className="brother-modal">
+            <h3>Choose a card</h3>
+            <select
+              value={selectedCardID}
+              onChange={(e) => setSelectedCardID(Number(e.target.value))}
+              className="brother-dropdown"
+            >
+              {allCardMetadata
+              .filter(card => card.id >= 1 && card.id <= 13)
+              .map(card => (
+                <option key={card.id} value={card.id}>
+                  {card.name.replace(/^[^\w]+/, "")}
+                </option>
+              ))}
+
+            </select>
+            <p style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>
+              Note: 3 copies of the chosen card will be shuffled into the deck.
+            </p>
+            <button
+              onClick={() => {
+                socket.emit("addCardCopiesToDeck", {
+                  roomID,
+                  cardID: selectedCardID,
+                  count: 3,
+                  sourcePlayer: myPlayer?.name || "Unknown",
+                });
+                setMediumModalOpen(false);
+                setIsChoosingMediumCard(false);
+                setSelectedCardID(1);
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+
 
 
 

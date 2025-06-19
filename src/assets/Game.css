@@ -317,3 +317,15 @@
   text-align: left;
 }
 
+.source-text {
+  white-space: pre-wrap;
+  padding: 5px;
+  background: #fff;
+  font-size: 10px;
+  line-height: 1.8; /* Increased line spacing */
+  max-height: 400px;
+  overflow-y: auto;
+  text-align: center;
+  font-style: italic;
+}
+

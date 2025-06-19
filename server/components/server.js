@@ -93,6 +93,14 @@ io.on('connection', (socket) => {
     callback?.({ gameID: gameID, success: true });
   });
 
+  socket.on("getAllCardMetadata", (callback) => {
+    const metadata = Cards.map(({ id, name, effect, color, src, source }) => ({
+      id, name, effect, color, src, source
+    }));
+    callback(metadata);
+  });
+
+
 
   socket.on("joinGameRoom", (data) => {
   const gameID = data.roomID || data.gameID;
@@ -266,15 +274,18 @@ io.on('connection', (socket) => {
       });
 
       if (result?.action === "chooseBrother") {
-        // Only notify the current player
         io.to(currentPlayer.socketID).emit("triggerChooseBrother", {
           roomID,
           playerName: currentPlayer.name,
         });
+      } else if (result?.action === "mediumChooseCard") {
+        io.to(currentPlayer.socketID).emit("triggerMediumChooseCard", {
+          roomID,
+          playerName: currentPlayer.name,
+        });
       }
-
-      // Future effects can be handled here using else if or switch
     }
+
 
     io.to(roomID).emit("cardDrawn", {
       drawnCard,
@@ -430,7 +441,24 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateRulesText", text);
   });
 
+  socket.on("addCardCopiesToDeck", ({ roomID, cardID, count, sourcePlayer }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
 
+    const card = Cards.find(c => c.id === cardID);
+    if (!card) {
+      console.log(`[MEDIUM] Invalid card ID ${cardID}`);
+      return;
+    }
+
+    for (let i = 0; i < count; i++) {
+      const newCard = { ...card, Source: `${sourcePlayer} - MEDIUM` };
+      gameState.deck.splice(Math.floor(Math.random() * (gameState.deck.length + 1)), 0, newCard);
+    }
+
+    console.log(`[MEDIUM] Added ${count} copies of ${card.name} (ID ${cardID})`);
+    console.log("[MEDIUM] Updated deck:", gameState.deck.map(c => c.id));
+  });
 
 
 
