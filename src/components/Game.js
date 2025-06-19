@@ -506,10 +506,11 @@ const Game = () => {
 
       <div className="king-counter">
         <img
-          src={`/CardImages/kingCounters/kingCounter${kingsRemaining}.png`}
+          src={`/CardImages/kingCounters/kingCounter${Math.min(kingsRemaining, 10)}.png`}
           className="king-counter-image"
         />
       </div>
+
 
     </div>
   );

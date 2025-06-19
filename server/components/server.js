@@ -25,8 +25,25 @@ const socketToGameMap = {};
 
 const shuffleDeck = (deck) => [...deck].sort(() => Math.random() - 0.5);
 
+//Toggle between shuffled or preassembled decks
 const createGameState = (gameID) => {
-  const deck = shuffleDeck([...Cards]);
+  
+  // SHUFFLED DECK
+  // const deck = shuffleDeck([...Cards]);
+
+  // TEST DECK
+  const deck = [
+    Cards.find(card => card.id === 64), // Medium Spectral card
+    ...Array(10).fill().map(() => Cards.find(card => card.id === 13)), // 10 Kings
+  ];
+
+  
+  
+  
+  
+  const kingIDs = [13, 26, 39, 52];
+  const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
+
   return {
     gameID,
     hasStarted: false,
@@ -36,7 +53,7 @@ const createGameState = (gameID) => {
     brothersGraph: {},
     drinkEquation: {},
     rulesText: "",
-    kingsRemaining: 4,
+    kingsRemaining: kingsInDeck,
   };
 };
 
@@ -177,9 +194,6 @@ io.on('connection', (socket) => {
   // Response back to the reconnected player
   socket.emit("joinRoomResponse", { gameID, success: true });
 });
-
-  
-  
 
   socket.on("startGame", ({ roomID }) => {
     const gameState = games[roomID];
