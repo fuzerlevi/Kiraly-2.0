@@ -51,6 +51,9 @@ const Game = () => {
   // Cards
   const [allCardMetadata, setAllCardMetadata] = useState([]);
 
+  // End Game button
+  const [isGameFinished, setIsGameFinished] = useState(false);
+
   // Coinflip
   const [coinflipOpen, setCoinflipOpen] = useState(false);
   const [flipResult, setFlipResult] = useState(null);
@@ -87,6 +90,8 @@ const Game = () => {
 
   // TRANCE
   const [isTranceActive, setIsTranceActive] = useState(false);
+  const [readyToEndTurn, setReadyToEndTurn] = useState(false);
+
 
 
 
@@ -135,6 +140,11 @@ const Game = () => {
 
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
+      if (newDeck.length === 0) {
+        console.log("[GAME] Last card drawn – waiting for effect resolution");
+        setIsGameFinished(true);
+      }
+
       setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
       setKingsRemaining(kingsRemaining);
@@ -228,6 +238,7 @@ const Game = () => {
     if (myPlayer?.name !== currentPlayerName) return;
     setCardDrawn(null);
     setIsTurnEnded(true);
+    setReadyToEndTurn(false);
     socket.emit("endTurn", { roomID });
   };
 
@@ -271,7 +282,7 @@ const Game = () => {
       playerName: myPlayer?.name,
     });
     setIsTranceActive(false); // hide shuffle button immediately
-    setCardDrawn({ name: "TRANCE", effect: "TRANCE effect complete", src: "", id: 69 });
+    setReadyToEndTurn(true);  // allow End Turn
   };
 
 
@@ -315,12 +326,15 @@ const Game = () => {
         )}
       </div>
     
-      {deck.length > 0 &&
-      players.length > 0 &&
+      {players.length > 0 &&
       currentPlayerName &&
       myPlayer?.name === currentPlayerName && (
         <>
-          {cardDrawn === null ? (
+          {isGameFinished ? (
+            <button className="floating-button" onClick={() => alert("Game Over!")}>
+              Finish Game
+            </button>
+          ) : cardDrawn === null && !readyToEndTurn ? (
             <button className="floating-button" onClick={drawACard}>
               Draw Card
             </button>
@@ -343,6 +357,7 @@ const Game = () => {
           )}
         </>
       )}
+
 
 
 
