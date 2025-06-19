@@ -33,8 +33,12 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 64), // Medium Spectral card
-    ...Array(10).fill().map(() => Cards.find(card => card.id === 13)), // 10 Kings
+    ...Array(2).fill().map(() => Cards.find(card => card.id === 1)), // 2 aces
+    Cards.find(card => card.id === 64), // Trance Spectral card
+    ...Array(2).fill().map(() => Cards.find(card => card.id === 2)), // 2 2s
+    Cards.find(card => card.id === 69), // Trance Spectral card
+    ...Array(2).fill().map(() => Cards.find(card => card.id === 2)), // 2 2s
+    
   ];
 
   
@@ -284,6 +288,12 @@ io.on('connection', (socket) => {
           playerName: currentPlayer.name,
         });
       }
+      else if (result?.action === "trance") {
+        io.to(currentPlayer.socketID).emit("triggerTrance", {
+          roomID,
+          playerName: currentPlayer.name,
+        });
+      }
     }
 
 
@@ -459,6 +469,48 @@ io.on('connection', (socket) => {
     console.log(`[MEDIUM] Added ${count} copies of ${card.name} (ID ${cardID})`);
     console.log("[MEDIUM] Updated deck:", gameState.deck.map(c => c.id));
   });
+
+  socket.on("tranceShuffleCards", ({ roomID, playerName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    const player = Object.values(gameState.players).find(p => p.name === playerName);
+    if (!player || !player.cardsDrawn.length) return;
+
+    const shuffledBack = player.cardsDrawn
+    .filter(card => card.id !== 69)
+    .map(card => ({
+      ...card,
+      Source: `${player.name} - TRANCE`,
+    }));
+
+
+    player.cardsDrawn = [];
+
+    for (const card of shuffledBack) {
+      const randomIndex = Math.floor(Math.random() * (gameState.deck.length + 1));
+      gameState.deck.splice(randomIndex, 0, card);
+    }
+
+    console.log(`[TRANCE] Shuffled ${shuffledBack.length} cards from ${playerName} back into the deck`);
+
+    io.to(roomID).emit("updateGameState", {
+      deck: gameState.deck,
+      players: Object.values(gameState.players),
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: cloneGraph(gameState.brothersGraph),
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      kingsRemaining: gameState.kingsRemaining,
+    });
+
+    // Notify the player that shuffle is complete
+    const socketID = Object.keys(gameState.players).find(sid => gameState.players[sid].name === playerName);
+    if (socketID) {
+      io.to(socketID).emit("tranceShuffleComplete");
+    }
+  });
+
 
 
 

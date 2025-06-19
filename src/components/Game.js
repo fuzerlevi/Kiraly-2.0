@@ -85,6 +85,10 @@ const Game = () => {
   const [selectedCardID, setSelectedCardID] = useState(1);
   const [mediumModalOpen, setMediumModalOpen] = useState(false);
 
+  // TRANCE
+  const [isTranceActive, setIsTranceActive] = useState(false);
+
+
 
 
 
@@ -126,11 +130,15 @@ const Game = () => {
 
     socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers, kingsRemaining }) => {
       setIsChoosingBrother(false);
+      setIsTranceActive(false);
+      setIsChoosingMediumCard(false);
+
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
       setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
       setKingsRemaining(kingsRemaining);
+
 
 
       const myPlayer = updatedPlayers.find(p => p.socketID === socket.id);
@@ -142,6 +150,7 @@ const Game = () => {
           roomID,
           setIsChoosingBrother,
           setIsChoosingMediumCard,
+          setIsTranceActive,
         });
       }
     });
@@ -176,6 +185,16 @@ const Game = () => {
     socket.on("triggerMediumChooseCard", ({ roomID, playerName }) => {
       setIsChoosingMediumCard(true);
     });
+
+    socket.on("triggerTrance", ({ roomID, playerName }) => {
+      console.log("[TRANCE] triggerTrance received from server");
+      setIsTranceActive(true);
+    });
+
+    socket.on("tranceShuffleComplete", () => {
+      setIsTranceActive(false);
+    });
+
 
 
 
@@ -246,6 +265,19 @@ const Game = () => {
     socket.emit("updateRulesText", { roomID, text: newText });
   };
 
+  const handleTranceShuffle = () => {
+    socket.emit("tranceShuffleCards", {
+      roomID,
+      playerName: myPlayer?.name,
+    });
+    setIsTranceActive(false); // hide shuffle button immediately
+    setCardDrawn({ name: "TRANCE", effect: "TRANCE effect complete", src: "", id: 69 });
+  };
+
+
+  console.log("[Render] isTranceActive:", isTranceActive);
+
+
   return (
     <div className="game-container">
       <h1 className="game-title">KIRALY 2.0</h1>
@@ -282,28 +314,37 @@ const Game = () => {
           />
         )}
       </div>
-
+    
       {deck.length > 0 &&
       players.length > 0 &&
       currentPlayerName &&
-      myPlayer?.name === currentPlayerName &&
-      (cardDrawn === null ? (
-        <button className="floating-button" onClick={drawACard}>
-          Draw Card
-        </button>
-      ) : isChoosingBrother ? (
-        <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
-          Choose Brother
-        </button>
-      ) : isChoosingMediumCard ? (
-        <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
-          Choose Card
-        </button>
-      ) : (
-        <button className="floating-button" onClick={endTurn}>
-          End Turn
-        </button>
-      ))}
+      myPlayer?.name === currentPlayerName && (
+        <>
+          {cardDrawn === null ? (
+            <button className="floating-button" onClick={drawACard}>
+              Draw Card
+            </button>
+          ) : isChoosingBrother ? (
+            <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
+              Choose Brother
+            </button>
+          ) : isChoosingMediumCard ? (
+            <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
+              Choose Card
+            </button>
+          ) : isTranceActive ? (
+            <button className="floating-button" onClick={handleTranceShuffle}>
+              Shuffle
+            </button>
+          ) : (
+            <button className="floating-button" onClick={endTurn}>
+              End Turn
+            </button>
+          )}
+        </>
+      )}
+
+
 
 
 

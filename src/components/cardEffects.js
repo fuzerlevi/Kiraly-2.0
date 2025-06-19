@@ -10,6 +10,14 @@ const cardEffects = {
     }
     return { action: "mediumChooseCard" }; // ← matches backend
   },
+  69: ({ player, setIsTranceActive }) => {
+    console.log("[Trance] Card effect triggered by", player.name);
+    if (setIsTranceActive) {
+      setIsTranceActive(true);
+    }
+    return { action: "trance" };
+  }
+
 
 };
 
