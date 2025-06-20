@@ -35,7 +35,15 @@ const createGameState = (gameID) => {
   const deck = [
     Cards.find(card => card.id === 1), // ace
 
-    Cards.find(card => card.id === 9), // Brother
+    Cards.find(card => card.id === 1), // ace
+
+    Cards.find(card => card.id === 57), // deja vu
+
+    Cards.find(card => card.id === 69), // trance
+
+    Cards.find(card => card.id === 69), // trance
+
+    Cards.find(card => card.id === 57), // deja vu
   ];
 
   
