@@ -9,28 +9,32 @@ const cardEffects = {
   69: ({ player, roomID, games, Cards }) => {
     const gameState = games[roomID];
 
-    if (!player.cardsDrawn.length) {
-      // No cards to shuffle — insert a random spectral on top
-      const spectralIDs = Array.from({ length: 18 }, (_, i) => 53 + i); // IDs 53–70
-      const randomID = spectralIDs[Math.floor(Math.random() * spectralIDs.length)];
-      const spectralCard = Cards.find(c => c.id === randomID);
+    const forbiddenSpawnIDs = [57, 65, 69]; // Prevent infinite loops
 
-      if (spectralCard) {
+    if (!player.cardsDrawn.length) {
+      // No cards to shuffle — insert a safe random spectral
+      const spectralCards = Cards.filter(
+        c => c.id >= 53 && c.id <= 70 && !forbiddenSpawnIDs.includes(c.id)
+      );
+
+      const randomCard = spectralCards[Math.floor(Math.random() * spectralCards.length)];
+
+      if (randomCard) {
         gameState.deck.unshift({
-          ...spectralCard,
-          Source: `${player.name} - TRANCE`
+          ...randomCard,
+          Source: `${player.name} - TRANCE (RANDOM)`
         });
 
-        console.log(`[TRANCE] No cards to shuffle. Inserting random spectral: ${spectralCard.name}`);
+        console.log(`[TRANCE] No cards to shuffle. Inserting safe spectral: ${randomCard.name}`);
       }
 
       return { action: "trance" };
     }
 
-    // Else, proceed as usual
     player.effectState.isTranceActive = true;
     return { action: "trance" };
   },
+
 
   // 🆕 Déjà Vu
   57: ({ player, roomID, games, Cards }) => {
@@ -49,7 +53,10 @@ const cardEffects = {
       gameState.deck.unshift(replayCard);
       console.log(`[DEJA VU] Replaying card ${lastCard.name} for ${player.name}`);
     } else {
-      const spectralCards = Cards.filter(c => c.id >= 53 && c.id <= 70 && c.id !== 69);
+      const spectralCards = Cards.filter(
+        c => c.id >= 53 && c.id <= 70 && !forbiddenSpawnIDs.includes(c.id)
+      );
+
       const randomSpectral = spectralCards[Math.floor(Math.random() * spectralCards.length)];
       replayCard = { ...randomSpectral, Source: `${player.name} - DEJA VU (Random)` };
       gameState.deck.unshift(replayCard);

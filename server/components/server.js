@@ -23,6 +23,8 @@ const cardEffects = require('./cardEffects');
 const games = {};
 const socketToGameMap = {};
 
+const forbiddenSpawnIDs = [57, 65, 69]; // Déjà Vu, Ouija, Trance
+
 const shuffleDeck = (deck) => [...deck].sort(() => Math.random() - 0.5);
 
 //Toggle between shuffled or preassembled decks
@@ -33,9 +35,12 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 65), // ouija
     Cards.find(card => card.id === 69), // trance
-    Cards.find(card => card.id === 65), // ouija
+    Cards.find(card => card.id === 69), // trance
+    Cards.find(card => card.id === 69), // trance
+    Cards.find(card => card.id === 69), // trance
+    Cards.find(card => card.id === 69), // trance
+    Cards.find(card => card.id === 69), // trance
 
     // Cards.find(card => card.id === 65), // ouija
     // Cards.find(card => card.id === 69), // trance
@@ -390,7 +395,10 @@ io.on('connection', (socket) => {
 
         if (nonOuija.length === 0) {
           // Fallback: spawn a random spectral
-          const spectralCards = Cards.filter(c => c.id >= 53 && c.id <= 70 && c.id !== 65);
+          const spectralCards = Cards.filter(
+            c => c.id >= 53 && c.id <= 70 && !forbiddenSpawnIDs.includes(c.id)
+          );
+
           const randomCard = {
             ...spectralCards[Math.floor(Math.random() * spectralCards.length)],
             Source: `${player.name} - OUIJA (RANDOM)`
@@ -632,10 +640,13 @@ io.on('connection', (socket) => {
 
     // 👻 Fallback: hand is empty *except* Trance
     if (nonTranceCards.length === 0) {
-      const spectralCards = Cards.filter(c => c.id >= 53 && c.id <= 70 && c.id !== 69);
+      const spectralCards = Cards.filter(
+        c => c.id >= 53 && c.id <= 70 && !forbiddenSpawnIDs.includes(c.id)
+      );
+
       const randomCard = {
         ...spectralCards[Math.floor(Math.random() * spectralCards.length)],
-        Source: `${player.name} - TRANCE (FALLBACK)`
+        Source: `${player.name} - TRANCE (RANDOM)`
       };
 
       gameState.deck.unshift(randomCard);

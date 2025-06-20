@@ -85,7 +85,7 @@ const Cards = [
   { id: 60, cardType: "SPECTRAL", name: "Grim", effect: "Dobj egyet egy D6-al, majd idd meg a dobott szám négyzetét", color: "-", src: "/CardImages/SPECTRAL/grim.png", source: "" },
   { id: 61, cardType: "SPECTRAL", name: "Hex", effect: "Sózd meg az italod (ízlés szerint xd)", color: "-", src: "/CardImages/SPECTRAL/hex.png", source: "" },
   { id: 62, cardType: "SPECTRAL", name: "Immolate", effect: "Rakj valami csípőset az italodba xd", color: "-", src: "/CardImages/SPECTRAL/immolate.png", source: "" },
-  { id: 63, cardType: "SPECTRAL", name: "Incantation", effect: "A következő 5 lapot te húzod fel", color: "-", src: "/CardImages/SPECTRAL/incantation.png", source: "" },
+  { id: 63, cardType: "SPECTRAL", name: "Incantation", effect: "Húzhatsz 5 lapot", color: "-", src: "/CardImages/SPECTRAL/incantation.png", source: "" },
   { id: 64, cardType: "SPECTRAL", name: "Medium", effect: "Választhatsz egy francia kártyát amiből 3 db belekeveredik a pakliba", color: "-", src: "/CardImages/SPECTRAL/medium.png", source: "" },
   { id: 65, cardType: "SPECTRAL", name: "Ouija", effect: "Választhatsz egy lapot az általad kijátszott lapok közül, amit megkapsz megint (Ha nincsenek felhúzott lapjaid, akkor kapsz egy random SPECTRAL kártyát)", color: "-", src: "/CardImages/SPECTRAL/ouija.png", source: "" },
   { id: 66, cardType: "SPECTRAL", name: "Sigil", effect: "Húzhatsz mégegy lapot, ami 2x játszódik ki", color: "-", src: "/CardImages/SPECTRAL/sigil.png", source: "" },
