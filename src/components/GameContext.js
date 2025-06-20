@@ -14,11 +14,11 @@ export const GameProvider = ({ children }) => {
   const [isChoosingBrother, setIsChoosingBrother] = useState(false);
   const [isChoosingMediumCard, setIsChoosingMediumCard] = useState(false);
   const [isTranceActive, setIsTranceActive] = useState(false);
+  const [hasActiveDejaVu, setHasActiveDejaVu] = useState(false); // 🆕
 
   const [cardDrawn, setCardDrawn] = useState(null);
   const [readyToEndTurn, setReadyToEndTurn] = useState(false);
   const [isTurnEnded, setIsTurnEnded] = useState(false);
-
 
   return (
     <GameContext.Provider value={{
@@ -31,11 +31,11 @@ export const GameProvider = ({ children }) => {
       isChoosingBrother, setIsChoosingBrother,
       isChoosingMediumCard, setIsChoosingMediumCard,
       isTranceActive, setIsTranceActive,
+      hasActiveDejaVu, setHasActiveDejaVu, // 🆕
 
       cardDrawn, setCardDrawn,
       readyToEndTurn, setReadyToEndTurn,
       isTurnEnded, setIsTurnEnded
-
     }}>
       {children}
     </GameContext.Provider>

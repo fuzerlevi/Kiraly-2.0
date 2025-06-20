@@ -49,6 +49,7 @@ const Game = () => {
     cardDrawn, setCardDrawn,
     isTurnEnded, setIsTurnEnded,
     readyToEndTurn, setReadyToEndTurn,
+    hasActiveDejaVu, setHasActiveDejaVu,
   } = useGameContext();
 
 
@@ -144,6 +145,7 @@ const Game = () => {
       setIsChoosingBrother(me.effectState.isChoosingBrother || false);
       setIsChoosingMediumCard(me.effectState.isChoosingMediumCard || false);
       setIsTranceActive(me.effectState.isTranceActive || false);
+      setHasActiveDejaVu(me.effectState.hasActiveDejaVu || false);
     }
 
     console.log("[RECONNECT] cardDrawn:", data.lastDrawnCard);
@@ -177,6 +179,7 @@ const Game = () => {
           setIsChoosingBrother,
           setIsChoosingMediumCard,
           setIsTranceActive,
+          setHasActiveDejaVu,
         });
       }
     });
@@ -246,9 +249,28 @@ const Game = () => {
 
     });
 
+    socket.on("triggerDejaVu", ({ playerName }) => {
+      const me = players.find(p => p.socketID === socket.id);
+      if (me?.name === playerName) {
+        setHasActiveDejaVu(true);
+        const lastCard = me.cardsDrawn?.slice(-1)[0];
+        if (lastCard) {
+          console.log("[Déjà Vu] Last card to replay:", lastCard);
+          setCardDrawn(lastCard);
+        } else {
+          console.log("[Déjà Vu] No card to replay, allowing fresh draw.");
+          setCardDrawn(null);
+          setReadyToEndTurn(true); // fallback draw
+        }
+      }
+    });
+
+
     socket.on("gameOver", () => {
       alert("No more cards in the deck, GG");
     });
+
+    
 
 
     return () => {
@@ -262,6 +284,7 @@ const Game = () => {
       socket.off("triggerTrance");
       socket.off("triggerMediumChooseCard");
       socket.off("triggerChooseBrother");
+      socket.off("triggerDejaVu");
       socket.off("gameOver");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
@@ -278,11 +301,20 @@ const Game = () => {
 
   const endTurn = () => {
     if (myPlayer?.name !== currentPlayerName) return;
+
+    if (hasActiveDejaVu) {
+      setHasActiveDejaVu(false); // reset the flag
+      setCardDrawn(null);        // clear the "replayed" card
+      setReadyToEndTurn(false);  // show draw button again
+      return; // ⛔ don't emit endTurn yet
+    }
+
     setCardDrawn(null);
     setIsTurnEnded(true);
     setReadyToEndTurn(false);
     socket.emit("endTurn", { roomID });
   };
+
 
   // Coinflip handlers
   const openCoinflip = () => {

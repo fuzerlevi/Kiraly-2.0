@@ -79,7 +79,7 @@ const Cards = [
   { id: 54, cardType: "SPECTRAL", name: "Aura", effect: "Mindenki akinek eddig a tesója voltál, mostantól a tesód", color: "-", src: "/CardImages/SPECTRAL/aura.png", source: "" },
   { id: 55, cardType: "SPECTRAL", name: "Black hole", effect: "Mindenki befejezi az italát, viszont aki felhúzta, az előtte újratölti az övét", color: "-", src: "/CardImages/SPECTRAL/black hole.png", source: "" },
   { id: 56, cardType: "SPECTRAL", name: "Cryptid", effect: "Általad válaszott játékos dob egyet a D20-al, ha nem 20-ast dobott akkor iszik egy kortyot, addig ismétli amég nem sikerül 20-ast dobnia", color: "-", src: "/CardImages/SPECTRAL/cryptid.png", source: "" },
-  { id: 57, cardType: "SPECTRAL", name: "Deja vu", effect: "Az előző körben játszott lapodat újra kijátszod", color: "-", src: "/CardImages/SPECTRAL/deja vu.png", source: "" },
+  { id: 57, cardType: "SPECTRAL", name: "Deja vu", effect: "Az előző körben játszott lapodat újra kijátszod (Ha nincsenek felhúzott lapjaid, akkor kapsz egy random SPECTRAL kártyát)", color: "-", src: "/CardImages/SPECTRAL/deja vu.png", source: "" },
   { id: 58, cardType: "SPECTRAL", name: "Ectoplasm", effect: "Igyál annyi kortyot, ahány éves vagy /2", color: "-", src: "/CardImages/SPECTRAL/ectoplasm.png", source: "" },
   { id: 59, cardType: "SPECTRAL", name: "Familiar", effect: "Keverj egy italt, majd válassz valakit akivel elfelezed", color: "-", src: "/CardImages/SPECTRAL/familiar.png", source: "" },
   { id: 60, cardType: "SPECTRAL", name: "Grim", effect: "Dobj egyet egy D6-al, majd idd meg a dobott szám négyzetét", color: "-", src: "/CardImages/SPECTRAL/grim.png", source: "" },
@@ -87,11 +87,11 @@ const Cards = [
   { id: 62, cardType: "SPECTRAL", name: "Immolate", effect: "Rakj valami csípőset az italodba xd", color: "-", src: "/CardImages/SPECTRAL/immolate.png", source: "" },
   { id: 63, cardType: "SPECTRAL", name: "Incantation", effect: "A következő 5 lapot te húzod fel", color: "-", src: "/CardImages/SPECTRAL/incantation.png", source: "" },
   { id: 64, cardType: "SPECTRAL", name: "Medium", effect: "Választhatsz egy francia kártyát amiből 3 db belekeveredik a pakliba", color: "-", src: "/CardImages/SPECTRAL/medium.png", source: "" },
-  { id: 65, cardType: "SPECTRAL", name: "Ouija", effect: "Választhatsz egy lapot az általad kijátszott lapok közül, amit megkapsz megint", color: "-", src: "/CardImages/SPECTRAL/ouija.png", source: "" },
+  { id: 65, cardType: "SPECTRAL", name: "Ouija", effect: "Választhatsz egy lapot az általad kijátszott lapok közül, amit megkapsz megint (Ha nincsenek felhúzott lapjaid, akkor kapsz egy random SPECTRAL kártyát)", color: "-", src: "/CardImages/SPECTRAL/ouija.png", source: "" },
   { id: 66, cardType: "SPECTRAL", name: "Sigil", effect: "Húzhatsz mégegy lapot, ami 2x játszódik ki", color: "-", src: "/CardImages/SPECTRAL/sigil.png", source: "" },
   { id: 67, cardType: "SPECTRAL", name: "Soul", effect: "A következő italodba nem rakhatsz alkoholt, pihenj egy picit", color: "-", src: "/CardImages/SPECTRAL/soul.png", source: "" },
   { id: 68, cardType: "SPECTRAL", name: "Talisman", effect: "A kör végén kapsz 2 random SPECTRAL lapot", color: "-", src: "/CardImages/SPECTRAL/talisman.png", source: "" },
-  { id: 69, cardType: "SPECTRAL", name: "Trance", effect: "Minden kártya amit a játék alatt felhúztál visszakeveredik a pakliba", color: "-", src: "/CardImages/SPECTRAL/trance.png", source: "" },
+  { id: 69, cardType: "SPECTRAL", name: "Trance", effect: "Minden kártya amit ezelőtt felhúztál visszakeveredik a pakliba (Ha nincsenek felhúzott lapjaid, akkor kapsz egy random SPECTRAL kártyát)", color: "-", src: "/CardImages/SPECTRAL/trance.png", source: "" },
   { id: 70, cardType: "SPECTRAL", name: "Wraith", effect: "Tölts ki 1 shotnyi vizet és 1 shotnyi átlátszó alkoholt, majd válassz valakit aki eldöntheti hogy melyiket issza meg, te pedig idd meg a másikat", color: "-", src: "/CardImages/SPECTRAL/wraith.png", source: "" },
 
 ];

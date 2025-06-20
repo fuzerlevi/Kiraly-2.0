@@ -34,16 +34,13 @@ const createGameState = (gameID) => {
   // TEST DECK
   const deck = [
     Cards.find(card => card.id === 1), // ace
-
+    Cards.find(card => card.id === 53), // ankh
     Cards.find(card => card.id === 1), // ace
-
-    Cards.find(card => card.id === 57), // deja vu
-
-    Cards.find(card => card.id === 69), // trance
-
-    Cards.find(card => card.id === 69), // trance
-
-    Cards.find(card => card.id === 57), // deja vu
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 53), // ankh
+    
+    // Cards.find(card => card.id === 69), // trance
+    // Cards.find(card => card.id === 57), // deja vu
   ];
 
   
@@ -77,7 +74,8 @@ const createPlayerState = (socketID) => ({
   effectState: {
   isChoosingBrother: false,
   isChoosingMediumCard: false,
-  isTranceActive: false
+  isTranceActive: false,
+  hasActiveDejaVu: false,
 }
 
 });
@@ -221,6 +219,10 @@ io.on('connection', (socket) => {
     if (player?.effectState?.isChoosingBrother) {
       socket.emit("chooseBrotherPopup", { roomID: gameID, playerName: player.name });
     }
+    if (player?.effectState?.hasActiveDejaVu) {
+      socket.emit("triggerDejaVu", { roomID: gameID, playerName: player.name });
+    }
+
 
 
 
@@ -342,7 +344,14 @@ io.on('connection', (socket) => {
       const result = effectFn({
         player: currentPlayer,
         roomID,
+        games,
+        Cards,
       });
+
+      if (result?.updatedDrinkEquation) {
+        io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+      }
+
 
       if (result?.action === "chooseBrother") {
         currentPlayer.effectState = { isChoosingBrother: true };
@@ -364,6 +373,7 @@ io.on('connection', (socket) => {
           playerName: currentPlayer.name,
         });
       }
+
     }
 
 
@@ -570,15 +580,37 @@ io.on('connection', (socket) => {
     if (!gameState) return;
 
     const player = Object.values(gameState.players).find(p => p.name === playerName);
-    if (!player || !player.cardsDrawn.length) return;
+    if (!player) return;
 
-    const shuffledBack = player.cardsDrawn
-    .filter(card => card.id !== 69)
-    .map(card => ({
+    const socketID = Object.keys(gameState.players).find(sid => gameState.players[sid].name === playerName);
+
+    const nonTranceCards = player.cardsDrawn.filter(card => card.id !== 69);
+
+    // 👻 Fallback: hand is empty *except* Trance
+    if (nonTranceCards.length === 0) {
+      const spectralCards = Cards.filter(c => c.id >= 53 && c.id <= 70 && c.id !== 69);
+      const randomCard = {
+        ...spectralCards[Math.floor(Math.random() * spectralCards.length)],
+        Source: `${player.name} - TRANCE (FALLBACK)`
+      };
+
+      gameState.deck.unshift(randomCard);
+
+      player.effectState.isTranceActive = false;
+      player.effectState.hasActiveDejaVu = true;
+
+      if (socketID) {
+        io.to(socketID).emit("triggerDejaVu", { roomID, playerName });
+      }
+
+      return;
+    }
+
+    // 🌀 Shuffle back all non-Trance cards
+    const shuffledBack = nonTranceCards.map(card => ({
       ...card,
       Source: `${player.name} - TRANCE`,
     }));
-
 
     player.cardsDrawn = [];
 
@@ -607,14 +639,14 @@ io.on('connection', (socket) => {
       kingsRemaining: gameState.kingsRemaining,
     });
 
-    // Notify the player that shuffle is complete
-    const socketID = Object.keys(gameState.players).find(sid => gameState.players[sid].name === playerName);
     if (socketID) {
       io.to(socketID).emit("tranceShuffleComplete");
     }
 
     player.effectState.isTranceActive = false;
   });
+
+
 
 
 
