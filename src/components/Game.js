@@ -52,6 +52,7 @@ const Game = () => {
     hasActiveDejaVu, setHasActiveDejaVu,
     isChoosingOuijaCard, setIsChoosingOuijaCard,
     sigilDrawsRemaining, setSigilDrawsRemaining,
+    talismanDrawsRemaining, setTalismanDrawsRemaining,
   } = useGameContext();
 
 
@@ -282,6 +283,11 @@ const Game = () => {
       setSigilDrawsRemaining(sigilDrawsRemaining);
     });
 
+    socket.on("triggerTalismanDraw", ({ talismanDrawsRemaining }) => {
+      setTalismanDrawsRemaining(talismanDrawsRemaining);
+    });
+
+
 
 
 
@@ -305,6 +311,7 @@ const Game = () => {
       socket.off("triggerChooseBrother");
       socket.off("triggerDejaVu");
       socket.off("triggerSigilDraw");
+      socket.off("triggerTalismanDraw");
       socket.off("gameOver");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
@@ -426,6 +433,10 @@ const Game = () => {
                 <button className="floating-button" onClick={drawACard}>
                   Draw ({3 - myPlayer.effectState.sigilDrawsRemaining}/2)
                 </button>
+              ) : myPlayer?.effectState?.talismanDrawsRemaining > 0 ? (
+                <button className="floating-button" onClick={drawACard}>
+                  Draw ({3 - myPlayer.effectState.talismanDrawsRemaining}/2)
+                </button>
               ) : (
                 <button className="floating-button" onClick={drawACard}>
                   Draw Card
@@ -454,6 +465,8 @@ const Game = () => {
             )}
           </>
       )}
+
+
 
 
 

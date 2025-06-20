@@ -23,6 +23,8 @@ export const GameProvider = ({ children }) => {
   const [isChoosingOuijaCard, setIsChoosingOuijaCard] = useState(false);
 
   const [sigilDrawsRemaining, setSigilDrawsRemaining] = useState(0);
+  const [talismanDrawsRemaining, setTalismanDrawsRemaining] = useState(0);
+
 
 
 
@@ -45,6 +47,7 @@ export const GameProvider = ({ children }) => {
 
       isChoosingOuijaCard, setIsChoosingOuijaCard,
       sigilDrawsRemaining, setSigilDrawsRemaining,
+      talismanDrawsRemaining, setTalismanDrawsRemaining,
 
     }}>
       {children}

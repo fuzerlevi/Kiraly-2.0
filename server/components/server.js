@@ -35,17 +35,30 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
+    Cards.find(card => card.id === 68), // talisman
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 66), // sigil
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 2), // ace
-    Cards.find(card => card.id === 2), // ace
+    Cards.find(card => card.id === 68), // talisman
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 68), // talisman
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 68), // talisman
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 68), // talisman
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
 
+    // Cards.find(card => card.id === 9), // blood brother
     // Cards.find(card => card.id === 65), // ouija
     // Cards.find(card => card.id === 69), // trance
     // Cards.find(card => card.id === 57), // deja vu
     // Cards.find(card => card.id === 64), // medium
     // Cards.find(card => card.id === 66), // sigil
+    // Cards.find(card => card.id === 54), // aura
+    // Cards.find(card => card.id === 68), // talisman
   ];
 
   
@@ -352,6 +365,15 @@ io.on('connection', (socket) => {
       console.log(`[SIGIL] ${currentPlayer.name} has ${currentPlayer.effectState.sigilDrawsRemaining} draw(s) remaining.`);
     }
 
+    if (currentPlayer.effectState?.talismanDrawsRemaining > 0) {
+      currentPlayer.effectState.talismanDrawsRemaining--;
+      console.log(`[TALISMAN] ${currentPlayer.name} has ${currentPlayer.effectState.talismanDrawsRemaining} draw(s) remaining.`);
+    }
+
+    console.log(`[DEBUG] ${currentPlayer.name} drew ${drawnCard.name}. Remaining TALISMAN draws: ${currentPlayer.effectState?.talismanDrawsRemaining}`);
+
+
+
 
     
 
@@ -380,22 +402,35 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
       }
 
+      if (result?.updatedBrothersGraph) {
+        io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
+      }
+
+
 
       if (result?.action === "chooseBrother") {
-        currentPlayer.effectState = { isChoosingBrother: true };
+        currentPlayer.effectState = {
+          ...currentPlayer.effectState,
+          isChoosingBrother: true
+        };
         io.to(currentPlayer.socketID).emit("triggerChooseBrother", {
           roomID,
           playerName: currentPlayer.name,
         });
       } else if (result?.action === "mediumChooseCard") {
-        currentPlayer.effectState = { isChoosingMediumCard: true };
+        currentPlayer.effectState = {
+          ...currentPlayer.effectState,
+          isChoosingMediumCard: true
+        };
         io.to(currentPlayer.socketID).emit("triggerMediumChooseCard", {
           roomID,
           playerName: currentPlayer.name,
         });
-      }
-      else if (result?.action === "trance") {
-        currentPlayer.effectState = { isTranceActive: true };
+      } else if (result?.action === "trance") {
+        currentPlayer.effectState = {
+          ...currentPlayer.effectState,
+          isTranceActive: true
+        };
         io.to(currentPlayer.socketID).emit("triggerTrance", {
           roomID,
           playerName: currentPlayer.name,
@@ -456,6 +491,17 @@ io.on('connection', (socket) => {
           }
         }
       }
+      else if (result?.action === "talismanDraw") {
+        const socketID = currentPlayer.socketID;
+        if (socketID) {
+          io.to(socketID).emit("triggerTalismanDraw", {
+            roomID,
+            playerName: currentPlayer.name,
+            talismanDrawsRemaining: result.talismanDrawsRemaining
+          });
+        }
+      }
+
 
 
     }
@@ -485,6 +531,15 @@ io.on('connection', (socket) => {
       console.log(`[SIGIL] ${currentPlayer.name} still has ${currentPlayer.effectState.sigilDrawsRemaining} draw(s) remaining.`);
       return;
     }
+
+    console.log(`[END TURN CHECK] ${currentPlayer.name} - talismanDrawsRemaining: ${currentPlayer.effectState?.talismanDrawsRemaining}`);
+
+    if (currentPlayer.effectState?.talismanDrawsRemaining > 0) {
+      console.log(`[TALISMAN] ${currentPlayer.name} still has ${currentPlayer.effectState.talismanDrawsRemaining} draw(s) remaining.`);
+      return;
+    }
+
+
 
     const playerList = Object.values(gameState.players); // keep join order
     const currentIndex = playerList.findIndex(p => p.name === gameState.currentPlayerName);
