@@ -61,20 +61,25 @@ const cardEffects = {
   },
 
   53: ({ player, roomID, games }) => {
-  const gameState = games[roomID];
-  if (!gameState || !player?.name) return;
+    const gameState = games[roomID];
+    if (!gameState || !player?.name) return;
 
-  const equation = gameState.drinkEquation[player.name];
-  if (equation) {
-    equation.multipliers = 1;
-    if (equation.flats >= 0) {
-      equation.flats = 0;
+    const equation = gameState.drinkEquation[player.name];
+    if (equation) {
+      equation.multipliers = 1;
+      if (equation.flats >= 0) {
+        equation.flats = 0;
+      }
+      console.log(`[ANKH] Reset drink equation for ${player.name}`, equation);
     }
-    console.log(`[ANKH] Reset drink equation for ${player.name}`, equation);
+
+    return { updatedDrinkEquation: true };
+  },
+
+  65: ({ player, roomID }) => {
+    return { action: "ouijaChooseCard", playerName: player.name };
   }
 
-  return { updatedDrinkEquation: true };
-},
 
 
 

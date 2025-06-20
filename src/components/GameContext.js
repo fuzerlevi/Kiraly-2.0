@@ -20,6 +20,9 @@ export const GameProvider = ({ children }) => {
   const [readyToEndTurn, setReadyToEndTurn] = useState(false);
   const [isTurnEnded, setIsTurnEnded] = useState(false);
 
+  const [isChoosingOuijaCard, setIsChoosingOuijaCard] = useState(false);
+
+
   return (
     <GameContext.Provider value={{
       players, setPlayers,
@@ -35,7 +38,9 @@ export const GameProvider = ({ children }) => {
 
       cardDrawn, setCardDrawn,
       readyToEndTurn, setReadyToEndTurn,
-      isTurnEnded, setIsTurnEnded
+      isTurnEnded, setIsTurnEnded,
+
+      isChoosingOuijaCard, setIsChoosingOuijaCard,
     }}>
       {children}
     </GameContext.Provider>

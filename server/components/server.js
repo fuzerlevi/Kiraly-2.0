@@ -33,14 +33,14 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 53), // ankh
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 53), // ankh
-    
+    Cards.find(card => card.id === 65), // ouija
+    Cards.find(card => card.id === 69), // trance
+    Cards.find(card => card.id === 65), // ouija
+
+    // Cards.find(card => card.id === 65), // ouija
     // Cards.find(card => card.id === 69), // trance
     // Cards.find(card => card.id === 57), // deja vu
+    // Cards.find(card => card.id === 64), // medium
   ];
 
   
@@ -222,6 +222,14 @@ io.on('connection', (socket) => {
     if (player?.effectState?.hasActiveDejaVu) {
       socket.emit("triggerDejaVu", { roomID: gameID, playerName: player.name });
     }
+    if (player?.effectState?.isChoosingOuijaCard) {
+      socket.emit("triggerOuijaChooseCard", {
+        roomID: gameID,
+        playerName: player.name,
+        cardsDrawn: player.cardsDrawn || [],
+      });
+    }
+
 
 
 
@@ -373,6 +381,42 @@ io.on('connection', (socket) => {
           playerName: currentPlayer.name,
         });
       }
+      else if (result?.action === "ouijaChooseCard") {
+        const player = Object.values(gameState.players).find(p => p.name === currentPlayer.name);
+        if (!player) return;
+
+        // Exclude the Ouija card itself
+        const nonOuija = player.cardsDrawn.filter(c => c.id !== 65);
+
+        if (nonOuija.length === 0) {
+          // Fallback: spawn a random spectral
+          const spectralCards = Cards.filter(c => c.id >= 53 && c.id <= 70 && c.id !== 65);
+          const randomCard = {
+            ...spectralCards[Math.floor(Math.random() * spectralCards.length)],
+            Source: `${player.name} - OUIJA (RANDOM)`
+          };
+          gameState.deck.unshift(randomCard);
+
+          player.effectState.isChoosingOuijaCard = false;
+          player.effectState.hasActiveDejaVu = true;
+
+          const sid = Object.keys(gameState.players).find(sid => gameState.players[sid].name === player.name);
+          io.to(sid).emit("triggerDejaVu", { roomID, playerName: player.name });
+
+        } else {
+          player.effectState.isChoosingOuijaCard = true;
+          const sid = player.socketID;
+          io.to(sid).emit("triggerOuijaChooseCard", {
+            roomID,
+            playerName: player.name,
+            cardsDrawn: nonOuija  // send only non-Ouija cards
+          });
+        }
+      }
+
+
+
+
 
     }
 
@@ -645,6 +689,29 @@ io.on('connection', (socket) => {
 
     player.effectState.isTranceActive = false;
   });
+
+  socket.on("confirmOuijaChoice", ({ roomID, playerName, cardID }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    const player = Object.values(gameState.players).find(p => p.name === playerName);
+    if (!player) return;
+
+    const chosenCard = player.cardsDrawn.find(c => c.id === cardID);
+    if (!chosenCard) return;
+
+    const clonedCard = { ...chosenCard, Source: `${playerName} - OUIJA` };
+    gameState.deck.unshift(clonedCard);
+
+    player.effectState.isChoosingOuijaCard = false;
+    player.effectState.hasActiveDejaVu = true;
+
+    const socketID = Object.keys(gameState.players).find(sid => gameState.players[sid].name === playerName);
+    if (socketID) {
+      io.to(socketID).emit("triggerDejaVu", { roomID, playerName });
+    }
+  });
+
 
 
 

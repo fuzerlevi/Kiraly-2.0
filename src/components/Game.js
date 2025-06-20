@@ -50,6 +50,7 @@ const Game = () => {
     isTurnEnded, setIsTurnEnded,
     readyToEndTurn, setReadyToEndTurn,
     hasActiveDejaVu, setHasActiveDejaVu,
+    isChoosingOuijaCard, setIsChoosingOuijaCard,
   } = useGameContext();
 
 
@@ -91,8 +92,11 @@ const Game = () => {
   const [selectedCardID, setSelectedCardID] = useState(1);
   const [mediumModalOpen, setMediumModalOpen] = useState(false);
 
-  // TRANCE
-  
+  // OUIJA
+  const [ouijaModalOpen, setOuijaModalOpen] = useState(false);
+  const [ouijaCardOptions, setOuijaCardOptions] = useState([]);
+  const [selectedOuijaID, setSelectedOuijaID] = useState(null);
+
 
 
   const myPlayer = players.find((player) => player.socketID === mySocketID);
@@ -146,6 +150,7 @@ const Game = () => {
       setIsChoosingMediumCard(me.effectState.isChoosingMediumCard || false);
       setIsTranceActive(me.effectState.isTranceActive || false);
       setHasActiveDejaVu(me.effectState.hasActiveDejaVu || false);
+      setIsChoosingOuijaCard(me.effectState.isChoosingOuijaCard || false);
     }
 
     console.log("[RECONNECT] cardDrawn:", data.lastDrawnCard);
@@ -220,7 +225,6 @@ const Game = () => {
       }
     });
 
-
     socket.on("triggerTrance", ({ playerName }) => {
       const me = players.find(p => p.socketID === socket.id);
       if (me?.name === playerName) {
@@ -231,7 +235,6 @@ const Game = () => {
       }
     });
 
-
     socket.on("triggerChooseBrother", ({ playerName }) => {
       const me = players.find(p => p.socketID === socket.id);
       if (me?.name === playerName) {
@@ -240,7 +243,6 @@ const Game = () => {
         if (lastCard) setCardDrawn(lastCard);
       }
     });
-
 
     socket.on("tranceShuffleComplete", () => {
       setIsTranceActive(false);
@@ -264,6 +266,18 @@ const Game = () => {
         }
       }
     });
+
+    socket.on("triggerOuijaChooseCard", ({ playerName, cardsDrawn }) => {
+      const me = players.find(p => p.socketID === socket.id);
+      if (me?.name !== playerName) return;
+
+      setIsChoosingOuijaCard(true);
+      setOuijaCardOptions(cardsDrawn);  // dropdown now excludes the Ouija card
+      const lastCard = me.cardsDrawn.slice(-1)[0];
+      if (lastCard) setCardDrawn(lastCard);
+    });
+
+
 
 
     socket.on("gameOver", () => {
@@ -398,32 +412,37 @@ const Game = () => {
       </div>
     
       {players.length > 0 &&
-      currentPlayerName &&
-      myPlayer?.name === currentPlayerName && (
-        <>
-          {cardDrawn === null && !readyToEndTurn ? (
-            <button className="floating-button" onClick={drawACard}>
-              Draw Card
-            </button>
-          ) : isChoosingBrother ? (
-            <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
-              Choose Brother
-            </button>
-          ) : isChoosingMediumCard ? (
-            <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
-              Choose Card
-            </button>
-          ) : isTranceActive ? (
-            <button className="floating-button" onClick={handleTranceShuffle}>
-              Shuffle
-            </button>
-          ) : (
-            <button className="floating-button" onClick={endTurn}>
-              End Turn
-            </button>
-          )}
-        </>
+        currentPlayerName &&
+        myPlayer?.name === currentPlayerName && (
+          <>
+            {cardDrawn === null && !readyToEndTurn ? (
+              <button className="floating-button" onClick={drawACard}>
+                Draw Card
+              </button>
+            ) : isChoosingBrother ? (
+              <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
+                Choose Brother
+              </button>
+            ) : isChoosingMediumCard ? (
+              <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
+                Choose Card
+              </button>
+            ) : isTranceActive ? (
+              <button className="floating-button" onClick={handleTranceShuffle}>
+                Shuffle
+              </button>
+            ) : isChoosingOuijaCard ? (
+              <button className="floating-button" onClick={() => setOuijaModalOpen(true)}>
+                Choose Card
+              </button>
+            ) : (
+              <button className="floating-button" onClick={endTurn}>
+                End Turn
+              </button>
+            )}
+          </>
       )}
+
 
 
 
@@ -574,8 +593,6 @@ const Game = () => {
         </div>
       )}
 
-
-
       {brothersOpen && (
         <div className="brothers-modal-overlay">
           <div className="brothers-modal">
@@ -667,6 +684,46 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {ouijaModalOpen && (
+        <div className="brother-modal-overlay">
+          <div className="brother-modal">
+            <h3>Choose a previously drawn card</h3>
+            <select
+              value={selectedOuijaID}
+              onChange={(e) => setSelectedOuijaID(Number(e.target.value))}
+              className="brother-dropdown"
+            >
+              <option value="">- Select a card -</option>
+              {ouijaCardOptions
+                .filter(card => card.id !== 65) // ⛔ Exclude Ouija itself
+                .map(card => (
+                  <option key={card.id} value={card.id}>
+                    {card.name}
+                  </option>
+              ))}
+            </select>
+            <button
+              onClick={() => {
+                if (!selectedOuijaID) return;
+
+                socket.emit("confirmOuijaChoice", {
+                  roomID,
+                  playerName: myPlayer?.name,
+                  cardID: selectedOuijaID,
+                });
+
+                setOuijaModalOpen(false);
+                setIsChoosingOuijaCard(false);
+                setCardDrawn(null);
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
 
 
 
