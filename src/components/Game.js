@@ -51,6 +51,7 @@ const Game = () => {
     readyToEndTurn, setReadyToEndTurn,
     hasActiveDejaVu, setHasActiveDejaVu,
     isChoosingOuijaCard, setIsChoosingOuijaCard,
+    sigilDrawsRemaining, setSigilDrawsRemaining,
   } = useGameContext();
 
 
@@ -277,6 +278,10 @@ const Game = () => {
       if (lastCard) setCardDrawn(lastCard);
     });
 
+    socket.on("triggerSigilDraw", ({ sigilDrawsRemaining }) => {
+      setSigilDrawsRemaining(sigilDrawsRemaining);
+    });
+
 
 
 
@@ -299,6 +304,7 @@ const Game = () => {
       socket.off("triggerMediumChooseCard");
       socket.off("triggerChooseBrother");
       socket.off("triggerDejaVu");
+      socket.off("triggerSigilDraw");
       socket.off("gameOver");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
@@ -416,9 +422,15 @@ const Game = () => {
         myPlayer?.name === currentPlayerName && (
           <>
             {cardDrawn === null && !readyToEndTurn ? (
-              <button className="floating-button" onClick={drawACard}>
-                Draw Card
-              </button>
+              myPlayer?.effectState?.sigilDrawsRemaining > 0 ? (
+                <button className="floating-button" onClick={drawACard}>
+                  Draw ({3 - myPlayer.effectState.sigilDrawsRemaining}/2)
+                </button>
+              ) : (
+                <button className="floating-button" onClick={drawACard}>
+                  Draw Card
+                </button>
+              )
             ) : isChoosingBrother ? (
               <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
                 Choose Brother
@@ -442,6 +454,7 @@ const Game = () => {
             )}
           </>
       )}
+
 
 
 

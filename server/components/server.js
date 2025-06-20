@@ -35,17 +35,17 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 69), // trance
-    Cards.find(card => card.id === 69), // trance
-    Cards.find(card => card.id === 69), // trance
-    Cards.find(card => card.id === 69), // trance
-    Cards.find(card => card.id === 69), // trance
-    Cards.find(card => card.id === 69), // trance
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 66), // sigil
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 2), // ace
+    Cards.find(card => card.id === 2), // ace
 
     // Cards.find(card => card.id === 65), // ouija
     // Cards.find(card => card.id === 69), // trance
     // Cards.find(card => card.id === 57), // deja vu
     // Cards.find(card => card.id === 64), // medium
+    // Cards.find(card => card.id === 66), // sigil
   ];
 
   
@@ -234,6 +234,14 @@ io.on('connection', (socket) => {
         cardsDrawn: player.cardsDrawn || [],
       });
     }
+    if (player?.effectState?.sigilDrawsRemaining > 0) {
+      socket.emit("triggerSigilDraw", {
+        roomID: gameID,
+        playerName: player.name,
+        sigilDrawsRemaining: player.effectState.sigilDrawsRemaining
+      });
+    }
+
 
 
 
@@ -338,6 +346,13 @@ io.on('connection', (socket) => {
 
     currentPlayer.cardsDrawn.push(drawnCard);
 
+    // Decrement SIGIL draw count if active
+    if (currentPlayer.effectState?.sigilDrawsRemaining > 0) {
+      currentPlayer.effectState.sigilDrawsRemaining--;
+      console.log(`[SIGIL] ${currentPlayer.name} has ${currentPlayer.effectState.sigilDrawsRemaining} draw(s) remaining.`);
+    }
+
+
     
 
     // Decrease kingsRemaining if a king is drawn
@@ -421,9 +436,26 @@ io.on('connection', (socket) => {
           });
         }
       }
+      else if (result?.action === "sigil") {
+        const nextCard = gameState.deck[0];
+        if (nextCard) {
+          const clone = {
+            ...nextCard,
+            Source: `${currentPlayer.name} - SIGIL`
+          };
+          gameState.deck.splice(1, 0, clone); // Insert clone right after original
+          currentPlayer.effectState.sigilDrawsRemaining = 2;
 
-
-
+          const socketID = currentPlayer.socketID;
+          if (socketID) {
+            io.to(socketID).emit("triggerSigilDraw", {
+              roomID,
+              playerName: currentPlayer.name,
+              sigilDrawsRemaining: 2
+            });
+          }
+        }
+      }
 
 
     }
@@ -442,14 +474,23 @@ io.on('connection', (socket) => {
   socket.on('endTurn', ({ roomID }) => {
     const gameState = games[roomID];
     if (!gameState) return;
-  
+
+    const currentPlayer = Object.values(gameState.players).find(
+      p => p.name === gameState.currentPlayerName
+    );
+    if (!currentPlayer) return;
+
+    // 🚫 Prevent turn end if SIGIL draws are not finished
+    if (currentPlayer.effectState?.sigilDrawsRemaining > 0) {
+      console.log(`[SIGIL] ${currentPlayer.name} still has ${currentPlayer.effectState.sigilDrawsRemaining} draw(s) remaining.`);
+      return;
+    }
+
     const playerList = Object.values(gameState.players); // keep join order
-  
     const currentIndex = playerList.findIndex(p => p.name === gameState.currentPlayerName);
     const nextIndex = (currentIndex + 1) % playerList.length;
-  
-    gameState.currentPlayerName = playerList[nextIndex]?.name || null;
 
+    gameState.currentPlayerName = playerList[nextIndex]?.name || null;
     gameState.lastDrawnCard = null;
 
     for (const player of Object.values(gameState.players)) {
@@ -457,11 +498,14 @@ io.on('connection', (socket) => {
         isChoosingBrother: false,
         isChoosingMediumCard: false,
         isTranceActive: false,
+        hasActiveDejaVu: false,
+        isChoosingOuijaCard: false,
+        sigilDrawsRemaining: 0,
       };
     }
 
     console.log(`Turn ended. Next: ${gameState.currentPlayerName}`);
-  
+
     io.to(roomID).emit('updateGameState', {
       deck: gameState.deck,
       players: playerList,
@@ -473,6 +517,7 @@ io.on('connection', (socket) => {
       lastDrawnCard: gameState.lastDrawnCard,
     });
   });
+
   
 
   socket.on('disconnect', () => {
@@ -722,6 +767,23 @@ io.on('connection', (socket) => {
       io.to(socketID).emit("triggerDejaVu", { roomID, playerName });
     }
   });
+
+  socket.on("resolveSigilDraw", ({ roomID, playerName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    const player = Object.values(gameState.players).find(p => p.name === playerName);
+    if (!player) return;
+
+    // Mark that we are in Sigil resolution phase
+    player.effectState.isResolvingSigil = false;
+
+    // Just trigger drawCard twice (same as normal draw)
+    for (let i = 0; i < 2; i++) {
+      io.to(player.socketID).emit("forceDrawCard", { roomID });
+    }
+  });
+
 
 
 

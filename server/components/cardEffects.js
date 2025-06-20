@@ -83,6 +83,25 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
+  66: ({ player, roomID, games }) => {
+    const gameState = games[roomID];
+    if (!gameState || gameState.deck.length === 0) return;
+
+    const topCard = gameState.deck[0];
+    if (!topCard) return;
+
+    const clone = { ...topCard, Source: `${player.name} - SIGIL` };
+    gameState.deck.splice(1, 0, clone);
+
+    player.effectState.sigilDrawsRemaining = 2;
+
+    return { action: "sigilDrawTwice", sigilDrawsRemaining: 2 };
+  },
+
+
+
+
+
   65: ({ player, roomID }) => {
     return { action: "ouijaChooseCard", playerName: player.name };
   }
