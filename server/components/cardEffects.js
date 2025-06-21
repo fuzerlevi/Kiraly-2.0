@@ -19,7 +19,7 @@ const cardEffects = {
       if (randomCard) {
         gameState.deck.unshift({
           ...randomCard,
-          Source: `${player.name} - TRANCE (RANDOM)`
+          source: `${player.name} - TRANCE (RANDOM)`
         });
 
         console.log(`[TRANCE] No cards to shuffle. Inserting safe spectral: ${randomCard.name}`);
@@ -48,14 +48,14 @@ const cardEffects = {
     const lastCard = cardsDrawn
       .slice(0, -1)
       .reverse()
-      .find(card => card?.id !== 57 && card?.Source !== `${player.name} - DEJA VU`);
+      .find(card => card?.id !== 57 && card?.source !== `${player.name} - DEJA VU`);
 
     let replayCard;
 
     const forbiddenSpawnIDs = [57, 65, 69];
 
     if (lastCard) {
-      replayCard = { ...lastCard, Source: `${player.name} - DEJA VU` };
+      replayCard = { ...lastCard, source: `${player.name} - DEJA VU` };
       gameState.deck.unshift(replayCard);
       console.log(`[DEJA VU] Replaying card ${lastCard.name} for ${player.name}`);
     } else {
@@ -64,7 +64,7 @@ const cardEffects = {
       );
 
       const randomSpectral = spectralCards[Math.floor(Math.random() * spectralCards.length)];
-      replayCard = { ...randomSpectral, Source: `${player.name} - DEJA VU (Random)` };
+      replayCard = { ...randomSpectral, source: `${player.name} - DEJA VU (Random)` };
       gameState.deck.unshift(replayCard);
       console.log(`[DEJA VU] No card to replay, using spectral: ${randomSpectral.name}`);
     }
@@ -100,7 +100,7 @@ const cardEffects = {
     const topCard = gameState.deck[0];
     if (!topCard) return;
 
-    const clone = { ...topCard, Source: `${player.name} - SIGIL` };
+    const clone = { ...topCard, source: `${player.name} - SIGIL` };
     gameState.deck.splice(1, 0, clone);
 
     player.effectState = {
@@ -152,7 +152,7 @@ const cardEffects = {
 
     for (let i = 0; i < drawCount; i++) {
       const random = spectralCards[Math.floor(Math.random() * spectralCards.length)];
-      chosen.push({ ...random, Source: `${player.name} - TALISMAN` });
+      chosen.push({ ...random, source: `${player.name} - TALISMAN` });
     }
 
     for (let i = chosen.length - 1; i >= 0; i--) {
@@ -165,7 +165,16 @@ const cardEffects = {
     };
 
     return { action: "talismanDraw", talismanDrawsRemaining: drawCount };
-  }
+  },
+
+  63: ({ player }) => {
+    player.effectState.incantationDrawsRemaining = 5;
+    return {
+      action: "incantationDraw",
+      incantationDrawsRemaining: 5
+    };
+  },
+
 };
 
 module.exports = cardEffects;

@@ -99,11 +99,13 @@ const Game = () => {
   const [ouijaCardOptions, setOuijaCardOptions] = useState([]);
   const [selectedOuijaID, setSelectedOuijaID] = useState(null);
 
-
-
   const myPlayer = players.find((player) => player.socketID === mySocketID);
   const isHost = myPlayer?.isHost;
   const myCards = myPlayer?.cardsDrawn || [];
+
+  // Also OUIJA 
+  const lastCard = myPlayer?.cardsDrawn?.[myPlayer.cardsDrawn.length - 1];
+  const isWaitingForOuijaClone = lastCard?.id === 65;
 
 
 
@@ -166,14 +168,14 @@ const Game = () => {
 
 
 
-    socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers, kingsRemaining }) => {
+    socket.on("cardDrawn", ({ drawnCard, newDeck, updatedPlayers, kingsRemaining, nextCard }) => {
 
       setCardDrawn(drawnCard);
       setDeck(newDeck || []);
       setPlayers(updatedPlayers || []);
       setIsTurnEnded(false);
       setKingsRemaining(kingsRemaining);
-
+      
 
 
       const myPlayer = updatedPlayers.find(p => p.socketID === socket.id);
@@ -323,7 +325,7 @@ const Game = () => {
   const drawACard = () => {
     if (cardDrawn || myPlayer?.name !== currentPlayerName)
       return;
-    socket.emit("drawCard", { roomID });
+    socket.emit("drawCard", { roomID, cause: "normal" });
   };
 
   const endTurn = () => {
@@ -387,6 +389,8 @@ const Game = () => {
     setCardDrawn(null);            // ✅ hide the old Trance card
   };
 
+  
+
   return (
     <div className="game-container">
       <h1 className="game-title">KIRALY 2.0</h1>
@@ -406,9 +410,9 @@ const Game = () => {
               <p className="effect-text">
                 <strong>Effect:</strong> {cardDrawn.effect || "No effect for now"}
               </p>
-              {cardDrawn?.Source && (
+              {cardDrawn?.source && (
                 <p className="source-text">
-                  Source: {cardDrawn.Source}
+                  Source: {cardDrawn.source}
                 </p>
               )}
 
@@ -437,11 +441,45 @@ const Game = () => {
                 <button className="floating-button" onClick={drawACard}>
                   Draw ({3 - myPlayer.effectState.talismanDrawsRemaining}/2)
                 </button>
-              ) : (
-                <button className="floating-button" onClick={drawACard}>
-                  Draw Card
-                </button>
-              )
+              ) : (() => {
+                  const lastCard = myPlayer?.cardsDrawn?.[myPlayer.cardsDrawn.length - 1];
+                  const isWaitingForOuijaClone = lastCard?.id === 65;
+
+                  if (
+                    isWaitingForOuijaClone ||
+                    myPlayer?.effectState?.hasActiveDejaVu ||
+                    isChoosingOuijaCard
+                  ) {
+                    return (
+                      <button className="floating-button" onClick={drawACard}>
+                        Draw Card
+                      </button>
+                    );
+                  } else if (
+                    myPlayer?.effectState?.incantationDrawsRemaining > 0 ||
+                    myPlayer?.effectState?.incantationDrawsRemaining === 5
+                  ) {
+                    return (
+                      <button className="floating-button" onClick={drawACard}>
+                        Draw ({
+                          myPlayer.cardsDrawn.filter(card =>
+                            !card.source?.includes("TALISMAN") &&
+                            !card.source?.includes("SIGIL") &&
+                            !card.source?.includes("DEJA VU") &&
+                            !card.source?.includes("OUIJA") &&
+                            !card.source?.includes("INCANTATION")
+                          ).length
+                        }/5)
+                      </button>
+                    );
+                  } else {
+                    return (
+                      <button className="floating-button" onClick={drawACard}>
+                        Draw Card
+                      </button>
+                    );
+                  }
+                })()
             ) : isChoosingBrother ? (
               <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
                 Choose Brother
@@ -465,13 +503,6 @@ const Game = () => {
             )}
           </>
       )}
-
-
-
-
-
-
-
 
 
 

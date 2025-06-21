@@ -35,21 +35,11 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 68), // talisman
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 68), // talisman
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 68), // talisman
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 68), // talisman
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 68), // talisman
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
+    Cards.find(c => c.id === 63), // Incantation
+    Cards.find(c => c.id === 1),  // Ace
+    Cards.find(c => c.id === 57), // Deja Vu
+    Cards.find(c => c.id === 65), // Ouija
+    Cards.find(c => c.id === 1),  // Ace
 
     // Cards.find(card => card.id === 9), // blood brother
     // Cards.find(card => card.id === 65), // ouija
@@ -59,6 +49,7 @@ const createGameState = (gameID) => {
     // Cards.find(card => card.id === 66), // sigil
     // Cards.find(card => card.id === 54), // aura
     // Cards.find(card => card.id === 68), // talisman
+    // Cards.find(c => c.id === 63), // Incantation
   ];
 
   
@@ -247,6 +238,7 @@ io.on('connection', (socket) => {
         cardsDrawn: player.cardsDrawn || [],
       });
     }
+    
     if (player?.effectState?.sigilDrawsRemaining > 0) {
       socket.emit("triggerSigilDraw", {
         roomID: gameID,
@@ -254,6 +246,15 @@ io.on('connection', (socket) => {
         sigilDrawsRemaining: player.effectState.sigilDrawsRemaining
       });
     }
+
+    if (player?.effectState?.incantationDrawsRemaining > 0) {
+      socket.emit("triggerIncantationDraw", {
+        roomID: gameID,
+        playerName: player.name,
+        incantationDrawsRemaining: player.effectState.incantationDrawsRemaining
+      });
+    }
+
 
 
 
@@ -359,6 +360,19 @@ io.on('connection', (socket) => {
 
     currentPlayer.cardsDrawn.push(drawnCard);
 
+    // ✅ Deactivate Deja Vu only after drawing the DEJA VU or OUIJA clone
+    const isCloneFromDejaVu = drawnCard?.source?.includes("DEJA VU");
+    const isCloneFromOuija = drawnCard?.source?.includes("OUIJA");
+
+    if (currentPlayer.effectState?.hasActiveDejaVu && (isCloneFromDejaVu || isCloneFromOuija)) {
+      console.log(`[EFFECT] Deactivating hasActiveDejaVu after clone: ${drawnCard.name}`);
+      currentPlayer.effectState.hasActiveDejaVu = false;
+    }
+
+
+
+
+
     // Decrement SIGIL draw count if active
     if (currentPlayer.effectState?.sigilDrawsRemaining > 0) {
       currentPlayer.effectState.sigilDrawsRemaining--;
@@ -370,7 +384,24 @@ io.on('connection', (socket) => {
       console.log(`[TALISMAN] ${currentPlayer.name} has ${currentPlayer.effectState.talismanDrawsRemaining} draw(s) remaining.`);
     }
 
-    console.log(`[DEBUG] ${currentPlayer.name} drew ${drawnCard.name}. Remaining TALISMAN draws: ${currentPlayer.effectState?.talismanDrawsRemaining}`);
+    const shouldDecrementIncantation =
+      currentPlayer.effectState?.incantationDrawsRemaining > 0 &&
+      (
+        !drawnCard?.source ||
+        (
+          !drawnCard.source.includes("TALISMAN") &&
+          !drawnCard.source.includes("SIGIL") &&
+          !drawnCard.source.includes("DEJA VU") &&
+          !drawnCard.source.includes("OUIJA")
+
+        )
+      );
+
+    if (shouldDecrementIncantation) {
+      console.log(`[INCANTATION] ${currentPlayer.name} has ${currentPlayer.effectState.incantationDrawsRemaining} draw(s) remaining.`);
+      currentPlayer.effectState.incantationDrawsRemaining--;
+      console.log(`[INCANTATION] ${currentPlayer.name} has ${currentPlayer.effectState.incantationDrawsRemaining} draw(s) remaining.`);
+    }
 
 
 
@@ -386,6 +417,8 @@ io.on('connection', (socket) => {
 
 
     console.log(`Player ${currentPlayer.name} drew ${drawnCard.name}`);
+    console.log(`[DRAW] Emitting card with source: ${drawnCard.source}`);
+
 
     // Run any registered card effect
     const effectFn = cardEffects[drawnCard.id];
@@ -406,6 +439,9 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
       }
 
+      
+
+
 
 
       if (result?.action === "chooseBrother") {
@@ -416,7 +452,9 @@ io.on('connection', (socket) => {
         io.to(currentPlayer.socketID).emit("triggerChooseBrother", {
           roomID,
           playerName: currentPlayer.name,
+          cause: drawnCard.name,
         });
+
       } else if (result?.action === "mediumChooseCard") {
         currentPlayer.effectState = {
           ...currentPlayer.effectState,
@@ -425,7 +463,9 @@ io.on('connection', (socket) => {
         io.to(currentPlayer.socketID).emit("triggerMediumChooseCard", {
           roomID,
           playerName: currentPlayer.name,
+          cause: drawnCard.name,
         });
+
       } else if (result?.action === "trance") {
         currentPlayer.effectState = {
           ...currentPlayer.effectState,
@@ -434,14 +474,17 @@ io.on('connection', (socket) => {
         io.to(currentPlayer.socketID).emit("triggerTrance", {
           roomID,
           playerName: currentPlayer.name,
+          cause: drawnCard.name,
         });
+
       }
       else if (result?.action === "ouijaChooseCard") {
         const player = Object.values(gameState.players).find(p => p.name === currentPlayer.name);
         if (!player) return;
 
         // Exclude the Ouija card itself
-        const nonOuija = player.cardsDrawn.filter(c => c.id !== 65);
+        const nonOuija = player.cardsDrawn.filter(c => c.id !== 65 && c.id !== 57); // 65 = Ouija, 57 = Deja Vu
+
 
         if (nonOuija.length === 0) {
           // Fallback: spawn a random spectral
@@ -451,7 +494,7 @@ io.on('connection', (socket) => {
 
           const randomCard = {
             ...spectralCards[Math.floor(Math.random() * spectralCards.length)],
-            Source: `${player.name} - OUIJA (RANDOM)`
+            source: `${player.name} - OUIJA (RANDOM)`
           };
           gameState.deck.unshift(randomCard);
 
@@ -459,7 +502,12 @@ io.on('connection', (socket) => {
           player.effectState.hasActiveDejaVu = true;
 
           const sid = Object.keys(gameState.players).find(sid => gameState.players[sid].name === player.name);
-          io.to(sid).emit("triggerDejaVu", { roomID, playerName: player.name });
+          io.to(sid).emit("triggerDejaVu", {
+            roomID,
+            playerName: player.name,
+            cause: drawnCard.name
+          });
+
 
         } else {
           player.effectState.isChoosingOuijaCard = true;
@@ -467,7 +515,8 @@ io.on('connection', (socket) => {
           io.to(sid).emit("triggerOuijaChooseCard", {
             roomID,
             playerName: player.name,
-            cardsDrawn: nonOuija  // send only non-Ouija cards
+            cardsDrawn: nonOuija,  // send only non-Ouija cards
+            cause: drawnCard.name
           });
         }
       }
@@ -476,7 +525,7 @@ io.on('connection', (socket) => {
         if (nextCard) {
           const clone = {
             ...nextCard,
-            Source: `${currentPlayer.name} - SIGIL`
+            source: `${currentPlayer.name} - SIGIL`
           };
           gameState.deck.splice(1, 0, clone); // Insert clone right after original
           currentPlayer.effectState.sigilDrawsRemaining = 2;
@@ -486,7 +535,8 @@ io.on('connection', (socket) => {
             io.to(socketID).emit("triggerSigilDraw", {
               roomID,
               playerName: currentPlayer.name,
-              sigilDrawsRemaining: 2
+              sigilDrawsRemaining: 2,
+              cause: drawnCard.name,
             });
           }
         }
@@ -497,13 +547,36 @@ io.on('connection', (socket) => {
           io.to(socketID).emit("triggerTalismanDraw", {
             roomID,
             playerName: currentPlayer.name,
-            talismanDrawsRemaining: result.talismanDrawsRemaining
+            talismanDrawsRemaining: result.talismanDrawsRemaining,
+            cause: drawnCard.name,
+          });
+        }
+      }
+      else if (result?.action === "incantationDraw") {
+        currentPlayer.effectState.incantationDrawsRemaining = result.incantationDrawsRemaining;
+
+        const socketID = currentPlayer.socketID;
+        if (socketID) {
+          io.to(socketID).emit("triggerIncantationDraw", {
+            roomID,
+            playerName: currentPlayer.name,
+            incantationDrawsRemaining: result.incantationDrawsRemaining,
+            cause: drawnCard.name,
           });
         }
       }
 
 
 
+
+    }
+
+    const upcomingCard = gameState.deck[0];
+
+    // Normalize card source field
+    if (drawnCard.Source && !drawnCard.source) {
+      drawnCard.source = drawnCard.Source;
+      delete drawnCard.Source;
     }
 
 
@@ -512,6 +585,7 @@ io.on('connection', (socket) => {
       newDeck: gameState.deck,
       updatedPlayers: Object.values(gameState.players),
       kingsRemaining: gameState.kingsRemaining,
+      nextCard: upcomingCard || null
     });
   });
 
@@ -532,12 +606,16 @@ io.on('connection', (socket) => {
       return;
     }
 
-    console.log(`[END TURN CHECK] ${currentPlayer.name} - talismanDrawsRemaining: ${currentPlayer.effectState?.talismanDrawsRemaining}`);
-
     if (currentPlayer.effectState?.talismanDrawsRemaining > 0) {
       console.log(`[TALISMAN] ${currentPlayer.name} still has ${currentPlayer.effectState.talismanDrawsRemaining} draw(s) remaining.`);
       return;
     }
+
+    if (currentPlayer.effectState?.incantationDrawsRemaining > 0) {
+      console.log(`[INCANTATION] ${currentPlayer.name} still has ${currentPlayer.effectState.incantationDrawsRemaining} draw(s) remaining.`);
+      return;
+    }
+
 
 
 
@@ -712,7 +790,7 @@ io.on('connection', (socket) => {
     }
 
     for (let i = 0; i < count; i++) {
-      const newCard = { ...card, Source: `${sourcePlayer} - MEDIUM` };
+      const newCard = { ...card, source: `${sourcePlayer} - MEDIUM` };
       gameState.deck.splice(Math.floor(Math.random() * (gameState.deck.length + 1)), 0, newCard);
     }
 
@@ -746,7 +824,7 @@ io.on('connection', (socket) => {
 
       const randomCard = {
         ...spectralCards[Math.floor(Math.random() * spectralCards.length)],
-        Source: `${player.name} - TRANCE (RANDOM)`
+        source: `${player.name} - TRANCE (RANDOM)`
       };
 
       gameState.deck.unshift(randomCard);
@@ -764,7 +842,7 @@ io.on('connection', (socket) => {
     // 🌀 Shuffle back all non-Trance cards
     const shuffledBack = nonTranceCards.map(card => ({
       ...card,
-      Source: `${player.name} - TRANCE`,
+      source: `${player.name} - TRANCE`,
     }));
 
     player.cardsDrawn = [];
@@ -811,7 +889,7 @@ io.on('connection', (socket) => {
     const chosenCard = player.cardsDrawn.find(c => c.id === cardID);
     if (!chosenCard) return;
 
-    const clonedCard = { ...chosenCard, Source: `${playerName} - OUIJA` };
+    const clonedCard = { ...chosenCard, source: `${playerName} - OUIJA` };
     gameState.deck.unshift(clonedCard);
 
     player.effectState.isChoosingOuijaCard = false;

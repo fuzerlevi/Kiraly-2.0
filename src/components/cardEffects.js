@@ -20,14 +20,22 @@ const cardEffects = {
     return { action: "trance" };
   },
 
-  // 🆕 Déjà Vu
   57: ({ player, setHasActiveDejaVu }) => {
     console.log("[Déjà Vu] Card effect triggered by", player.name);
     if (setHasActiveDejaVu) {
       setHasActiveDejaVu(true);
     }
     return { action: "dejaVu", playerName: player.name };
-  }
+  },
+
+  // 🆕 Ouija (to enable hasActiveDejaVu for cloned draw)
+  65: ({ player, setHasActiveDejaVu }) => {
+    console.log("[Ouija] Card effect triggered by", player.name);
+    if (setHasActiveDejaVu) {
+      setHasActiveDejaVu(true);
+    }
+    return { action: "ouijaChooseCard", playerName: player.name };
+  },
 };
 
 export default cardEffects;
