@@ -35,10 +35,7 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(c => c.id === 63), // Incantation
-    Cards.find(card => card.id === 66), // sigil
-    Cards.find(card => card.id === 65), // ouija
-    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 64), // medium
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
 

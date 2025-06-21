@@ -91,7 +91,9 @@ const Game = () => {
   const [rulesText, setRulesText] = useState("");
 
   // MEDIUM
-  const [selectedCardID, setSelectedCardID] = useState(1);
+  const [selectedColor, setSelectedColor] = useState("Red"); 
+  const [selectedCardID, setSelectedCardID] = useState(1);      
+
   const [mediumModalOpen, setMediumModalOpen] = useState(false);
 
   // OUIJA
@@ -703,23 +705,45 @@ const Game = () => {
         <div className="brother-modal-overlay">
           <div className="brother-modal">
             <h3>Choose a card</h3>
+
+            {/* Color Selector */}
+            <select
+              value={selectedColor}
+              onChange={(e) => {
+                setSelectedColor(e.target.value);
+                // Reset selected card when color changes
+                setSelectedCardID(e.target.value === "Black" ? 1 : 14);
+              }}
+              className="brother-dropdown"
+              style={{ marginBottom: "10px" }}
+            >
+              <option value="Black">Black</option>
+              <option value="Red">Red</option>
+            </select>
+
+            {/* Card Selector */}
             <select
               value={selectedCardID}
               onChange={(e) => setSelectedCardID(Number(e.target.value))}
               className="brother-dropdown"
             >
               {allCardMetadata
-              .filter(card => card.id >= 1 && card.id <= 13)
-              .map(card => (
-                <option key={card.id} value={card.id}>
-                  {card.name.replace(/^[^\w]+/, "")}
-                </option>
-              ))}
-
+                .filter(card => {
+                  if (selectedColor === "Black") return card.id >= 1 && card.id <= 13;
+                  if (selectedColor === "Red") return card.id >= 14 && card.id <= 26;
+                  return false;
+                })
+                .map(card => (
+                  <option key={card.id} value={card.id}>
+                    {card.name.replace(/^[^\w]+/, "")}
+                  </option>
+                ))}
             </select>
+
             <p style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>
               Note: 3 copies of the chosen card will be shuffled into the deck.
             </p>
+
             <button
               onClick={() => {
                 socket.emit("addCardCopiesToDeck", {
@@ -730,10 +754,9 @@ const Game = () => {
                 });
                 setMediumModalOpen(false);
                 setIsChoosingMediumCard(false);
-                setSelectedCardID(1);
-                setCardDrawn(null);  // <-- ✅ reset the drawn card
-                setReadyToEndTurn(true);  // <-- ✅ show End Turn
-
+                setSelectedCardID(selectedColor === "Black" ? 1 : 14);
+                setCardDrawn(null);
+                setReadyToEndTurn(true);
               }}
             >
               Confirm
@@ -741,6 +764,7 @@ const Game = () => {
           </div>
         </div>
       )}
+
 
       {ouijaModalOpen && (
         <div className="brother-modal-overlay">
