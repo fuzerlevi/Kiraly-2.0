@@ -35,9 +35,10 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 64), // medium
+    Cards.find(card => card.id === 68), // talisman
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
+    
 
     // Cards.find(card => card.id === 9), // blood brother
     // Cards.find(card => card.id === 65), // ouija
@@ -50,9 +51,6 @@ const createGameState = (gameID) => {
     // Cards.find(c => c.id === 63), // Incantation
   ];
 
-  
-  
-  
   
   const kingIDs = [13, 26, 39, 52];
   const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
@@ -777,20 +775,34 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // 👁️ Look ahead at the next card in the deck
+    const nextCard = gameState.deck[0];
+    const isTalismanSpawn =
+      nextCard &&
+      nextCard.id >= 53 && nextCard.id <= 70 &&
+      nextCard.source?.includes("TALISMAN");
+
+    // 🎯 Decide insert position
+    const insertAfterIndex = isTalismanSpawn ? 1 : 0;
+
     for (let i = 0; i < count; i++) {
       const newCard = { ...card, source: `${sourcePlayer} - MEDIUM` };
-      gameState.deck.splice(Math.floor(Math.random() * (gameState.deck.length + 1)), 0, newCard);
+      gameState.deck.splice(
+        insertAfterIndex + Math.floor(Math.random() * (gameState.deck.length - insertAfterIndex + 1)),
+        0,
+        newCard
+      );
     }
 
     console.log(`[MEDIUM] Added ${count} copies of ${card.name} (ID ${cardID})`);
     console.log("[MEDIUM] Updated deck:", gameState.deck.map(c => c.id));
 
-    // ✅ Fix: look up the player using their name
     const player = Object.values(gameState.players).find(p => p.name === sourcePlayer);
     if (player?.effectState) {
       player.effectState.isChoosingMediumCard = false;
     }
   });
+
 
 
   socket.on("tranceShuffleCards", ({ roomID, playerName }) => {
