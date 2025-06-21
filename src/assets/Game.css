@@ -245,7 +245,7 @@
 
 .rules-button {
   position: absolute;
-  top: 68%;
+  top: 41%;
   right: 20px;
   background: transparent;
   border: none;
@@ -328,4 +328,85 @@
   text-align: center;
   font-style: italic;
 }
+
+.dicebag-button {
+  position: absolute;
+  top: 56%;
+  right: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dicebag-icon {
+  width: 105px;
+  height: 105px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.dicebag-button:hover .dicebag-icon {
+  transform: scale(1.1);
+}
+
+.dicebag-menu {
+  position: absolute;
+  right: 20px;
+  bottom: 140px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
+  border-radius: 8px;
+}
+
+.dicebag-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+}
+
+.dicebag-menu-horizontal {
+  position: absolute;
+  top: 56%;
+  right: 140px; /* make room for horizontal row left of the dice bag */
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  z-index: 5;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(120px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.dice-option-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+  transition: transform 0.2s ease;
+  animation: slideInFromRight 0.1s ease forwards;
+}
+
+.dice-option-button:hover {
+  transform: scale(1.1);
+}
+
+.dice-icon {
+  width: 105px;
+  height: 105px;
+  object-fit: contain;
+}
+
 

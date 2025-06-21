@@ -109,6 +109,10 @@ const Game = () => {
   const lastCard = myPlayer?.cardsDrawn?.[myPlayer.cardsDrawn.length - 1];
   const isWaitingForOuijaClone = lastCard?.id === 65;
 
+  // Dicebag
+  const [diceBagOpen, setDiceBagOpen] = useState(false);
+
+
 
 
 
@@ -532,15 +536,12 @@ const Game = () => {
       </button>
 
 
-      {/* Coinflip Button */}
-      <button className="coinflip-button" onClick={openCoinflip} title="Coinflip">
-        <img src="/Icons/cflip.png" alt="Coinflip" className="coinflip-icon" />
+      {/* Dice bag Button (replaces Coinflip and D20) */}
+      <button className="dicebag-button" onClick={() => setDiceBagOpen(prev => !prev)} title="Dice Bag">
+        <img src="/Icons/dicebag.png" alt="Dice Bag" className="dicebag-icon" />
       </button>
 
-      {/* D20 Button (below Coinflip) */}
-      <button className="d20-button" onClick={openD20} title="Roll D20">
-        <img src="/Icons/d20.png" alt="Roll D20" className="d20-icon" />
-      </button>
+
 
       {/* Coinflip Modal */}
       {coinflipOpen && (
@@ -595,6 +596,40 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {diceBagOpen && (
+        <div
+          className="dicebag-menu-overlay"
+          onClick={() => setDiceBagOpen(false)}
+        >
+          <div
+            className="dicebag-menu-horizontal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="dice-option-button"
+              onClick={() => {
+                setDiceBagOpen(false);
+                openCoinflip();
+              }}
+            >
+              <img src="/Icons/cflip.png" alt="Coinflip" className="dice-icon" />
+            </button>
+            <button
+              className="dice-option-button"
+              onClick={() => {
+                setDiceBagOpen(false);
+                openD20();
+              }}
+            >
+              <img src="/Icons/d20.png" alt="D20" className="dice-icon" />
+            </button>
+          </div>
+        </div>
+      )}
+
+
+
 
       {brotherModalOpen && (
         <div className="brother-modal-overlay">
