@@ -36,10 +36,11 @@ const createGameState = (gameID) => {
   // TEST DECK
   const deck = [
     Cards.find(c => c.id === 63), // Incantation
-    Cards.find(c => c.id === 1),  // Ace
-    Cards.find(c => c.id === 57), // Deja Vu
-    Cards.find(c => c.id === 65), // Ouija
-    Cards.find(c => c.id === 1),  // Ace
+    Cards.find(card => card.id === 66), // sigil
+    Cards.find(card => card.id === 65), // ouija
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
 
     // Cards.find(card => card.id === 9), // blood brother
     // Cards.find(card => card.id === 65), // ouija
@@ -417,7 +418,6 @@ io.on('connection', (socket) => {
 
 
     console.log(`Player ${currentPlayer.name} drew ${drawnCard.name}`);
-    console.log(`[DRAW] Emitting card with source: ${drawnCard.source}`);
 
 
     // Run any registered card effect
@@ -520,27 +520,18 @@ io.on('connection', (socket) => {
           });
         }
       }
-      else if (result?.action === "sigil") {
-        const nextCard = gameState.deck[0];
-        if (nextCard) {
-          const clone = {
-            ...nextCard,
-            source: `${currentPlayer.name} - SIGIL`
-          };
-          gameState.deck.splice(1, 0, clone); // Insert clone right after original
-          currentPlayer.effectState.sigilDrawsRemaining = 2;
-
-          const socketID = currentPlayer.socketID;
-          if (socketID) {
-            io.to(socketID).emit("triggerSigilDraw", {
-              roomID,
-              playerName: currentPlayer.name,
-              sigilDrawsRemaining: 2,
-              cause: drawnCard.name,
-            });
-          }
+      else if (result?.action === "sigilDraw") {
+        const socketID = currentPlayer.socketID;
+        if (socketID) {
+          io.to(socketID).emit("triggerSigilDraw", {
+            roomID,
+            playerName: currentPlayer.name,
+            sigilDrawsRemaining: result.sigilDrawsRemaining,
+            cause: drawnCard.name,
+          });
         }
       }
+
       else if (result?.action === "talismanDraw") {
         const socketID = currentPlayer.socketID;
         if (socketID) {

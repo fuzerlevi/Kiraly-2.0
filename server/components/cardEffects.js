@@ -93,23 +93,35 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
-  66: ({ player, roomID, games }) => {
+  66: ({ player, roomID, games, Cards }) => {
     const gameState = games[roomID];
-    if (!gameState || gameState.deck.length === 0) return;
+    if (!gameState || !player?.name) return;
 
-    const topCard = gameState.deck[0];
-    if (!topCard) return;
+    const frenchCards = Cards.filter(c => c.cardType === "French");
+    const drawCount = 2;
 
-    const clone = { ...topCard, source: `${player.name} - SIGIL` };
-    gameState.deck.splice(1, 0, clone);
+    // Pick ONE random French card
+    const baseCard = frenchCards[Math.floor(Math.random() * frenchCards.length)];
+    if (!baseCard) return;
+
+    const clone = { ...baseCard, source: `${player.name} - SIGIL` };
+
+    // Insert two copies at top of deck (last inserted will be drawn first)
+    gameState.deck.unshift({ ...clone });
+    gameState.deck.unshift({ ...clone });
 
     player.effectState = {
       ...player.effectState,
-      sigilDrawsRemaining: 2
+      sigilDrawsRemaining: drawCount
     };
 
-    return { action: "sigilDrawTwice", sigilDrawsRemaining: 2 };
+    return {
+      action: "sigilDraw",
+      sigilDrawsRemaining: drawCount
+    };
   },
+
+
 
   65: ({ player }) => {
     return { action: "ouijaChooseCard", playerName: player.name };

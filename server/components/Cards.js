@@ -88,7 +88,7 @@ const Cards = [
   { id: 63, cardType: "SPECTRAL", name: "Incantation", effect: "Húzz 5 lapot", color: "-", src: "/CardImages/SPECTRAL/incantation.png", source: "" },
   { id: 64, cardType: "SPECTRAL", name: "Medium", effect: "Választhatsz egy francia kártyát amiből 3 db belekeveredik a pakliba", color: "-", src: "/CardImages/SPECTRAL/medium.png", source: "" },
   { id: 65, cardType: "SPECTRAL", name: "Ouija", effect: "Választhatsz egy lapot az általad kijátszott lapok közül, amit megkapsz megint (Ha nincsenek felhúzott lapjaid, akkor kapsz egy random SPECTRAL kártyát)", color: "-", src: "/CardImages/SPECTRAL/ouija.png", source: "" },
-  { id: 66, cardType: "SPECTRAL", name: "Sigil", effect: "Húzhatsz mégegy lapot, ami 2x játszódik ki", color: "-", src: "/CardImages/SPECTRAL/sigil.png", source: "" },
+  { id: 66, cardType: "SPECTRAL", name: "Sigil", effect: "Húzhatsz egy véletlenszerű FRENCH kártyát, ami 2x játszódik ki", color: "-", src: "/CardImages/SPECTRAL/sigil.png", source: "" },
   { id: 67, cardType: "SPECTRAL", name: "Soul", effect: "A következő italodba nem rakhatsz alkoholt, pihenj egy picit", color: "-", src: "/CardImages/SPECTRAL/soul.png", source: "" },
   { id: 68, cardType: "SPECTRAL", name: "Talisman", effect: "Húzz 2 véletlenszerű SPECTRAL lapot", color: "-", src: "/CardImages/SPECTRAL/talisman.png", source: "" },
   { id: 69, cardType: "SPECTRAL", name: "Trance", effect: "Minden kártya amit ezelőtt felhúztál visszakeveredik a pakliba (Ha nincsenek felhúzott lapjaid, akkor kapsz egy random SPECTRAL kártyát)", color: "-", src: "/CardImages/SPECTRAL/trance.png", source: "" },

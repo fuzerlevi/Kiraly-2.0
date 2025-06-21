@@ -745,7 +745,7 @@ const Game = () => {
       {ouijaModalOpen && (
         <div className="brother-modal-overlay">
           <div className="brother-modal">
-            <h3>Choose a previously drawn card</h3>
+            <h3>Choose a card to replay</h3>
             <select
               value={selectedOuijaID}
               onChange={(e) => setSelectedOuijaID(Number(e.target.value))}
