@@ -25,19 +25,39 @@ const socketToGameMap = {};
 
 const forbiddenSpawnIDs = [57, 65, 69]; // Déjà Vu, Ouija, Trance
 
-const shuffleDeck = (deck) => [...deck].sort(() => Math.random() - 0.5);
+const buildShuffledDeck = () => {
+  const allCards = require("./Cards"); // or wherever your Cards array is
 
-//Toggle between shuffled or preassembled decks
+  const frenchAndSpectral = allCards.filter(
+    (card) => card.cardType === "French" || card.cardType === "SPECTRAL"
+  );
+
+  const planetCards = allCards.filter(card => card.cardType === "PLANET");
+  const selectedPlanets = shuffleArray(planetCards).slice(0, 2); // Pick 2 random PLANET cards
+
+  const fullDeck = [...frenchAndSpectral, ...selectedPlanets];
+  return shuffleArray(fullDeck); // Shuffle the final deck
+};
+
+const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+
+
+//Toggle between shuffled and preassembled decks
 const createGameState = (gameID) => {
   
   // SHUFFLED DECK
-  // const deck = shuffleDeck([...Cards]);
+  // const deck = buildShuffledDeck();
+
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 68), // talisman
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 82), // pluto
+    Cards.find(card => card.id === 82), // pluto
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+
     
 
     // Cards.find(card => card.id === 9), // blood brother
@@ -66,6 +86,7 @@ const createGameState = (gameID) => {
     rulesText: "",
     kingsRemaining: kingsInDeck,
     lastDrawnCard: null,
+    activePlanets: [],
   };
 };
 
@@ -213,6 +234,7 @@ io.on('connection', (socket) => {
       drinkEquation: gameState.drinkEquation,
       rulesText: gameState.rulesText,
       lastDrawnCard,
+      activePlanets: gameState.activePlanets,
     });
     
     if (player?.effectState?.isChoosingMediumCard) {
@@ -312,6 +334,7 @@ io.on('connection', (socket) => {
         rulesText: gameState.rulesText,
         kingsRemaining: gameState.kingsRemaining,
         lastDrawnCard: gameState.lastDrawnCard,
+        activePlanets: gameState.activePlanets,
       });
 
       const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
@@ -355,6 +378,12 @@ io.on('connection', (socket) => {
     gameState.lastDrawnCard = drawnCard;
 
     currentPlayer.cardsDrawn.push(drawnCard);
+
+    // 🌌 If this is a PLANET card, activate it
+    if (drawnCard.cardType === "PLANET") {
+      gameState.activePlanets.push(drawnCard);
+    }
+
 
     // ✅ Deactivate Deja Vu only after drawing the DEJA VU or OUIJA clone
     const isCloneFromDejaVu = drawnCard?.source?.includes("DEJA VU");
@@ -433,9 +462,6 @@ io.on('connection', (socket) => {
       if (result?.updatedBrothersGraph) {
         io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
       }
-
-      
-
 
 
 
@@ -571,7 +597,8 @@ io.on('connection', (socket) => {
       newDeck: gameState.deck,
       updatedPlayers: Object.values(gameState.players),
       kingsRemaining: gameState.kingsRemaining,
-      nextCard: upcomingCard || null
+      nextCard: upcomingCard || null,
+      activePlanets: gameState.activePlanets
     });
   });
 
@@ -634,6 +661,7 @@ io.on('connection', (socket) => {
       rulesText: gameState.rulesText,
       kingsRemaining: gameState.kingsRemaining,
       lastDrawnCard: gameState.lastDrawnCard,
+      activePlanets: gameState.activePlanets,
     });
   });
 

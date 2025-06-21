@@ -53,6 +53,7 @@ const Game = () => {
     isChoosingOuijaCard, setIsChoosingOuijaCard,
     sigilDrawsRemaining, setSigilDrawsRemaining,
     talismanDrawsRemaining, setTalismanDrawsRemaining,
+    activePlanets, setActivePlanets,
   } = useGameContext();
 
 
@@ -139,6 +140,7 @@ const Game = () => {
     const playerList = Object.values(data.players);
     setPlayers(playerList || []);
     setDeck(data.deck || []);
+    setActivePlanets(data.activePlanets || []);
     setCurrentPlayerName(data.currentPlayerName || null);
     setKingsRemaining(data.kingsRemaining ?? 4);
 
@@ -884,6 +886,28 @@ const Game = () => {
           className="king-counter-image"
         />
       </div>
+
+      <div className="planet-panel">
+        <h3 className="planet-panel-title">Planets</h3>
+        {[0, 1].map((slot) => {
+          const planet = activePlanets[slot];
+          return (
+            <div key={slot} className="planet-slot">
+              {planet ? (
+                <img
+                  src={planet.src}
+                  alt={planet.name}
+                  className="planet-card-image"
+                />
+              ) : (
+                <div className="planet-card-placeholder" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+
 
 
     </div>

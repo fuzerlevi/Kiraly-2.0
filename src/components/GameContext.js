@@ -25,6 +25,9 @@ export const GameProvider = ({ children }) => {
   const [sigilDrawsRemaining, setSigilDrawsRemaining] = useState(0);
   const [talismanDrawsRemaining, setTalismanDrawsRemaining] = useState(0);
 
+  const [activePlanets, setActivePlanets] = useState([]);
+
+
 
 
 
@@ -49,6 +52,7 @@ export const GameProvider = ({ children }) => {
       sigilDrawsRemaining, setSigilDrawsRemaining,
       talismanDrawsRemaining, setTalismanDrawsRemaining,
 
+      activePlanets, setActivePlanets,
     }}>
       {children}
     </GameContext.Provider>
