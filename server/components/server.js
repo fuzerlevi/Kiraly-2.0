@@ -58,7 +58,7 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 82), // pluto
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 72), // ceres
+    Cards.find(card => card.id === 74), // mercury
     Cards.find(card => card.id === 39), // red king
     Cards.find(card => card.id === 65), // ouija
 
@@ -389,6 +389,23 @@ io.on('connection', (socket) => {
     if (drawnCard.cardType !== "PLANET") {
       currentPlayer.cardsDrawn.push(drawnCard);
     }
+
+    // ☿️ MERCURY: Add +X to drinkEquation based on turn order distance
+    if (drawnCard.name === "Mercury") {
+      const playerList = Object.values(gameState.players); // keep join order
+      const currentIndex = playerList.findIndex(p => p.name === currentPlayer.name);
+
+      playerList.forEach((player, i) => {
+        const distance = (i - currentIndex + playerList.length) % playerList.length;
+        if (!gameState.drinkEquation[player.name]) {
+          gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
+        }
+        gameState.drinkEquation[player.name].flats += distance;
+      });
+
+      io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+    }
+
 
     // 🌌 If this is a PLANET card, activate it
     if (drawnCard.cardType === "PLANET") {
