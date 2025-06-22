@@ -59,11 +59,12 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 82), // pluto
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 81), // pluto
+    Cards.find(card => card.id === 77), // mars
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), //  black ace
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 27), // red ace
+    Cards.find(card => card.id === 39), // red king
 
     
 
@@ -414,6 +415,18 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("planetGlow", { planetName: "Neptune" });
       }
     }
+
+    // 🔴 Check if a red French card is drawn AND Mars is active
+    if (drawnCard.id >= 14 && drawnCard.id <= 39) {
+      const marsIsActive = gameState.activePlanets?.some(card => card.name === "Mars");
+      if (marsIsActive) {
+        if (!gameState.glowingPlanets.includes("Mars")) {
+          gameState.glowingPlanets.push("Mars"); // ✅ track it
+        }
+        io.to(roomID).emit("planetGlow", { planetName: "Mars" });
+      }
+    }
+
 
 
 
