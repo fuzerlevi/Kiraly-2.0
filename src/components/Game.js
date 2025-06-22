@@ -74,7 +74,12 @@ const Game = () => {
   const [coinflipOpen, setCoinflipOpen] = useState(false);
   const [flipResult, setFlipResult] = useState(null);
 
-  // D20 Roller
+  // D6 
+  const [d6Open, setD6Open] = useState(false);
+  const [d6Result, setD6Result] = useState(null);
+
+
+  // D20
   const [d20Open, setD20Open] = useState(false);
   const [rollResult, setRollResult] = useState(null);
   const d20Effect = rollResult ? D20.find(entry => entry.id === rollResult)?.effect : null;
@@ -461,6 +466,18 @@ const Game = () => {
   const closeD20 = () => setD20Open(false);
   const rollD20 = () => setRollResult(Math.floor(Math.random() * 20) + 1);
 
+  const openD6 = () => {
+    setD6Result(null);
+    setD6Open(true);
+  };
+
+  const closeD6 = () => setD6Open(false);
+
+  const rollD6 = () => {
+    const result = Math.floor(Math.random() * 6) + 1; // 1 to 6
+    setD6Result(result);
+  };
+
   const containerWidth = 600;
   const cardWidth = 100;
   const totalCards = myCards.length;
@@ -651,7 +668,7 @@ const Game = () => {
             ) : (
               <div className="coinflip-gif-container">
                 <img
-                  src={flipResult === 0 ? "/Coinflip/heads.gif" : "/Coinflip/tails.gif"}
+                  src={flipResult === 0 ? "/rollgifs/heads.gif" : "/rollgifs/tails.gif"}
                   alt={flipResult === 0 ? "Heads" : "Tails"}
                   className="coinflip-gif"
                 />
@@ -663,6 +680,29 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {d6Open && (
+        <div className="d20-modal-overlay">
+          <div className="d20-modal">
+            <button className="d20-close-button" onClick={closeD6}>×</button>
+            {d6Result === null ? (
+              <button className="d20-roll-button pixel-font" onClick={rollD6}>
+                Roll
+              </button>
+            ) : (
+              <div className="d20-gif-container">
+                <img
+                  src={`/rollgifs/diceroll${d6Result}.gif`}
+                  alt={`Rolled ${d6Result}`}
+                  className="d20-gif"
+                />
+                <div className="d20-result-overlay">{d6Result}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
 
 
       {/* D20 Modal */}
@@ -679,7 +719,7 @@ const Game = () => {
             ) : (
               <>
                 <div className="d20-gif-container">
-                  <img src="/Coinflip/d20.gif" alt="Rolling D20" className="d20-gif" />
+                  <img src="/rollgifs/d20.gif" alt="Rolling D20" className="d20-gif" />
                   <div className="d20-result-overlay">{rollResult}</div>
                 </div>
                 {d20Effect && (
@@ -708,6 +748,15 @@ const Game = () => {
               }}
             >
               <img src="/Icons/cflip.png" alt="Coinflip" className="dice-icon" />
+            </button>
+            <button
+              className="dice-option-button"
+              onClick={() => {
+                setDiceBagOpen(false);
+                openD6();
+              }}
+            >
+              <img src="/Icons/d6.png" alt="D6" className="dice-icon" />
             </button>
             <button
               className="dice-option-button"

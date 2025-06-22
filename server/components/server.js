@@ -55,12 +55,14 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 82), // pluto
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 74), // mercury
-    Cards.find(card => card.id === 39), // red king
-    Cards.find(card => card.id === 65), // ouija
+    Cards.find(card => card.id === 11), // jack
+    Cards.find(card => card.id === 12), // queen
+    Cards.find(card => card.id === 78), // jupiter
+    Cards.find(card => card.id === 75), // venus
+    Cards.find(card => card.id === 11), // jack
+    Cards.find(card => card.id === 12), // queen
+    
+    
 
     
 
@@ -463,6 +465,69 @@ io.on('connection', (socket) => {
       }
       io.to(roomID).emit("planetGlow", { planetName: "Ceres" });
     }
+
+    // 🌀 URANUS glows when specific card IDs are drawn
+    const uranusTriggerIDs = [8, 21, 34, 47, 56, 60];
+    if (uranusTriggerIDs.includes(drawnCard.id)) {
+      const uranusIsActive = gameState.activePlanets?.some(card => card.name === "Uranus");
+      if (uranusIsActive) {
+        if (!gameState.glowingPlanets.includes("Uranus")) {
+          gameState.glowingPlanets.push("Uranus"); // ✅ Track glow
+        }
+        io.to(roomID).emit("planetGlow", { planetName: "Uranus" });
+      }
+    }
+
+    const queenIDs = [12, 25, 38, 51];
+    if (queenIDs.includes(drawnCard.id)) {
+      const venusIsActive = gameState.activePlanets?.some(card => card.name === "Venus");
+      if (venusIsActive) {
+        if (!gameState.glowingPlanets.includes("Venus")) {
+          gameState.glowingPlanets.push("Venus");
+        }
+        io.to(roomID).emit("planetGlow", { planetName: "Venus" });
+
+        // 💃 Boost flats for girls
+        for (const player of Object.values(gameState.players)) {
+          if (player.team === "girl") {
+            const name = player.name;
+            if (gameState.drinkEquation[name]) {
+              gameState.drinkEquation[name].flats += 1;
+            }
+          }
+        }
+
+        io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+      }
+    }
+
+
+    const jackIDs = [11, 24, 37, 50];
+    if (jackIDs.includes(drawnCard.id)) {
+      const jupiterIsActive = gameState.activePlanets?.some(card => card.name === "Jupiter");
+      if (jupiterIsActive) {
+        if (!gameState.glowingPlanets.includes("Jupiter")) {
+          gameState.glowingPlanets.push("Jupiter");
+        }
+        io.to(roomID).emit("planetGlow", { planetName: "Jupiter" });
+
+        // 💪 Boost flats for boys
+        for (const player of Object.values(gameState.players)) {
+          if (player.team === "boy") {
+            const name = player.name;
+            if (gameState.drinkEquation[name]) {
+              gameState.drinkEquation[name].flats += 1;
+            }
+          }
+        }
+
+        io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+      }
+    }
+
+
+
+
 
 
 

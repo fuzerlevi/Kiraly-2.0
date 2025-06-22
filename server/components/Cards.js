@@ -93,7 +93,6 @@ const Cards = [
   { id: 81, cardType: "PLANET", name: "Neptune", effect: "Minden vízesés 2-szer megy körbe", color: "", src: "/CardImages/PLANET/neptune.png", source: "" },
   { id: 82, cardType: "PLANET", name: "Pluto", effect: "Ha valaki önt valamit a királyba, előtte meg kell innia fele annyit az adott italból", color: "", src: "/CardImages/PLANET/pluto.png", source: "" },
 
-
 ];
 
 module.exports = Cards;
