@@ -27,6 +27,8 @@ export const GameProvider = ({ children }) => {
 
   const [activePlanets, setActivePlanets] = useState([]);
   const [glowingPlanetName, setGlowingPlanetName] = useState(null);
+  const [planetGlowKeys, setPlanetGlowKeys] = useState({});
+
 
 
 
@@ -56,6 +58,8 @@ export const GameProvider = ({ children }) => {
 
       activePlanets, setActivePlanets,
       glowingPlanetName, setGlowingPlanetName,
+      planetGlowKeys, setPlanetGlowKeys,
+
     }}>
       {children}
     </GameContext.Provider>

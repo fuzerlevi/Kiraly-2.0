@@ -25,6 +25,8 @@ const socketToGameMap = {};
 
 const forbiddenSpawnIDs = [57, 65, 69]; // Déjà Vu, Ouija, Trance
 const kingIDs = [13, 26, 39, 52];
+const aceIDs = [1, 14, 27, 40];
+
 
 
 const buildShuffledDeck = () => {
@@ -57,9 +59,9 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 82), // pluto
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 82), // pluto
-    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 81), // pluto
     Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 1), // ace
 
@@ -90,6 +92,7 @@ const createGameState = (gameID) => {
     kingsRemaining: kingsInDeck,
     lastDrawnCard: null,
     activePlanets: [],
+    glowingPlanets: [],
   };
 };
 
@@ -354,6 +357,11 @@ io.on('connection', (socket) => {
         socket.emit("triggerTrance", { roomID, playerName: player.name });
       }
 
+      // 🔁 Re-trigger glow for all currently glowing planets
+      for (const planetName of gameState.glowingPlanets) {
+        socket.emit("planetGlow", { planetName });
+      }
+
 
       socket.emit("updateRulesText", gameState.rulesText);
       socket.emit("updateDrinkEquation", gameState.drinkEquation);
@@ -387,13 +395,27 @@ io.on('connection', (socket) => {
       gameState.activePlanets.push(drawnCard);
     }
 
-    // 🔶 Check if a king is drawn AND Pluto is active
     if (kingIDs.includes(drawnCard.id)) {
       const plutoIsActive = gameState.activePlanets?.some(card => card.name === "Pluto");
       if (plutoIsActive) {
+        if (!gameState.glowingPlanets.includes("Pluto")) {
+          gameState.glowingPlanets.push("Pluto"); // ✅ Track glow
+        }
         io.to(roomID).emit("planetGlow", { planetName: "Pluto" });
       }
     }
+
+    if (aceIDs.includes(drawnCard.id)) {
+      const neptuneIsActive = gameState.activePlanets?.some(card => card.name === "Neptune");
+      if (neptuneIsActive) {
+        if (!gameState.glowingPlanets.includes("Neptune")) {
+          gameState.glowingPlanets.push("Neptune"); // ✅ Track glow
+        }
+        io.to(roomID).emit("planetGlow", { planetName: "Neptune" });
+      }
+    }
+
+
 
 
 
@@ -675,6 +697,7 @@ io.on('connection', (socket) => {
       activePlanets: gameState.activePlanets,
     });
 
+    gameState.glowingPlanets = []; // ✅ Clear tracked glows
     io.to(roomID).emit("clearPlanetGlow");
 
   });

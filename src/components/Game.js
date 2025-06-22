@@ -55,8 +55,13 @@ const Game = () => {
     talismanDrawsRemaining, setTalismanDrawsRemaining,
     activePlanets, setActivePlanets,
     glowingPlanetName, setGlowingPlanetName,
+    planetGlowKeys, setPlanetGlowKeys,
     
   } = useGameContext();
+
+  if (!window.__planetGlowIntervals) {
+    window.__planetGlowIntervals = {};
+  }
 
 
   const { roomID } = useParams();
@@ -308,36 +313,49 @@ const Game = () => {
 
 
     socket.on("planetGlow", ({ planetName }) => {
-      // Cancel any existing glow interval first
-      if (window.__planetGlowInterval) {
-        clearInterval(window.__planetGlowInterval);
-        window.__planetGlowInterval = null;
+      if (!planetName) return;
+
+      // 🛠️ Ensure the map exists
+      if (!window.__planetGlowIntervals) {
+        window.__planetGlowIntervals = {};
       }
 
-      // Retrigger the glow repeatedly every 2 seconds
-      let glowKey = 0;
-      glowRef.current?.(`${planetName}-${glowKey}`); // use key like "Pluto-0"
+      // Clear this planet's existing interval
+      if (window.__planetGlowIntervals[planetName]) {
+        clearInterval(window.__planetGlowIntervals[planetName]);
+      }
 
+      let glowKey = 0;
+
+      // Trigger glow immediately
+      setPlanetGlowKeys(prev => ({
+        ...prev,
+        [planetName]: glowKey,
+      }));
+
+      // Loop every 2 seconds
       const interval = setInterval(() => {
-        glowKey += 1;
-        glowRef.current?.(`${planetName}-${glowKey}`); // "Pluto-1", "Pluto-2", ...
+        glowKey++;
+        setPlanetGlowKeys(prev => ({
+          ...prev,
+          [planetName]: glowKey,
+        }));
       }, 2000);
 
-      window.__planetGlowInterval = interval;
+      window.__planetGlowIntervals[planetName] = interval;
     });
+
+
+
 
     socket.on("clearPlanetGlow", () => {
-      if (window.__planetGlowInterval) {
-        clearInterval(window.__planetGlowInterval);
-        window.__planetGlowInterval = null;
+      if (window.__planetGlowIntervals) {
+        Object.values(window.__planetGlowIntervals).forEach(clearInterval);
+        window.__planetGlowIntervals = {};
       }
-      setGlowingPlanetName(null);
+
+      setPlanetGlowKeys({});
     });
-
-
-
-
-
 
 
 
@@ -414,10 +432,12 @@ const Game = () => {
     setIsTurnEnded(true);
     setReadyToEndTurn(false);
     
-    if (window.__planetGlowInterval) {
-      clearInterval(window.__planetGlowInterval);
-      window.__planetGlowInterval = null;
+    if (window.__planetGlowIntervals) {
+      Object.values(window.__planetGlowIntervals).forEach(clearInterval);
+      window.__planetGlowIntervals = {};
     }
+    setPlanetGlowKeys({});
+
     setGlowingPlanetName(null);
 
 
@@ -967,12 +987,14 @@ const Game = () => {
             <div key={slot} className="planet-slot" style={{ position: "relative" }}>
               {planet ? (
                 <img
+                  key={`${planet.name}-${planetGlowKeys[planet.name] ?? 0}`}  // 🔁 dynamic key
                   src={planet.src}
                   alt={planet.name}
-                  className={`planet-card-image ${glowingPlanetName === planet.name ? "planet-glow" : ""}`}
+                  className={`planet-card-image ${planetGlowKeys[planet.name] !== undefined ? "planet-glow" : ""}`}
                   onClick={() => setSelectedPlanet(planet)}
                   style={{ cursor: "pointer" }}
                 />
+
               ) : (
                 <div className="planet-card-placeholder" />
               )}
