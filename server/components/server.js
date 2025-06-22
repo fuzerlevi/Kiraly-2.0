@@ -24,6 +24,8 @@ const games = {};
 const socketToGameMap = {};
 
 const forbiddenSpawnIDs = [57, 65, 69]; // Déjà Vu, Ouija, Trance
+const kingIDs = [13, 26, 39, 52];
+
 
 const buildShuffledDeck = () => {
   const allCards = require("./Cards"); // or wherever your Cards array is
@@ -51,11 +53,14 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 82), // pluto
+    Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 82), // pluto
     Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 1), // ace
 
     
@@ -71,8 +76,6 @@ const createGameState = (gameID) => {
     // Cards.find(c => c.id === 63), // Incantation
   ];
 
-  
-  const kingIDs = [13, 26, 39, 52];
   const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
 
   return {
@@ -384,6 +387,15 @@ io.on('connection', (socket) => {
       gameState.activePlanets.push(drawnCard);
     }
 
+    // 🔶 Check if a king is drawn AND Pluto is active
+    if (kingIDs.includes(drawnCard.id)) {
+      const plutoIsActive = gameState.activePlanets?.some(card => card.name === "Pluto");
+      if (plutoIsActive) {
+        io.to(roomID).emit("planetGlow", { planetName: "Pluto" });
+      }
+    }
+
+
 
     // ✅ Deactivate Deja Vu only after drawing the DEJA VU or OUIJA clone
     const isCloneFromDejaVu = drawnCard?.source?.includes("DEJA VU");
@@ -434,7 +446,6 @@ io.on('connection', (socket) => {
     
 
     // Decrease kingsRemaining if a king is drawn
-    const kingIDs = [13, 26, 39, 52];
     if (kingIDs.includes(drawnCard.id)) {
       gameState.kingsRemaining = Math.max(0, gameState.kingsRemaining - 1);
       console.log(`[KING] Drew a King! Kings remaining: ${gameState.kingsRemaining}`);
@@ -663,6 +674,9 @@ io.on('connection', (socket) => {
       lastDrawnCard: gameState.lastDrawnCard,
       activePlanets: gameState.activePlanets,
     });
+
+    io.to(roomID).emit("clearPlanetGlow");
+
   });
 
   

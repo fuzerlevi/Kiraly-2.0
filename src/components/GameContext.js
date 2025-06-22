@@ -26,6 +26,8 @@ export const GameProvider = ({ children }) => {
   const [talismanDrawsRemaining, setTalismanDrawsRemaining] = useState(0);
 
   const [activePlanets, setActivePlanets] = useState([]);
+  const [glowingPlanetName, setGlowingPlanetName] = useState(null);
+
 
 
 
@@ -53,6 +55,7 @@ export const GameProvider = ({ children }) => {
       talismanDrawsRemaining, setTalismanDrawsRemaining,
 
       activePlanets, setActivePlanets,
+      glowingPlanetName, setGlowingPlanetName,
     }}>
       {children}
     </GameContext.Provider>

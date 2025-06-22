@@ -460,3 +460,29 @@
 
 
 
+@keyframes glowLoop {
+  0%   { box-shadow: 0 0 0px orange; }
+  50%  { box-shadow: 0 0 20px 10px orange; }
+  100% { box-shadow: 0 0 0px orange; }
+}
+
+.planet-glow {
+  animation: glowLoop 2s ease-in-out;
+}
+
+.planet-info-box {
+  position: absolute;
+  left: 110px;
+  top: 10px;
+  width: 300px;
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 13px;
+  z-index: 10;
+}
+
+
+

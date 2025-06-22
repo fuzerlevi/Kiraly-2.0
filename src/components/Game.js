@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useGameContext } from "../components/GameContext";
 import socket from "../socket.js";
@@ -54,6 +54,8 @@ const Game = () => {
     sigilDrawsRemaining, setSigilDrawsRemaining,
     talismanDrawsRemaining, setTalismanDrawsRemaining,
     activePlanets, setActivePlanets,
+    glowingPlanetName, setGlowingPlanetName,
+    
   } = useGameContext();
 
 
@@ -113,6 +115,12 @@ const Game = () => {
   // Dicebag
   const [diceBagOpen, setDiceBagOpen] = useState(false);
 
+  //PLANETs
+  const glowRef = useRef();
+  glowRef.current = setGlowingPlanetName; // always current
+
+  const [selectedPlanet, setSelectedPlanet] = useState(null);
+
 
 
 
@@ -123,6 +131,7 @@ const Game = () => {
     if (!socket.connected) {
       socket.connect();
     }
+    
 
     socket.emit("getAllCardMetadata", (metadata) => {
       setAllCardMetadata(metadata);
@@ -298,6 +307,39 @@ const Game = () => {
     });
 
 
+    socket.on("planetGlow", ({ planetName }) => {
+      // Cancel any existing glow interval first
+      if (window.__planetGlowInterval) {
+        clearInterval(window.__planetGlowInterval);
+        window.__planetGlowInterval = null;
+      }
+
+      // Retrigger the glow repeatedly every 2 seconds
+      let glowKey = 0;
+      glowRef.current?.(`${planetName}-${glowKey}`); // use key like "Pluto-0"
+
+      const interval = setInterval(() => {
+        glowKey += 1;
+        glowRef.current?.(`${planetName}-${glowKey}`); // "Pluto-1", "Pluto-2", ...
+      }, 2000);
+
+      window.__planetGlowInterval = interval;
+    });
+
+    socket.on("clearPlanetGlow", () => {
+      if (window.__planetGlowInterval) {
+        clearInterval(window.__planetGlowInterval);
+        window.__planetGlowInterval = null;
+      }
+      setGlowingPlanetName(null);
+    });
+
+
+
+
+
+
+
 
 
 
@@ -322,9 +364,28 @@ const Game = () => {
       socket.off("triggerDejaVu");
       socket.off("triggerSigilDraw");
       socket.off("triggerTalismanDraw");
+      socket.off("planetGlow");
+      socket.off("clearPlanetGlow");
       socket.off("gameOver");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        !e.target.closest(".planet-info-box") &&
+        !e.target.closest(".planet-card-image")
+      ) {
+        setSelectedPlanet(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
 
   if (!mySocketID) return <div>Loading game...</div>;
 
@@ -346,9 +407,20 @@ const Game = () => {
       return; // ⛔ don't emit endTurn yet
     }
 
+    
+
+
     setCardDrawn(null);
     setIsTurnEnded(true);
     setReadyToEndTurn(false);
+    
+    if (window.__planetGlowInterval) {
+      clearInterval(window.__planetGlowInterval);
+      window.__planetGlowInterval = null;
+    }
+    setGlowingPlanetName(null);
+
+
     socket.emit("endTurn", { roomID });
   };
 
@@ -892,19 +964,29 @@ const Game = () => {
         {[0, 1].map((slot) => {
           const planet = activePlanets[slot];
           return (
-            <div key={slot} className="planet-slot">
+            <div key={slot} className="planet-slot" style={{ position: "relative" }}>
               {planet ? (
                 <img
                   src={planet.src}
                   alt={planet.name}
-                  className="planet-card-image"
+                  className={`planet-card-image ${glowingPlanetName === planet.name ? "planet-glow" : ""}`}
+                  onClick={() => setSelectedPlanet(planet)}
+                  style={{ cursor: "pointer" }}
                 />
               ) : (
                 <div className="planet-card-placeholder" />
               )}
+
+              {planet && selectedPlanet?.id === planet.id && (
+                <div className="planet-info-box">
+                  <strong>{planet.name}:</strong> {planet.effect || "No effect."}
+                </div>
+              )}
+
             </div>
           );
         })}
+
       </div>
 
 
