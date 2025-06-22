@@ -56,15 +56,10 @@ const createGameState = (gameID) => {
   // TEST DECK
   const deck = [
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 82), // pluto
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 77), // mars
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 1), //  black ace
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 27), // red ace
-    Cards.find(card => card.id === 39), // red king
+    Cards.find(card => card.id === 71), // eris
+    Cards.find(card => card.id === 36), // red ten
 
     
 
@@ -426,6 +421,19 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("planetGlow", { planetName: "Mars" });
       }
     }
+
+    // 🔟 Check if a 10 is drawn AND Eris is active
+    const tenIDs = [10, 23, 36, 49];
+    if (tenIDs.includes(drawnCard.id)) {
+      const erisIsActive = gameState.activePlanets?.some(card => card.name === "Eris");
+      if (erisIsActive) {
+        if (!gameState.glowingPlanets.includes("Eris")) {
+          gameState.glowingPlanets.push("Eris");
+        }
+        io.to(roomID).emit("planetGlow", { planetName: "Eris" });
+      }
+    }
+
 
 
 
