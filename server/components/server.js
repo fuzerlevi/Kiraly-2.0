@@ -58,8 +58,9 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 82), // pluto
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 71), // eris
-    Cards.find(card => card.id === 36), // red ten
+    Cards.find(card => card.id === 72), // ceres
+    Cards.find(card => card.id === 39), // red king
+    Cards.find(card => card.id === 65), // ouija
 
     
 
@@ -384,7 +385,10 @@ io.on('connection', (socket) => {
     
     gameState.lastDrawnCard = drawnCard;
 
-    currentPlayer.cardsDrawn.push(drawnCard);
+    // only push non planet cards into hand
+    if (drawnCard.cardType !== "PLANET") {
+      currentPlayer.cardsDrawn.push(drawnCard);
+    }
 
     // 🌌 If this is a PLANET card, activate it
     if (drawnCard.cardType === "PLANET") {
@@ -433,6 +437,16 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("planetGlow", { planetName: "Eris" });
       }
     }
+
+    // 🌾 CERES glows on any card draw
+    const ceresIsActive = gameState.activePlanets?.some(card => card.name === "Ceres");
+    if (ceresIsActive) {
+      if (!gameState.glowingPlanets.includes("Ceres")) {
+        gameState.glowingPlanets.push("Ceres");
+      }
+      io.to(roomID).emit("planetGlow", { planetName: "Ceres" });
+    }
+
 
 
 
