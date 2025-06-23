@@ -133,6 +133,7 @@ const createPlayerState = (socketID) => ({
   hasActiveDejaVu: false,
   isPlanetXActive: false,
   incantationDrawsRemaining: 0,
+  earthClonePending: false,
 }
 
 });
@@ -325,6 +326,8 @@ io.on('connection', (socket) => {
     // Also restore rules text and drink equation for the reconnecting client
     socket.emit("updateRulesText", gameState.rulesText);
     socket.emit("updateDrinkEquation", gameState.drinkEquation);
+    socket.emit("updateEarthDrawPending", gameState.isEarthDrawPending);
+
 
 
     // Response back to the reconnected player
@@ -398,6 +401,8 @@ io.on('connection', (socket) => {
       socket.emit("updateRulesText", gameState.rulesText);
       socket.emit("updateDrinkEquation", gameState.drinkEquation);
       socket.emit("updateEndOfRound", gameState.isEndOfRound);
+      socket.emit("updateEarthDrawPending", gameState.isEarthDrawPending);
+
 
     }
   });
@@ -435,7 +440,13 @@ io.on('connection', (socket) => {
 
     if (drawnCard.source === "EARTH") {
       currentPlayer.effectState.earthClonePending = false;
+
+      // 🔁 Emit updated state so client sees flag change
+      io.to(roomID).emit("updateGameState", getUpdatedGameState(gameState));
     }
+
+
+    
 
 
 
@@ -957,14 +968,19 @@ io.on('connection', (socket) => {
     const player = game.players[socket.id];
     if (!player) return;
 
-    // ✅ Clear EARTH flags
+    // ✅ Clear EARTH clone flag
     player.effectState.earthClonePending = false;
-    game.isEarthDrawPending = false;
 
-    // ✅ Allow player to continue their real turn
-    // Just emit a fresh game state — without changing the turn
+    // ✅ Set draw-lock flag so player can't end turn yet
+    game.isEarthDrawPending = true;
+
+    game.lastDrawnCard = null;
+
+
+    // ✅ Send fresh game state so Draw button appears
     io.to(roomID).emit("updateGameState", getUpdatedGameState(game));
   });
+
 
 
   

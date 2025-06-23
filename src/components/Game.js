@@ -60,6 +60,8 @@ const Game = () => {
     planetXActive, setPlanetXActive,
     incantationDrawsRemaining, setIncantationDrawsRemaining,
     isEarthDrawPending, setIsEarthDrawPending,
+    earthClonePending, setEarthClonePending,
+
 
     
   } = useGameContext();
@@ -136,7 +138,10 @@ const Game = () => {
   const [selectedPlanet, setSelectedPlanet] = useState(null);
 
   // EARTH
-  
+  const shouldShowEndTurnEarth =
+  isEarthDrawPending && !earthClonePending;
+
+
 
 
   //End of Round feature
@@ -187,9 +192,12 @@ const Game = () => {
 
       if (me?.effectState?.earthClonePending) {
         setIsEarthDrawPending(true);
+        setEarthClonePending(true);
       } else {
         setIsEarthDrawPending(false);
+        setEarthClonePending(false);
       }
+
 
 
 
@@ -236,15 +244,11 @@ const Game = () => {
       }
 
       if (drawnCard?.source === "EARTH") {
-      console.log("[EARTH] Earth clone card drawn. Setting flags.");
-      setIsEarthDrawPending(true);
-
-      if (myPlayer?.effectState) {
-        myPlayer.effectState.earthClonePending = true;
-      } else {
-        console.warn("[EARTH] Could not find myPlayer.effectState to set earthClonePending.");
+        console.log("[EARTH] Earth clone card drawn. Setting flags.");
+        setIsEarthDrawPending(true);
+        setEarthClonePending(true); // <-- this is the fix
       }
-    }
+
 
 
 
@@ -409,6 +413,11 @@ const Game = () => {
       setIsEndOfRound(status);
     });
 
+    socket.on("updateEarthDrawPending", (value) => {
+      setIsEarthDrawPending(value);
+    });
+
+
     socket.on("planetXShuffleComplete", () => {
       setPlanetXActive(false);
       setCardDrawn(null);
@@ -563,12 +572,10 @@ const Game = () => {
   const endTurnEarth = () => {
     if (myPlayer?.name !== currentPlayerName) return;
 
-    // 🔍 Defensive cleanup
-    if (myPlayer?.effectState) {
-      myPlayer.effectState.earthClonePending = false;
-    }
+    
 
     setIsEarthDrawPending(false);
+    setEarthClonePending(false);
     setCardDrawn(null);
     setIsTurnEnded(true);
     setReadyToEndTurn(false);
@@ -586,6 +593,8 @@ const Game = () => {
     if (isLastPlayer) {
       setIsEndOfRound(true);
     }
+
+    
 
     socket.emit("endTurnEarth", { roomID });
   };
@@ -692,14 +701,20 @@ const Game = () => {
         myPlayer?.name === currentPlayerName && (
           <>
             {(() => {
-              console.log("🧪 Button Eval:");
-              console.log("myPlayer:", myPlayer);
-              console.log("myPlayer.effectState:", myPlayer?.effectState);
-              console.log("myPlayer.effectState.earthClonePending:", myPlayer?.effectState?.earthClonePending);
-              console.log("isEarthDrawPending:", isEarthDrawPending);
+              console.log("[DRAW LOGIC]");
               console.log("cardDrawn:", cardDrawn);
+              console.log("myPlayer?.effectState.earthClonePending:", myPlayer?.effectState?.earthClonePending);
+              console.log("isEarthDrawPending:", isEarthDrawPending);
+              console.log("readyToEndTurn:", readyToEndTurn);
+              console.log("isChoosingOuijaCard:", isChoosingOuijaCard);
+              console.log("hasActiveDejaVu:", hasActiveDejaVu);
+              console.log("incantationDrawsRemaining:", incantationDrawsRemaining);
+              console.log("sigilDrawsRemaining:", myPlayer?.effectState?.sigilDrawsRemaining);
+              console.log("talismanDrawsRemaining:", myPlayer?.effectState?.talismanDrawsRemaining);
+              console.log("planetXActive:", planetXActive);
 
-              if (myPlayer?.effectState?.earthClonePending || isEarthDrawPending) {
+               // 🌍 EARTH logic
+              if (isEarthDrawPending) {
                 if (cardDrawn === null) {
                   return (
                     <button className="floating-button" onClick={drawACard}>
@@ -714,6 +729,17 @@ const Game = () => {
                   );
                 }
               }
+
+
+              // 🌍 After EARTH clone resolved: show fresh draw
+              if (isEarthDrawPending) {
+                return (
+                  <button className="floating-button" onClick={drawACard}>
+                    Draw (Earth)
+                  </button>
+                );
+              }
+
 
               if (cardDrawn === null && !readyToEndTurn) {
                 if (myPlayer?.effectState?.sigilDrawsRemaining > 0) {

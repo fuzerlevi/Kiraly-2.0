@@ -85,7 +85,7 @@ const Cards = [
   { id: 73, cardType: "PLANET", name: "Planet X", effect: "Amikor ezt a lapot felhúzzák, az összes eddig felhúzott lap belekeveredik a pakliba", color: "", src: "/CardImages/PLANET/planetx.png", source: "" },
   { id: 74, cardType: "PLANET", name: "Mercury", effect: "Mostantól mindenki annyival több kortyot iszik, ahányadik a körben a lap felhúzójától számítva", color: "", src: "/CardImages/PLANET/mercury.png", source: "" },
   { id: 75, cardType: "PLANET", name: "Venus", effect: "Minden lány iszik 1 kortyot minden kör végén. A QUEEN kártyák +1-el emelik az összes lány + kortyait", color: "", src: "/CardImages/PLANET/venus.png", source: "" },
-  { id: 76, cardType: "PLANET", name: "Earth", effect: "A körben előtted lévő játékos az általad játszott kártyát szintén kijátssza", color: "", src: "/CardImages/PLANET/earth.png", source: "" },
+  { id: 76, cardType: "PLANET", name: "Earth", effect: "A körben utánad következő játékos az általad játszott kártyát szintén kijátssza", color: "", src: "/CardImages/PLANET/earth.png", source: "" },
   { id: 77, cardType: "PLANET", name: "Mars", effect: "Ha valaki piros FRENCH lapot húz, iszik 1 kortyot", color: "", src: "/CardImages/PLANET/mars.png", source: "" },
   { id: 78, cardType: "PLANET", name: "Jupiter", effect: "Minden fiú iszik 1 kortyot minden kör végén. A JACK kártyák +1-el emelik az összes fiú + kortyait", color: "", src: "/CardImages/PLANET/jupiter.png", source: "" },
   { id: 79, cardType: "PLANET", name: "Saturn", effect: "Mindenkinek a jobboldali szomszédja keveri az italait", color: "", src: "/CardImages/PLANET/saturn.png", source: "" },
