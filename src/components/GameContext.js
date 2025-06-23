@@ -28,6 +28,7 @@ export const GameProvider = ({ children }) => {
   const [activePlanets, setActivePlanets] = useState([]);
   const [glowingPlanetName, setGlowingPlanetName] = useState(null);
   const [planetGlowKeys, setPlanetGlowKeys] = useState({});
+  const [isEndOfRound, setIsEndOfRound] = useState(false);
 
 
 
@@ -46,7 +47,7 @@ export const GameProvider = ({ children }) => {
       isChoosingBrother, setIsChoosingBrother,
       isChoosingMediumCard, setIsChoosingMediumCard,
       isTranceActive, setIsTranceActive,
-      hasActiveDejaVu, setHasActiveDejaVu, // 🆕
+      hasActiveDejaVu, setHasActiveDejaVu,
 
       cardDrawn, setCardDrawn,
       readyToEndTurn, setReadyToEndTurn,
@@ -59,6 +60,8 @@ export const GameProvider = ({ children }) => {
       activePlanets, setActivePlanets,
       glowingPlanetName, setGlowingPlanetName,
       planetGlowKeys, setPlanetGlowKeys,
+
+      isEndOfRound, setIsEndOfRound,
 
     }}>
       {children}

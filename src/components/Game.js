@@ -56,6 +56,7 @@ const Game = () => {
     activePlanets, setActivePlanets,
     glowingPlanetName, setGlowingPlanetName,
     planetGlowKeys, setPlanetGlowKeys,
+    isEndOfRound, setIsEndOfRound,
     
   } = useGameContext();
 
@@ -133,6 +134,8 @@ const Game = () => {
   //End of Round feature
   const [endOfRoundOpen, setEndOfRoundOpen] = useState(false);
   const [endOfRoundEntries, setEndOfRoundEntries] = useState([]);
+  
+
 
 
 
@@ -366,6 +369,12 @@ const Game = () => {
       setPlanetGlowKeys({});
     });
 
+    socket.on("updateEndOfRound", (status) => {
+      console.log("[SOCKET] updateEndOfRound received:", status);
+      setIsEndOfRound(status);
+    });
+
+
 
 
 
@@ -393,6 +402,7 @@ const Game = () => {
       socket.off("triggerTalismanDraw");
       socket.off("planetGlow");
       socket.off("clearPlanetGlow");
+      socket.off("updateEndOfRound");
       socket.off("gameOver");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
@@ -440,6 +450,9 @@ const Game = () => {
   const drawACard = () => {
     if (cardDrawn || myPlayer?.name !== currentPlayerName)
       return;
+    
+    // ✅ Reset end of round glow on first draw of new round
+    setIsEndOfRound(false);
     socket.emit("drawCard", { roomID, cause: "normal" });
   };
 
@@ -468,6 +481,12 @@ const Game = () => {
 
     setGlowingPlanetName(null);
 
+    // ✅ If this player is last in turn order
+    const playerNamesInOrder = players.map(p => p.name);
+    const isLastPlayer = playerNamesInOrder[playerNamesInOrder.length - 1] === myPlayer.name;
+    if (isLastPlayer) {
+      setIsEndOfRound(true);
+    }
 
     socket.emit("endTurn", { roomID });
   };
@@ -658,12 +677,13 @@ const Game = () => {
       </button>
 
       <button
-        className="endofround-button"
+        className={`endofround-button ${isEndOfRound ? "endofround-glow" : ""}`}
         onClick={() => setEndOfRoundOpen(true)}
         title="End of Round Actions"
       >
-        <img src="/Icons/endofround.png" alt="End of Round" className="endofround-icon" />
+        <img src="/Icons/endofround.png" alt="End of Round" className="dicebag-icon" />
       </button>
+
 
 
       <button

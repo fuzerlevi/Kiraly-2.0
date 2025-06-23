@@ -270,6 +270,7 @@
   right: 20px;
   background: transparent;
   border: none;
+  border-radius: 16pt;
   cursor: pointer;
   padding: 0;
 }
@@ -289,7 +290,7 @@
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -304,7 +305,6 @@
   max-width: 90%;
   box-shadow: 4px 4px 0 #000;
   position: relative;
-  font-family: 'Courier New', monospace;
 }
 
 .endofround-close-button {
@@ -342,7 +342,7 @@
   border-radius: 6px;
   padding: 10px 14px;
   margin-bottom: 8px;
-  font-size: 15px;
+  font-size: 13px;
   color: #111;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
   transition: background 0.2s ease;
@@ -350,6 +350,16 @@
 
 .endofround-list-item:hover {
   background-color: #e6e6e6;
+}
+
+.endofround-glow {
+  animation: glow-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes glow-pulse {
+  0%   { box-shadow: 0 0 0px orange; }
+  50%  { box-shadow: 0 0 20px 10px orange; }
+  100% { box-shadow: 0 0 0px orange; }
 }
 
 

@@ -92,6 +92,7 @@ const createGameState = (gameID) => {
     lastDrawnCard: null,
     activePlanets: [],
     glowingPlanets: [],
+    isEndOfRound: false,
   };
 };
 
@@ -303,6 +304,8 @@ io.on('connection', (socket) => {
 
     // Response back to the reconnected player
     socket.emit("joinRoomResponse", { gameID, success: true });
+    socket.emit("updateEndOfRound", gameState.isEndOfRound);
+
   });
 
   socket.on("startGame", ({ roomID }) => {
@@ -364,6 +367,8 @@ io.on('connection', (socket) => {
 
       socket.emit("updateRulesText", gameState.rulesText);
       socket.emit("updateDrinkEquation", gameState.drinkEquation);
+      socket.emit("updateEndOfRound", gameState.isEndOfRound);
+
     }
   });
 
@@ -377,6 +382,12 @@ io.on('connection', (socket) => {
       io.to(roomID).emit("gameOver");
       return;
     }
+
+    if (gameState.isEndOfRound) {
+      gameState.isEndOfRound = false;
+      io.to(roomID).emit("updateEndOfRound", false);
+    }
+
 
     const currentPlayer = Object.values(gameState.players).find(
       (p) => p.name === gameState.currentPlayerName
@@ -785,6 +796,11 @@ io.on('connection', (socket) => {
     const playerList = Object.values(gameState.players); // keep join order
     const currentIndex = playerList.findIndex(p => p.name === gameState.currentPlayerName);
     const nextIndex = (currentIndex + 1) % playerList.length;
+
+    const isLastPlayer = nextIndex === 0;
+    gameState.isEndOfRound = isLastPlayer;
+    io.to(roomID).emit("updateEndOfRound", gameState.isEndOfRound);
+
 
     gameState.currentPlayerName = playerList[nextIndex]?.name || null;
     gameState.lastDrawnCard = null;
