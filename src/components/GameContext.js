@@ -36,6 +36,11 @@ export const GameProvider = ({ children }) => {
   const [isEarthDrawPending, setIsEarthDrawPending] = useState(0);
   const [earthClonePending, setEarthClonePending] = useState(false);
 
+  const [activeTarots, setActiveTarots] = useState([]);
+  const [selectedTarotIndex, setSelectedTarotIndex] = useState(0);
+  const [glowingTarotIDs, setGlowingTarotIDs] = useState([]);
+  const [tarotPopupOpen, setTarotPopupOpen] = useState(false);
+
 
 
 
@@ -76,6 +81,11 @@ export const GameProvider = ({ children }) => {
 
       isEarthDrawPending, setIsEarthDrawPending,
       earthClonePending, setEarthClonePending,
+
+      activeTarots, setActiveTarots,
+      selectedTarotIndex, setSelectedTarotIndex,
+      glowingTarotIDs, setGlowingTarotIDs,
+      tarotPopupOpen, setTarotPopupOpen,
 
 
 

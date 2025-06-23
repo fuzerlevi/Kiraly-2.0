@@ -62,6 +62,11 @@ const Game = () => {
     isEarthDrawPending, setIsEarthDrawPending,
     earthClonePending, setEarthClonePending,
 
+    activeTarots, setActiveTarots,
+    selectedTarotIndex, setSelectedTarotIndex,
+    glowingTarotIDs, setGlowingTarotIDs,
+    tarotPopupOpen, setTarotPopupOpen,
+
 
     
   } = useGameContext();
@@ -1290,6 +1295,55 @@ const Game = () => {
         })}
 
       </div>
+
+      <div className="tarot-panel">
+        <h3 className="tarot-panel-title">Tarots</h3>
+        {activeTarots.length > 0 ? (
+          <div className="tarot-slot-wrapper">
+            <button
+              className={`tarot-arrow-button ${glowingTarotIDs.length > 0 && !glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "arrow-glow" : ""}`}
+              onClick={() =>
+                setSelectedTarotIndex((prev) =>
+                  (prev - 1 + activeTarots.length) % activeTarots.length
+                )
+              }
+            >
+              ←
+            </button>
+            <img
+              key={`${activeTarots[selectedTarotIndex]?.id}-${glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "glow" : "static"}`}
+              src={activeTarots[selectedTarotIndex].src}
+              alt={activeTarots[selectedTarotIndex].name}
+              className={`tarot-card-image ${glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "tarot-glow" : ""}`}
+              onClick={() => setTarotPopupOpen(true)}
+              style={{ cursor: "pointer" }}
+            />
+            <button
+              className={`tarot-arrow-button ${glowingTarotIDs.length > 0 && !glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "arrow-glow" : ""}`}
+              onClick={() =>
+                setSelectedTarotIndex((prev) =>
+                  (prev + 1) % activeTarots.length
+                )
+              }
+            >
+              →
+            </button>
+            <div className="tarot-index-text">
+              {selectedTarotIndex + 1}/{activeTarots.length}
+            </div>
+          </div>
+        ) : (
+          <div className="tarot-card-placeholder" />
+        )}
+
+        {tarotPopupOpen && (
+          <div className="planet-info-box tarot-info-box" onClick={() => setTarotPopupOpen(false)}>
+            <strong>{activeTarots[selectedTarotIndex].name}:</strong>{" "}
+            {activeTarots[selectedTarotIndex].effect || "No effect."}
+          </div>
+        )}
+      </div>
+
 
 
 
