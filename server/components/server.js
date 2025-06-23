@@ -58,18 +58,13 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 11), // jack
     Cards.find(card => card.id === 12), // queen
     Cards.find(card => card.id === 63), // Incantation
-    Cards.find(card => card.id === 73), // planet x
+    Cards.find(card => card.id === 68), // talisman
+    Cards.find(card => card.id === 68), // talisman
     Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 12), // queen
-    
     Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 12), // queen
-    Cards.find(card => card.id === 12), // queen
-    Cards.find(card => card.id === 12), // queen
     Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 12), // queen
-    Cards.find(card => card.id === 12), // queen
-    Cards.find(card => card.id === 12), // queen
+    Cards.find(card => card.id === 11), // jack
+    Cards.find(card => card.id === 11), // jack
     
     
 

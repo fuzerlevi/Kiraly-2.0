@@ -153,7 +153,7 @@ const cardEffects = {
 
   68: ({ player, roomID, games, Cards }) => {
     const gameState = games[roomID];
-    const forbiddenSpawnIDs = [57, 65, 66, 69, 63];
+    const forbiddenSpawnIDs = [57, 65, 66, 69, 63, 64];
 
     const spectralCards = Cards.filter(
       c => c.id >= 53 && c.id <= 70 && !forbiddenSpawnIDs.includes(c.id)
