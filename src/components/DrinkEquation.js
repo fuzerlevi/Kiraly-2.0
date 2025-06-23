@@ -5,12 +5,25 @@ import "../assets/DrinkEquation.css";
 
 const DrinkEquation = () => {
   const { players, drinkEquation, setDrinkEquation } = useGameContext();
-  const [baseSips, setBaseSips] = useState(1);
+
+  const [baseSipsInput, setBaseSipsInput] = useState("1");
   const [computedSips, setComputedSips] = useState({});
 
   const mySocketID = socket.id;
   const myPlayer = players.find((p) => p.socketID === mySocketID);
   const isHost = myPlayer?.isHost;
+
+  const baseSips = Number(baseSipsInput) || 1;
+
+  const handleBaseSipsChange = (e) => {
+    setBaseSipsInput(e.target.value);
+  };
+
+  const handleBaseSipsBlur = () => {
+    if (baseSipsInput.trim() === "" || isNaN(Number(baseSipsInput))) {
+      setBaseSipsInput("1");
+    }
+  };
 
   const adjustValue = (playerName, field, delta) => {
     const roomID = window.location.pathname.split("/").pop();
@@ -51,34 +64,31 @@ const DrinkEquation = () => {
                 <td>{player.name}</td>
 
                 <td>
-                    {isHost && (
-                        <button onClick={() => adjustValue(player.name, "multipliers", -0.5)}>-</button>
-                    )}
-                    <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
-                        {entry.multipliers}
-                    </span>
-                    {isHost && (
-                        <button onClick={() => adjustValue(player.name, "multipliers", 0.5)}>+</button>
-                )}
+                  {isHost && (
+                    <button onClick={() => adjustValue(player.name, "multipliers", -0.5)}>-</button>
+                  )}
+                  <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
+                    {entry.multipliers}
+                  </span>
+                  {isHost && (
+                    <button onClick={() => adjustValue(player.name, "multipliers", 0.5)}>+</button>
+                  )}
                 </td>
-
 
                 <td>
-                    {isHost && (
-                        <button onClick={() => adjustValue(player.name, "flats", -1)}>-</button>
-                    )}
-                    <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
-                        {entry.flats}
-                    </span>
-                    {isHost && (
-                        <button onClick={() => adjustValue(player.name, "flats", 1)}>+</button>
-                    )}
+                  {isHost && (
+                    <button onClick={() => adjustValue(player.name, "flats", -1)}>-</button>
+                  )}
+                  <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
+                    {entry.flats}
+                  </span>
+                  {isHost && (
+                    <button onClick={() => adjustValue(player.name, "flats", 1)}>+</button>
+                  )}
                 </td>
 
-
                 <td>{computedSips[player.name] ?? "-"}</td>
-                </tr>
-
+              </tr>
             );
           })}
         </tbody>
@@ -87,14 +97,15 @@ const DrinkEquation = () => {
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "24px", marginLeft: "33px" }}>
         <label htmlFor="baseSips">Base sips:</label>
         <input
-            id="baseSips"
-            type="number"
-            value={baseSips}
-            onChange={(e) => setBaseSips(Number(e.target.value))}
-            style={{ width: "80px" }}
+          id="baseSips"
+          type="number"
+          value={baseSipsInput}
+          onChange={handleBaseSipsChange}
+          onBlur={handleBaseSipsBlur}
+          style={{ width: "80px" }}
         />
         <button onClick={calculateSips}>Calculate</button>
-        </div>
+      </div>
     </div>
   );
 };
