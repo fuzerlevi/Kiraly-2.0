@@ -428,13 +428,13 @@ const Game = () => {
 
     // 1. PLANET effects
     if (activePlanets.some(card => card.name === "Uranus")) {
-      entries.push({ name: "Uranus", text: "Ha valaki kockával dob, annyit iszik, amilyen számot dobott" });
+      entries.push({ name: "Uranus", text: "Ha valaki kockával dob, annyit iszik, amilyen számot dobott", icon: "/CardImages/PLANET/uranus.png" });
     }
     if (activePlanets.some(card => card.name === "Venus")) {
-      entries.push({ name: "Venus", text: "Minden lány iszik 1-et" });
+      entries.push({ name: "Venus", text: "Minden lány iszik 1-et", icon: "/CardImages/PLANET/venus.png" });
     }
     if (activePlanets.some(card => card.name === "Jupiter")) {
-      entries.push({ name: "Jupiter", text: "Minden fiú iszik 1-et" });
+      entries.push({ name: "Jupiter", text: "Minden fiú iszik 1-et", icon: "/CardImages/PLANET/jupiter.png" });
     }
     
 
@@ -794,12 +794,14 @@ const Game = () => {
               <p className="endofround-empty-text">No end-of-round effects are currently active.</p>
             ) : (
               <ul className="endofround-list">
-                {endOfRoundEntries.map(({ name, text }, idx) => (
+                {endOfRoundEntries.map(({ name, text, icon }, idx) => (
                   <li key={idx} className="endofround-list-item">
-                    <strong>{name}:</strong> {text}
+                    {icon && <img src={icon} alt={name} className="endofround-icon-image" />}
+                    <div className="endofround-text"><strong>{name}:</strong> {text}</div>
                   </li>
                 ))}
               </ul>
+
             )}
           </div>
         </div>

@@ -337,6 +337,9 @@
 }
 
 .endofround-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   background-color: #f8f8f8;
   border: 1px solid #333;
   border-radius: 6px;
@@ -346,6 +349,16 @@
   color: #111;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
   transition: background 0.2s ease;
+}
+
+.endofround-icon-image {
+  width: 70px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.endofround-text {
+  flex: 1;
 }
 
 .endofround-list-item:hover {
