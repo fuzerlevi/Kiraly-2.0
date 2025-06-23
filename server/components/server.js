@@ -50,6 +50,14 @@ const recalculateKingsRemaining = (gameState) => {
   gameState.kingsRemaining = kingsInDeck;
 };
 
+const isEarthCloneEligible = (card) => {
+  const forbiddenSpectralIDs = [57, 63, 64, 65, 66, 68, 69];
+  const isFrench = card.id >= 1 && card.id <= 52;
+  const isSafeSpectral = card.id >= 53 && card.id <= 70 && !forbiddenSpectralIDs.includes(card.id);
+  return isFrench || isSafeSpectral;
+};
+
+
 
 
 //Toggle between shuffled and preassembled decks
@@ -62,17 +70,19 @@ const createGameState = (gameID) => {
   // TEST DECK
   const deck = [
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 76), // earth
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 1), // ace
     
     
     
@@ -422,6 +432,12 @@ io.on('connection', (socket) => {
     if (drawnCard.cardType !== "PLANET") {
       currentPlayer.cardsDrawn.push(drawnCard);
     }
+
+    if (drawnCard.source === "EARTH") {
+      currentPlayer.effectState.earthClonePending = false;
+    }
+
+
 
     // Decrement incantationDrawsRemaining if the drawn card is a PLANET and incantation is active
     if (drawnCard.cardType === "PLANET" && currentPlayer.effectState.incantationDrawsRemaining > 0) {
@@ -858,10 +874,22 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateEndOfRound", gameState.isEndOfRound);
 
 
-    gameState.currentPlayerName = playerList[nextIndex]?.name || null;
+    const isEarthOnlyTurn = playerList[nextIndex]?.effectState?.earthClonePending;
+
+    if (isEarthOnlyTurn) {
+      // Clear pending EARTH flag from next player
+      playerList[nextIndex].effectState.earthClonePending = false;
+      console.log(`[EARTH] ${playerList[nextIndex].name} finished Earth clone — keeping turn at ${currentPlayer.name}`);
+      // Do NOT change currentPlayerName!
+    } else {
+      gameState.currentPlayerName = playerList[nextIndex]?.name || null;
+    }
+
+
     gameState.lastDrawnCard = null;
 
-    for (const player of Object.values(gameState.players)) {
+    if (!isEarthOnlyTurn) {
+      for (const player of Object.values(gameState.players)) {
       player.effectState = {
         isChoosingBrother: false,
         isChoosingMediumCard: false,
@@ -871,6 +899,28 @@ io.on('connection', (socket) => {
         sigilDrawsRemaining: 0,
       };
     }
+    }
+    
+
+    if (gameState.activePlanets?.some(card => card.name === "Earth")) {
+      const lastCard = currentPlayer.cardsDrawn[currentPlayer.cardsDrawn.length - 1];
+      if (lastCard && isEarthCloneEligible(lastCard)) {
+        const playerList = Object.values(gameState.players);
+        const currentIndex = playerList.findIndex(p => p.name === currentPlayer.name);
+        const nextIndex = (currentIndex + 1) % playerList.length;
+        const nextPlayer = playerList[nextIndex];
+
+        if (nextPlayer) {
+          currentPlayer.effectState.earthClonePending = false;
+          const clone = { ...lastCard, source: "EARTH" };
+          gameState.deck.unshift(clone);
+          nextPlayer.effectState.earthClonePending = true;
+          console.log(`[EARTH] ${lastCard.name} cloned for ${nextPlayer.name}`);
+        }
+      }
+    }
+
+
 
     console.log(`Turn ended. Next: ${gameState.currentPlayerName}`);
 
@@ -899,6 +949,23 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("clearPlanetGlow");
 
   });
+
+  socket.on("endTurnEarth", ({ roomID }) => {
+    const game = games[roomID];
+    if (!game) return;
+
+    const player = game.players[socket.id];
+    if (!player) return;
+
+    // ✅ Clear EARTH flags
+    player.effectState.earthClonePending = false;
+    game.isEarthDrawPending = false;
+
+    // ✅ Allow player to continue their real turn
+    // Just emit a fresh game state — without changing the turn
+    io.to(roomID).emit("updateGameState", getUpdatedGameState(game));
+  });
+
 
   
 
@@ -938,6 +1005,27 @@ io.on('connection', (socket) => {
     }
     return newGraph;
   };
+
+  const getUpdatedGameState = (gameState) => ({
+    deck: gameState.deck,
+    players: Object.fromEntries(
+      Object.entries(gameState.players).map(([sid, player]) => [
+        sid,
+        {
+          ...player,
+          effectState: { ...player.effectState },
+        },
+      ])
+    ),
+    currentPlayerName: gameState.currentPlayerName,
+    brothersGraph: cloneGraph(gameState.brothersGraph),
+    drinkEquation: gameState.drinkEquation,
+    rulesText: gameState.rulesText,
+    kingsRemaining: gameState.kingsRemaining,
+    lastDrawnCard: gameState.lastDrawnCard,
+    activePlanets: gameState.activePlanets,
+  });
+
 
   socket.on('addBrotherConnection', ({ roomID, sourceName, targetName }) => {
     const gameState = games[roomID];

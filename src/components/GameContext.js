@@ -33,6 +33,8 @@ export const GameProvider = ({ children }) => {
 
   const [incantationDrawsRemaining, setIncantationDrawsRemaining] = useState(0);
 
+  const [isEarthDrawPending, setIsEarthDrawPending] = useState(0);
+
 
 
 
@@ -69,6 +71,9 @@ export const GameProvider = ({ children }) => {
       planetXActive, setPlanetXActive,
 
       incantationDrawsRemaining, setIncantationDrawsRemaining,
+
+      isEarthDrawPending, setIsEarthDrawPending,
+
 
     }}>
       {children}

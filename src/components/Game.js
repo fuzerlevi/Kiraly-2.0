@@ -59,6 +59,8 @@ const Game = () => {
     isEndOfRound, setIsEndOfRound,
     planetXActive, setPlanetXActive,
     incantationDrawsRemaining, setIncantationDrawsRemaining,
+    isEarthDrawPending, setIsEarthDrawPending,
+
     
   } = useGameContext();
 
@@ -128,10 +130,12 @@ const Game = () => {
   // Dicebag
   const [diceBagOpen, setDiceBagOpen] = useState(false);
 
-  //PLANETs
+  // PLANETs
   const glowRef = useRef();
   glowRef.current = setGlowingPlanetName; // always current
   const [selectedPlanet, setSelectedPlanet] = useState(null);
+
+  // EARTH
   
 
 
@@ -167,41 +171,52 @@ const Game = () => {
     });
 
     socket.on("updateGameState", (data) => {
-    const playerList = Object.values(data.players);
-    setPlayers(playerList || []);
-    setDeck(data.deck || []);
-    setActivePlanets(data.activePlanets || []);
-    setCurrentPlayerName(data.currentPlayerName || null);
-    setKingsRemaining(data.kingsRemaining ?? 4);
+      const playerList = Object.values(data.players);
+      setPlayers(playerList || []);
+      setDeck(data.deck || []);
+      setActivePlanets(data.activePlanets || []);
+      setCurrentPlayerName(data.currentPlayerName || null);
+      setKingsRemaining(data.kingsRemaining ?? 4);
 
-    if (data.brothersGraph) {
-      setBrothersGraph(data.brothersGraph);
-    }
+      if (data.brothersGraph) {
+        setBrothersGraph(data.brothersGraph);
+      }
 
-    const me = playerList.find(p => p.socketID === socket.id);
+      const me = playerList.find(p => p.socketID === socket.id);
+      setMySocketID(socket.id);
 
-    // ✅ Always set the drawn card from server state
-    setCardDrawn(data.lastDrawnCard || null);
+      if (me?.effectState?.earthClonePending) {
+        setIsEarthDrawPending(true);
+      } else {
+        setIsEarthDrawPending(false);
+      }
 
-    // ✅ Always reset these turn-related flags
-    setIsTurnEnded(false);
-    setReadyToEndTurn(false);
 
-    if (me?.effectState) {
-      setIsChoosingBrother(me.effectState.isChoosingBrother || false);
-      setIsChoosingMediumCard(me.effectState.isChoosingMediumCard || false);
-      setIsTranceActive(me.effectState.isTranceActive || false);
-      setHasActiveDejaVu(me.effectState.hasActiveDejaVu || false);
-      setIsChoosingOuijaCard(me.effectState.isChoosingOuijaCard || false);
-    }
 
-    console.log("[RECONNECT] cardDrawn:", data.lastDrawnCard);
-    console.log("[RECONNECT] isChoosingBrother:", isChoosingBrother);
-    console.log("[RECONNECT] isChoosingMediumCard:", isChoosingMediumCard);
-    console.log("[RECONNECT] isTranceActive:", isTranceActive);
-    console.log("[RECONNECT] currentPlayerName:", data.currentPlayerName);
-    console.log("[RECONNECT] myPlayerName:", me?.name);
-  });
+
+
+      // ✅ Always set the drawn card from server state
+      setCardDrawn(data.lastDrawnCard || null);
+
+      // ✅ Always reset these turn-related flags
+      setIsTurnEnded(false);
+      setReadyToEndTurn(false);
+
+      if (me?.effectState) {
+        setIsChoosingBrother(me.effectState.isChoosingBrother || false);
+        setIsChoosingMediumCard(me.effectState.isChoosingMediumCard || false);
+        setIsTranceActive(me.effectState.isTranceActive || false);
+        setHasActiveDejaVu(me.effectState.hasActiveDejaVu || false);
+        setIsChoosingOuijaCard(me.effectState.isChoosingOuijaCard || false);
+      }
+
+      console.log("[RECONNECT] cardDrawn:", data.lastDrawnCard);
+      console.log("[RECONNECT] isChoosingBrother:", isChoosingBrother);
+      console.log("[RECONNECT] isChoosingMediumCard:", isChoosingMediumCard);
+      console.log("[RECONNECT] isTranceActive:", isTranceActive);
+      console.log("[RECONNECT] currentPlayerName:", data.currentPlayerName);
+      console.log("[RECONNECT] myPlayerName:", me?.name);
+    });
 
 
 
@@ -219,6 +234,20 @@ const Game = () => {
       if (myPlayer?.effectState?.incantationDrawsRemaining !== undefined) {
         setIncantationDrawsRemaining(myPlayer.effectState.incantationDrawsRemaining);
       }
+
+      if (drawnCard?.source === "EARTH") {
+      console.log("[EARTH] Earth clone card drawn. Setting flags.");
+      setIsEarthDrawPending(true);
+
+      if (myPlayer?.effectState) {
+        myPlayer.effectState.earthClonePending = true;
+      } else {
+        console.warn("[EARTH] Could not find myPlayer.effectState to set earthClonePending.");
+      }
+    }
+
+
+
 
       if (myPlayer && drawnCard?.id && cardEffects[drawnCard.id]) {
         cardEffects[drawnCard.id]({
@@ -525,8 +554,42 @@ const Game = () => {
       setIsEndOfRound(true);
     }
 
+    setIsEarthDrawPending(false); // Reset manually just in case
+
+
     socket.emit("endTurn", { roomID });
   };
+
+  const endTurnEarth = () => {
+    if (myPlayer?.name !== currentPlayerName) return;
+
+    // 🔍 Defensive cleanup
+    if (myPlayer?.effectState) {
+      myPlayer.effectState.earthClonePending = false;
+    }
+
+    setIsEarthDrawPending(false);
+    setCardDrawn(null);
+    setIsTurnEnded(true);
+    setReadyToEndTurn(false);
+
+    if (window.__planetGlowIntervals) {
+      Object.values(window.__planetGlowIntervals).forEach(clearInterval);
+      window.__planetGlowIntervals = {};
+    }
+
+    setPlanetGlowKeys({});
+    setGlowingPlanetName(null);
+
+    const playerNamesInOrder = players.map(p => p.name);
+    const isLastPlayer = playerNamesInOrder[playerNamesInOrder.length - 1] === myPlayer.name;
+    if (isLastPlayer) {
+      setIsEndOfRound(true);
+    }
+
+    socket.emit("endTurnEarth", { roomID });
+  };
+
 
 
   // Coinflip handlers
@@ -628,16 +691,44 @@ const Game = () => {
         currentPlayerName &&
         myPlayer?.name === currentPlayerName && (
           <>
-            {cardDrawn === null && !readyToEndTurn ? (
-              myPlayer?.effectState?.sigilDrawsRemaining > 0 ? (
-                <button className="floating-button" onClick={drawACard}>
-                  Draw ({3 - myPlayer.effectState.sigilDrawsRemaining}/2)
-                </button>
-              ) : myPlayer?.effectState?.talismanDrawsRemaining > 0 ? (
-                <button className="floating-button" onClick={drawACard}>
-                  Draw ({3 - myPlayer.effectState.talismanDrawsRemaining}/2)
-                </button>
-              ) : (() => {
+            {(() => {
+              console.log("🧪 Button Eval:");
+              console.log("myPlayer:", myPlayer);
+              console.log("myPlayer.effectState:", myPlayer?.effectState);
+              console.log("myPlayer.effectState.earthClonePending:", myPlayer?.effectState?.earthClonePending);
+              console.log("isEarthDrawPending:", isEarthDrawPending);
+              console.log("cardDrawn:", cardDrawn);
+
+              if (myPlayer?.effectState?.earthClonePending || isEarthDrawPending) {
+                if (cardDrawn === null) {
+                  return (
+                    <button className="floating-button" onClick={drawACard}>
+                      Draw (Earth)
+                    </button>
+                  );
+                } else {
+                  return (
+                    <button className="floating-button" onClick={endTurnEarth}>
+                      End Turn (Earth)
+                    </button>
+                  );
+                }
+              }
+
+              if (cardDrawn === null && !readyToEndTurn) {
+                if (myPlayer?.effectState?.sigilDrawsRemaining > 0) {
+                  return (
+                    <button className="floating-button" onClick={drawACard}>
+                      Draw ({3 - myPlayer.effectState.sigilDrawsRemaining}/2)
+                    </button>
+                  );
+                } else if (myPlayer?.effectState?.talismanDrawsRemaining > 0) {
+                  return (
+                    <button className="floating-button" onClick={drawACard}>
+                      Draw ({3 - myPlayer.effectState.talismanDrawsRemaining}/2)
+                    </button>
+                  );
+                } else {
                   const lastCard = myPlayer?.cardsDrawn?.[myPlayer.cardsDrawn.length - 1];
                   const isWaitingForOuijaClone = lastCard?.id === 65;
 
@@ -667,41 +758,57 @@ const Game = () => {
                       </button>
                     );
                   }
-                })()
-            ) : isChoosingBrother ? (
-              <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
-                Choose Brother
-              </button>
-            ) : isChoosingMediumCard ? (
-              <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
-                Choose Card
-              </button>
-            ) : isTranceActive ? (
-              <button className="floating-button" onClick={handleTranceShuffle}>
-                Shuffle
-              </button>
-            ) : isChoosingOuijaCard ? (
-              <button className="floating-button" onClick={() => setOuijaModalOpen(true)}>
-                Choose Card
-              </button>
-            ) : planetXActive ? (
-              <button
-                className="floating-button"
-                onClick={() => {
-                  socket.emit("planetXShuffle", { roomID, playerName: myPlayer.name });
-                  setPlanetXActive(false);
-                }}
-              >
-                Shuffle
-              </button>
-            ) : (
-              <button className="floating-button" onClick={endTurn}>
-                End Turn
-              </button>
-            )}
-
+                }
+              } else if (isChoosingBrother) {
+                return (
+                  <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
+                    Choose Brother
+                  </button>
+                );
+              } else if (isChoosingMediumCard) {
+                return (
+                  <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
+                    Choose Card
+                  </button>
+                );
+              } else if (isTranceActive) {
+                return (
+                  <button className="floating-button" onClick={handleTranceShuffle}>
+                    Shuffle
+                  </button>
+                );
+              } else if (isChoosingOuijaCard) {
+                return (
+                  <button className="floating-button" onClick={() => setOuijaModalOpen(true)}>
+                    Choose Card
+                  </button>
+                );
+              } else if (planetXActive) {
+                return (
+                  <button
+                    className="floating-button"
+                    onClick={() => {
+                      socket.emit("planetXShuffle", { roomID, playerName: myPlayer.name });
+                      setPlanetXActive(false);
+                    }}
+                  >
+                    Shuffle
+                  </button>
+                );
+              } else {
+                return (
+                  <button className="floating-button" onClick={endTurn}>
+                    End Turn
+                  </button>
+                );
+              }
+            })()}
           </>
       )}
+
+
+
+
 
 
 
