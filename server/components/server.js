@@ -57,9 +57,18 @@ const createGameState = (gameID) => {
   const deck = [
     Cards.find(card => card.id === 11), // jack
     Cards.find(card => card.id === 12), // queen
-    Cards.find(card => card.id === 78), // jupiter
-    Cards.find(card => card.id === 80), // uranus
+    Cards.find(card => card.id === 63), // Incantation
+    Cards.find(card => card.id === 73), // planet x
     Cards.find(card => card.id === 11), // jack
+    Cards.find(card => card.id === 12), // queen
+    
+    Cards.find(card => card.id === 11), // jack
+    Cards.find(card => card.id === 12), // queen
+    Cards.find(card => card.id === 12), // queen
+    Cards.find(card => card.id === 12), // queen
+    Cards.find(card => card.id === 11), // jack
+    Cards.find(card => card.id === 12), // queen
+    Cards.find(card => card.id === 12), // queen
     Cards.find(card => card.id === 12), // queen
     
     
@@ -74,7 +83,7 @@ const createGameState = (gameID) => {
     // Cards.find(card => card.id === 66), // sigil
     // Cards.find(card => card.id === 54), // aura
     // Cards.find(card => card.id === 68), // talisman
-    // Cards.find(c => c.id === 63), // Incantation
+    // Cards.find(card => card.id === 63), // Incantation
   ];
 
   const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
@@ -108,6 +117,8 @@ const createPlayerState = (socketID) => ({
   isChoosingMediumCard: false,
   isTranceActive: false,
   hasActiveDejaVu: false,
+  isPlanetXActive: false,
+  incantationDrawsRemaining: 0,
 }
 
 });
@@ -278,11 +289,11 @@ io.on('connection', (socket) => {
         incantationDrawsRemaining: player.effectState.incantationDrawsRemaining
       });
     }
+    const roomID = gameID; // define roomID from the already existing gameID variable
 
-
-
-
-
+    if (player?.effectState?.isPlanetXActive) {
+      socket.emit("triggerPlanetXShuffle", { roomID });
+    }
 
 
     // If game already started, emit gameStarted only to this reconnecting socket
@@ -359,6 +370,11 @@ io.on('connection', (socket) => {
         socket.emit("triggerTrance", { roomID, playerName: player.name });
       }
 
+      if (player?.effectState?.isPlanetXActive) {
+        socket.emit("triggerPlanetXShuffle", { roomID, playerName: player.name });
+      }
+
+
       // 🔁 Re-trigger glow for all currently glowing planets
       for (const planetName of gameState.glowingPlanets) {
         socket.emit("planetGlow", { planetName });
@@ -402,6 +418,40 @@ io.on('connection', (socket) => {
     if (drawnCard.cardType !== "PLANET") {
       currentPlayer.cardsDrawn.push(drawnCard);
     }
+
+    // Decrement incantationDrawsRemaining if the drawn card is a PLANET and incantation is active
+    if (drawnCard.cardType === "PLANET" && currentPlayer.effectState.incantationDrawsRemaining > 0) {
+      currentPlayer.effectState.incantationDrawsRemaining--;
+      console.log(`[INCANTATION] Decremented due to PLANET card. Remaining: ${currentPlayer.effectState.incantationDrawsRemaining}`);
+    }
+
+
+    if (drawnCard.id === 73) {
+      gameState.activePlanets.push(drawnCard);
+
+      currentPlayer.effectState.isPlanetXActive = true;
+
+      const currentPlayerSocket = currentPlayer.socketID;
+      if (currentPlayerSocket) {
+        io.to(currentPlayerSocket).emit("triggerPlanetXShuffle", { roomID });
+      }
+
+      // Still emit cardDrawn so the UI updates
+      const upcomingCard = gameState.deck[0];
+
+      io.to(roomID).emit("cardDrawn", {
+        drawnCard,
+        newDeck: gameState.deck,
+        updatedPlayers: Object.values(gameState.players),
+        kingsRemaining: gameState.kingsRemaining,
+        nextCard: upcomingCard || null,
+        activePlanets: gameState.activePlanets,
+      });
+
+      return;
+    }
+
+
 
     // ☿️ MERCURY: Add +X to drinkEquation based on turn order distance
     if (drawnCard.name === "Mercury") {
@@ -786,9 +836,11 @@ io.on('connection', (socket) => {
     }
 
     if (currentPlayer.effectState?.incantationDrawsRemaining > 0) {
-      console.log(`[INCANTATION] ${currentPlayer.name} still has ${currentPlayer.effectState.incantationDrawsRemaining} draw(s) remaining.`);
+      console.log(`[INCANTATION] Cannot end turn — ${currentPlayer.effectState.incantationDrawsRemaining} draws remaining.`);
       return;
     }
+
+
 
 
 
@@ -820,7 +872,16 @@ io.on('connection', (socket) => {
 
     io.to(roomID).emit('updateGameState', {
       deck: gameState.deck,
-      players: playerList,
+      players: Object.fromEntries(
+        Object.entries(gameState.players).map(([sid, player]) => [
+          sid,
+          {
+            ...player,
+            effectState: { ...player.effectState },
+          },
+        ])
+      ),
+
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
       drinkEquation: gameState.drinkEquation,
@@ -1114,6 +1175,68 @@ io.on('connection', (socket) => {
       io.to(player.socketID).emit("forceDrawCard", { roomID });
     }
   });
+
+  socket.on("planetXShuffle", ({ roomID, playerName }) => {
+  const gameState = games[roomID];
+  if (!gameState) return;
+
+  const allCards = [];
+
+  for (const player of Object.values(gameState.players)) {
+    const nonPlanetCards = player.cardsDrawn.filter(c => c.cardType !== "PLANET");
+    const toShuffle = nonPlanetCards.map(card => ({
+      ...card,
+      source: `${player.name} - PLANET X`
+    }));
+
+    allCards.push(...toShuffle);
+    player.cardsDrawn = [];
+  }
+
+  for (const card of allCards) {
+    const index = Math.floor(Math.random() * (gameState.deck.length + 1));
+    gameState.deck.splice(index, 0, card);
+  }
+
+  console.log(`[PLANET X] Shuffled ${allCards.length} cards from all players into the deck`);
+
+  // Broadcast updated game state to all clients
+  io.to(roomID).emit("updateGameState", {
+    deck: gameState.deck,
+    players: Object.fromEntries(
+      Object.entries(gameState.players).map(([sid, player]) => [
+        sid,
+        {
+          ...player,
+          effectState: { ...player.effectState },
+        },
+      ])
+    ),
+    currentPlayerName: gameState.currentPlayerName,
+    brothersGraph: cloneGraph(gameState.brothersGraph),
+    drinkEquation: gameState.drinkEquation,
+    rulesText: gameState.rulesText,
+    kingsRemaining: gameState.kingsRemaining,
+    lastDrawnCard: null,
+    activePlanets: gameState.activePlanets,
+  });
+
+  // 🔧 Find the player who triggered it
+  const triggeringPlayer = Object.values(gameState.players).find(p => p.name === playerName);
+  if (triggeringPlayer) {
+    io.to(triggeringPlayer.socketID).emit("planetXShuffleComplete");
+  }
+
+  // Reset planetXActive flag for everyone
+  for (const player of Object.values(gameState.players)) {
+    player.effectState.isPlanetXActive = false;
+  }
+
+  gameState.glowingPlanets = [];
+  io.to(roomID).emit("clearPlanetGlow");
+});
+
+
 
 
 

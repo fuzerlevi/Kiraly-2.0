@@ -29,6 +29,10 @@ export const GameProvider = ({ children }) => {
   const [glowingPlanetName, setGlowingPlanetName] = useState(null);
   const [planetGlowKeys, setPlanetGlowKeys] = useState({});
   const [isEndOfRound, setIsEndOfRound] = useState(false);
+  const [planetXActive, setPlanetXActive] = useState(false);
+
+  const [incantationDrawsRemaining, setIncantationDrawsRemaining] = useState(0);
+
 
 
 
@@ -62,6 +66,9 @@ export const GameProvider = ({ children }) => {
       planetGlowKeys, setPlanetGlowKeys,
 
       isEndOfRound, setIsEndOfRound,
+      planetXActive, setPlanetXActive,
+
+      incantationDrawsRemaining, setIncantationDrawsRemaining,
 
     }}>
       {children}

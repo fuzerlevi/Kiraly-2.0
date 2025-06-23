@@ -57,6 +57,8 @@ const Game = () => {
     glowingPlanetName, setGlowingPlanetName,
     planetGlowKeys, setPlanetGlowKeys,
     isEndOfRound, setIsEndOfRound,
+    planetXActive, setPlanetXActive,
+    incantationDrawsRemaining, setIncantationDrawsRemaining,
     
   } = useGameContext();
 
@@ -130,6 +132,8 @@ const Game = () => {
   const glowRef = useRef();
   glowRef.current = setGlowingPlanetName; // always current
   const [selectedPlanet, setSelectedPlanet] = useState(null);
+  
+
 
   //End of Round feature
   const [endOfRoundOpen, setEndOfRoundOpen] = useState(false);
@@ -210,9 +214,11 @@ const Game = () => {
       setIsTurnEnded(false);
       setKingsRemaining(kingsRemaining);
       
-
-
       const myPlayer = updatedPlayers.find(p => p.socketID === socket.id);
+
+      if (myPlayer?.effectState?.incantationDrawsRemaining !== undefined) {
+        setIncantationDrawsRemaining(myPlayer.effectState.incantationDrawsRemaining);
+      }
 
       if (myPlayer && drawnCard?.id && cardEffects[drawnCard.id]) {
         cardEffects[drawnCard.id]({
@@ -374,6 +380,26 @@ const Game = () => {
       setIsEndOfRound(status);
     });
 
+    socket.on("planetXShuffleComplete", () => {
+      setPlanetXActive(false);
+      setCardDrawn(null);
+
+      const canDrawMore =
+        myPlayer?.effectState?.incantationDrawsRemaining > 0 ||
+        myPlayer?.effectState?.sigilDrawsRemaining > 0 ||
+        myPlayer?.effectState?.talismanDrawsRemaining > 0 ||
+        isChoosingOuijaCard || 
+        hasActiveDejaVu;
+
+      if (canDrawMore) {
+        setReadyToEndTurn(false);
+      } else {
+        setReadyToEndTurn(true);
+      }
+    });
+
+
+
 
 
 
@@ -440,6 +466,17 @@ const Game = () => {
 
     setEndOfRoundEntries(entries);
   }, [activePlanets]);
+
+  useEffect(() => {
+    socket.on("triggerPlanetXShuffle", ({ roomID }) => {
+      setPlanetXActive(true); // triggers special shuffle UI
+    });
+
+    return () => {
+      socket.off("triggerPlanetXShuffle");
+    };
+  }, []);
+
 
 
 
@@ -620,15 +657,7 @@ const Game = () => {
                   ) {
                     return (
                       <button className="floating-button" onClick={drawACard}>
-                        Draw ({
-                          myPlayer.cardsDrawn.filter(card =>
-                            !card.source?.includes("TALISMAN") &&
-                            !card.source?.includes("SIGIL") &&
-                            !card.source?.includes("DEJA VU") &&
-                            !card.source?.includes("OUIJA") &&
-                            !card.source?.includes("INCANTATION")
-                          ).length
-                        }/5)
+                        Draw ({6 - incantationDrawsRemaining}/5)
                       </button>
                     );
                   } else {
@@ -655,11 +684,22 @@ const Game = () => {
               <button className="floating-button" onClick={() => setOuijaModalOpen(true)}>
                 Choose Card
               </button>
+            ) : planetXActive ? (
+              <button
+                className="floating-button"
+                onClick={() => {
+                  socket.emit("planetXShuffle", { roomID, playerName: myPlayer.name });
+                  setPlanetXActive(false);
+                }}
+              >
+                Shuffle
+              </button>
             ) : (
               <button className="floating-button" onClick={endTurn}>
                 End Turn
               </button>
             )}
+
           </>
       )}
 
