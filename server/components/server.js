@@ -62,13 +62,18 @@ const createGameState = (gameID) => {
   // TEST DECK
   const deck = [
     Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 69), // trance
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 73), // planetx
-    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 54), // aura
+    
     
     
 

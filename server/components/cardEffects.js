@@ -134,22 +134,40 @@ const cardEffects = {
     const playerName = player.name;
     const oldGraph = gameState.brothersGraph;
 
+    // Clone the old graph deeply
     const flippedGraph = {};
     for (const [source, targets] of Object.entries(oldGraph)) {
-      flippedGraph[source] = targets.filter(name => name !== playerName);
+      flippedGraph[source] = [...targets];
     }
 
-    const newBrothers = Object.entries(oldGraph)
+    // Find all sources that point to this player
+    const incomingConnections = Object.entries(oldGraph)
       .filter(([_, targets]) => targets.includes(playerName))
-      .map(([source, _]) => source);
+      .map(([source]) => source);
 
-    flippedGraph[playerName] = newBrothers;
+    // For each source → playerName, remove that arrow
+    for (const source of incomingConnections) {
+      flippedGraph[source] = flippedGraph[source].filter(name => name !== playerName);
+    }
+
+    // Then make playerName → source connections
+    if (!flippedGraph[playerName]) {
+      flippedGraph[playerName] = [];
+    }
+
+    for (const source of incomingConnections) {
+      if (!flippedGraph[playerName].includes(source)) {
+        flippedGraph[playerName].push(source);
+      }
+    }
+
     gameState.brothersGraph = flippedGraph;
 
-    console.log(`[AURA] Flipped brother connections for ${playerName}`, flippedGraph);
+    console.log(`[AURA] Flipped arrows *pointed at* ${playerName}`, flippedGraph);
 
     return { updatedBrothersGraph: true };
   },
+
 
   68: ({ player, roomID, games, Cards }) => {
     const gameState = games[roomID];
