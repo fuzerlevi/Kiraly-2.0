@@ -45,6 +45,12 @@ const buildShuffledDeck = () => {
 
 const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
 
+const recalculateKingsRemaining = (gameState) => {
+  const kingsInDeck = gameState.deck.filter(card => kingIDs.includes(card.id)).length;
+  gameState.kingsRemaining = kingsInDeck;
+};
+
+
 
 //Toggle between shuffled and preassembled decks
 const createGameState = (gameID) => {
@@ -55,16 +61,14 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 12), // queen
-    Cards.find(card => card.id === 63), // Incantation
-    Cards.find(card => card.id === 68), // talisman
-    Cards.find(card => card.id === 68), // talisman
-    Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 11), // jack
-    Cards.find(card => card.id === 11), // jack
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 69), // trance
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 73), // planetx
+    Cards.find(card => card.id === 13), // king
     
     
 
@@ -1106,6 +1110,8 @@ io.on('connection', (socket) => {
       gameState.deck.splice(randomIndex, 0, card);
     }
 
+    recalculateKingsRemaining(gameState);
+
     console.log(`[TRANCE] Shuffled ${shuffledBack.length} cards from ${playerName} back into the deck`);
 
     io.to(roomID).emit("updateGameState", {
@@ -1192,6 +1198,8 @@ io.on('connection', (socket) => {
     const index = Math.floor(Math.random() * (gameState.deck.length + 1));
     gameState.deck.splice(index, 0, card);
   }
+
+  recalculateKingsRemaining(gameState);
 
   console.log(`[PLANET X] Shuffled ${allCards.length} cards from all players into the deck`);
 
