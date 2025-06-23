@@ -701,17 +701,7 @@ const Game = () => {
         myPlayer?.name === currentPlayerName && (
           <>
             {(() => {
-              console.log("[DRAW LOGIC]");
-              console.log("cardDrawn:", cardDrawn);
-              console.log("myPlayer?.effectState.earthClonePending:", myPlayer?.effectState?.earthClonePending);
-              console.log("isEarthDrawPending:", isEarthDrawPending);
-              console.log("readyToEndTurn:", readyToEndTurn);
-              console.log("isChoosingOuijaCard:", isChoosingOuijaCard);
-              console.log("hasActiveDejaVu:", hasActiveDejaVu);
-              console.log("incantationDrawsRemaining:", incantationDrawsRemaining);
-              console.log("sigilDrawsRemaining:", myPlayer?.effectState?.sigilDrawsRemaining);
-              console.log("talismanDrawsRemaining:", myPlayer?.effectState?.talismanDrawsRemaining);
-              console.log("planetXActive:", planetXActive);
+              
 
                // 🌍 EARTH logic
               if (isEarthDrawPending) {
@@ -728,16 +718,6 @@ const Game = () => {
                     </button>
                   );
                 }
-              }
-
-
-              // 🌍 After EARTH clone resolved: show fresh draw
-              if (isEarthDrawPending) {
-                return (
-                  <button className="floating-button" onClick={drawACard}>
-                    Draw (Earth)
-                  </button>
-                );
               }
 
 
