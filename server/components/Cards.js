@@ -93,6 +93,29 @@ const Cards = [
   { id: 81, cardType: "PLANET", name: "Neptune", effect: "Minden vízesés 2-szer megy körbe", color: "", src: "/CardImages/PLANET/neptune.png", source: "" },
   { id: 82, cardType: "PLANET", name: "Pluto", effect: "Ha valaki önt valamit a királyba, előtte meg kell innia fele annyit az adott italból", color: "", src: "/CardImages/PLANET/pluto.png", source: "" },
 
+  { id: 83, cardType: "TAROT", name: "Fool", effect: "Minden kör végén feldob egy érmét, ha fejet dob iszik 2-t", color: "", src: "/CardImages/TAROT/fool.png", source: "" },
+  { id: 84, cardType: "TAROT", name: "Magician", effect: "2-t húz körönként", color: "", src: "/CardImages/TAROT/magician.png", source: "" },
+  { id: 85, cardType: "TAROT", name: "High Priestess", effect: "Mostantól nem rakhatnak rá SPECTRAL lapokat, és általa kijátszott SPECTRAL lapok 2x játszódnak ki", color: "", src: "/CardImages/TAROT/high priestess.png", source: "" },
+  { id: 86, cardType: "TAROT", name: "Empress", effect: "Annyival kevesebbet iszik, ahány lány van. Kitalálhat egy szabályt, ami csak a lányokra hat", color: "", src: "/CardImages/TAROT/empress.png", source: "" },
+  { id: 87, cardType: "TAROT", name: "Emperor", effect: "Annyival kevesebbet iszik, ahány fiú van. Kitalálhat egy szabályt, ami csak a fiúkra hat", color: "", src: "/CardImages/TAROT/emperor.png", source: "" },
+  { id: 88, cardType: "TAROT", name: "Hierophant", effect: "Mostantól minden 10-es szabályt te hozol meg", color: "", src: "/CardImages/TAROT/hierophant.png", source: "" },
+  { id: 89, cardType: "TAROT", name: "Lovers", effect: "1 általad választott player a LOVER-ed lesz, a kortyaid felét ő issza", color: "", src: "/CardImages/TAROT/lovers.png", source: "" },
+  { id: 90, cardType: "TAROT", name: "Chariot", effect: "rework this", color: "", src: "/CardImages/TAROT/chariot.png", source: "" },
+  { id: 91, cardType: "TAROT", name: "Justice", effect: "Minimum 2-t iszik, de maximum 10-et (rendes játékmenet)", color: "", src: "/CardImages/TAROT/justice.png", source: "" },
+  { id: 92, cardType: "TAROT", name: "Hermit", effect: "Nem lehet testvéred (LOVER-ed se)", color: "", src: "/CardImages/TAROT/hermit.png", source: "" },
+  { id: 93, cardType: "TAROT", name: "Wheel Of Fortune", effect: "Minden kör végén rollol egy d20-al (kijátszódik az effektje)", color: "", src: "/CardImages/TAROT/wheel of fortune.png", source: "" },
+  { id: 94, cardType: "TAROT", name: "Strenght", effect: "-2-t iszik, de a pohara kétszer akkora (min. 500ml, ha sör akkor 1L)", color: "", src: "/CardImages/TAROT/strenght.png", source: "" },
+  { id: 95, cardType: "TAROT", name: "Hanged Man", effect: "Kör végén iszik 3-at", color: "", src: "/CardImages/TAROT/hanged man.png", source: "" },
+  { id: 96, cardType: "TAROT", name: "Death", effect: "A játék végéig 2x annyit iszik", color: "", src: "/CardImages/TAROT/death.png", source: "" },
+  { id: 97, cardType: "TAROT", name: "Temperance", effect: "Minden vízesés tőled indul", color: "", src: "/CardImages/TAROT/temperance.png", source: "" },
+  { id: 98, cardType: "TAROT", name: "Devil", effect: "A játék végéig egy általad választott player italait te kevered", color: "", src: "/CardImages/TAROT/devil.png", source: "" },
+  { id: 99, cardType: "TAROT", name: "Tower", effect: "Eldobhat Francia (3 korty), TAROT (5 korty) és PLANET (10 korty) kártyákat", color: "", src: "/CardImages/TAROT/tower.png", source: "" },
+  { id: 100, cardType: "TAROT", name: "Star", effect: "Ahány testvéred van, annyival kevesebb kortyot kell innod", color: "", src: "/CardImages/TAROT/star.png", source: "" },
+  { id: 101, cardType: "TAROT", name: "Moon", effect: "Minden köröd végén kapsz egy SPECTRAL lapot", color: "", src: "/CardImages/TAROT/moon.png", source: "" },
+  { id: 102, cardType: "TAROT", name: "Sun", effect: "Választhatsz két PLANET lapot, amik mostantól aktívak lesznek", color: "", src: "/CardImages/TAROT/sun.png", source: "" },
+  { id: 103, cardType: "TAROT", name: "Judgement", effect: "Ha ivott a körben, a kör végén kioszthat 5 kortyot", color: "", src: "/CardImages/TAROT/judgement.png", source: "" },
+  { id: 104, cardType: "TAROT", name: "World", effect: "Minden általad játszott kártya 2x fire-el", color: "", src: "/CardImages/TAROT/world.png", source: "" },
+
 ];
 
 module.exports = Cards;
