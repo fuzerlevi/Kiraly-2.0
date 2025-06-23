@@ -417,15 +417,16 @@ const Game = () => {
     const entries = [];
 
     // 1. PLANET effects
-    if (activePlanets.some(card => card.name === "Venus")) {
-      entries.push({ name: "Venus", text: "Minden lány iszik X-et a kör végén" });
-    }
-    if (activePlanets.some(card => card.name === "Jupiter")) {
-      entries.push({ name: "Jupiter", text: "Minden fiú iszik X-et a kör végén" });
-    }
     if (activePlanets.some(card => card.name === "Uranus")) {
       entries.push({ name: "Uranus", text: "Ha valaki kockával dob, annyit iszik, amilyen számot dobott" });
     }
+    if (activePlanets.some(card => card.name === "Venus")) {
+      entries.push({ name: "Venus", text: "Minden lány iszik 1-et" });
+    }
+    if (activePlanets.some(card => card.name === "Jupiter")) {
+      entries.push({ name: "Jupiter", text: "Minden fiú iszik 1-et" });
+    }
+    
 
     setEndOfRoundEntries(entries);
   }, [activePlanets]);

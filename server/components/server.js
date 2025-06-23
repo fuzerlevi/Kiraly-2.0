@@ -58,7 +58,7 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 11), // jack
     Cards.find(card => card.id === 12), // queen
     Cards.find(card => card.id === 78), // jupiter
-    Cards.find(card => card.id === 75), // venus
+    Cards.find(card => card.id === 80), // uranus
     Cards.find(card => card.id === 11), // jack
     Cards.find(card => card.id === 12), // queen
     
