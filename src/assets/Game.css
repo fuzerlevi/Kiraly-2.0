@@ -232,13 +232,13 @@
 
 .king-counter {
   position: fixed;
-  top: 82%;
+  top: 84%;
   right: 20px;
   z-index: 999;
 }
 
 .king-counter-image {
-  height: 140px;
+  height: 130px;
   width: auto;
 }
 
@@ -263,6 +263,95 @@
 .rules-button:hover .rules-icon {
   transform: scale(1.1);
 }
+
+.endofround-button {
+  position: absolute;
+  top: 71%;
+  right: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.endofround-icon {
+  width: 105px;
+  height: 105px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.endofround-button:hover .endofround-icon {
+  transform: scale(1.1);
+}
+
+.endofround-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.endofround-modal {
+  background: white;
+  border: 2px solid #222;
+  border-radius: 10px;
+  padding: 20px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 4px 4px 0 #000;
+  position: relative;
+  font-family: 'Courier New', monospace;
+}
+
+.endofround-close-button {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #000;
+}
+
+.endofround-title {
+  margin-bottom: 15px;
+  font-size: 18px;
+  text-align: center;
+}
+
+.endofround-empty-text {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.endofround-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.endofround-list-item {
+  background-color: #f8f8f8;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: #111;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
+  transition: background 0.2s ease;
+}
+
+.endofround-list-item:hover {
+  background-color: #e6e6e6;
+}
+
 
 .rules-modal-overlay {
   position: fixed;

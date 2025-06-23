@@ -128,8 +128,12 @@ const Game = () => {
   //PLANETs
   const glowRef = useRef();
   glowRef.current = setGlowingPlanetName; // always current
-
   const [selectedPlanet, setSelectedPlanet] = useState(null);
+
+  //End of Round feature
+  const [endOfRoundOpen, setEndOfRoundOpen] = useState(false);
+  const [endOfRoundEntries, setEndOfRoundEntries] = useState([]);
+
 
 
 
@@ -409,6 +413,24 @@ const Game = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const entries = [];
+
+    // 1. PLANET effects
+    if (activePlanets.some(card => card.name === "Venus")) {
+      entries.push({ name: "Venus", text: "Minden lány iszik X-et a kör végén" });
+    }
+    if (activePlanets.some(card => card.name === "Jupiter")) {
+      entries.push({ name: "Jupiter", text: "Minden fiú iszik X-et a kör végén" });
+    }
+    if (activePlanets.some(card => card.name === "Uranus")) {
+      entries.push({ name: "Uranus", text: "Ha valaki kockával dob, annyit iszik, amilyen számot dobott" });
+    }
+
+    setEndOfRoundEntries(entries);
+  }, [activePlanets]);
+
+
 
   if (!mySocketID) return <div>Loading game...</div>;
 
@@ -635,6 +657,15 @@ const Game = () => {
       </button>
 
       <button
+        className="endofround-button"
+        onClick={() => setEndOfRoundOpen(true)}
+        title="End of Round Actions"
+      >
+        <img src="/Icons/endofround.png" alt="End of Round" className="endofround-icon" />
+      </button>
+
+
+      <button
         className="drink-equation-button"
         onClick={() => setDrinkEquationOpen(true)}
         title="Drink Equation"
@@ -730,6 +761,30 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {endOfRoundOpen && (
+        <div className="endofround-modal-overlay" onClick={() => setEndOfRoundOpen(false)}>
+          <div className="endofround-modal" onClick={e => e.stopPropagation()}>
+            <button className="endofround-close-button" onClick={() => setEndOfRoundOpen(false)}>
+              ×
+            </button>
+            <h3 className="endofround-title">End of Round Actions</h3>
+            {endOfRoundEntries.length === 0 ? (
+              <p className="endofround-empty-text">No end-of-round effects are currently active.</p>
+            ) : (
+              <ul className="endofround-list">
+                {endOfRoundEntries.map(({ name, text }, idx) => (
+                  <li key={idx} className="endofround-list-item">
+                    <strong>{name}:</strong> {text}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+
 
       {diceBagOpen && (
         <div
