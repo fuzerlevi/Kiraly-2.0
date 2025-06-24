@@ -166,6 +166,10 @@ const Game = () => {
   // TAROTs
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
 
+  const [onlyOneTarotPopup, setOnlyOneTarotPopup] = useState(false);
+  const [onlyOneTarotName, setOnlyOneTarotName] = useState("");
+
+
   
 
 
@@ -510,6 +514,11 @@ const Game = () => {
     socket.on("triggerTarotActivation", ({ card }) => {
       console.log(`🔮 TAROT - Activating ${card.name}`);
       setActiveTarots((prev) => [...prev, card]);
+    });
+
+    socket.on("showOnlyOneTarotPopup", ({ cardName }) => {
+      setOnlyOneTarotName(cardName);
+      setOnlyOneTarotPopup(true);
     });
 
 
@@ -1525,6 +1534,17 @@ const Game = () => {
             {selectedTarot.effect || "No effect."}
           </div>
         )}
+
+        {onlyOneTarotPopup && (
+          <div className="tarot-popup-overlay" onClick={() => setOnlyOneTarotPopup(false)}>
+            <div className="tarot-popup-modal" onClick={e => e.stopPropagation()}>
+              <h3>There can only be one</h3>
+              <p>The Tarot card <strong>{onlyOneTarotName}</strong> is already in play.</p>
+              <button onClick={() => setOnlyOneTarotPopup(false)}>OK</button>
+            </div>
+          </div>
+        )}
+
 
       </div>
     </div>

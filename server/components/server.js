@@ -73,13 +73,12 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 83), // fool
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 97), // temperance
-    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 97), // temperance
     Cards.find(card => card.id === 2), // 2
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 97), // temperance
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
     
@@ -465,15 +464,26 @@ io.on('connection', (socket) => {
 
     // Add TAROT card to personal TAROT inventory
     if (drawnCard.cardType === "TAROT") {
+      const uniqueTarotIDs = [88, 97, 102];
+      const isUniqueTarot = uniqueTarotIDs.includes(drawnCard.id);
+
+      const tarotAlreadyExists = isUniqueTarot && Object.values(gameState.players).some((p) =>
+        p.tarots?.some(t => t.id === drawnCard.id)
+      );
+
+      if (tarotAlreadyExists) {
+        io.to(currentPlayer.socketID).emit("showOnlyOneTarotPopup", { cardName: drawnCard.name });
+        console.log(`❌ Duplicate TAROT (${drawnCard.name}) blocked for ${currentPlayer.name}`);
+        return; // Do not add or activate
+      }
+
       if (!currentPlayer.tarots) currentPlayer.tarots = [];
       currentPlayer.tarots.push(drawnCard);
 
       console.log(`🔮 TAROT - ${currentPlayer.name} drew ${drawnCard.name}`);
-
-      io.to(currentPlayer.socketID).emit("triggerTarotActivation", {
-        card: drawnCard,
-      });
+      io.to(currentPlayer.socketID).emit("triggerTarotActivation", { card: drawnCard });
     }
+
 
 
 
