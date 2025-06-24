@@ -70,6 +70,8 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
+    Cards.find(card => card.id === 83), // fool
+    Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 97), // temperance
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 2), // 2
@@ -361,9 +363,6 @@ io.on('connection', (socket) => {
   socket.on('joinGamePage', ({ roomID }) => {
     const gameState = games[roomID];
     if (gameState) {
-
-      console.log("[SERVER] Emitting updateGameState with tarotGlowKeys:", gameState.tarotGlowKeys);
-
       io.to(roomID).emit('updateGameState', {
         deck: gameState.deck,
         players: Object.fromEntries(

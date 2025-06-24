@@ -1479,13 +1479,14 @@ const Game = () => {
           {activeTarots.length > 1 && (
             <button
               className={`see-all-tarots-button ${
-                shouldGlowSeeAllTarots(activeTarots) ? "see-all-glow" : ""
+                activeTarots.slice(1).some(t => tarotGlowKeys[t.id] !== undefined) ? "see-all-glow" : ""
               }`}
               onClick={() => setSeeAllTarotsOpen(!seeAllTarotsOpen)}
             >
               See All
             </button>
           )}
+
         </div>
 
         {/* Right side: remaining tarots */}
@@ -1496,7 +1497,7 @@ const Game = () => {
                 key={`${tarot.name}-${tarotGlowKeys[tarot.id] ?? 0}`}
                 src={tarot.src}
                 alt={tarot.name}
-                className="tarot-card-image-smaller"
+                className={`tarot-card-image-smaller ${tarotGlowKeys[tarot.id] !== undefined ? "tarot-glow" : ""}`}
                 onClick={(e) => {
                   setSelectedTarot(tarot);
                   const rect = e.target.getBoundingClientRect();
@@ -1507,6 +1508,7 @@ const Game = () => {
                 }}
               />
             ))}
+
           </div>
         )}
 
