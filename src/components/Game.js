@@ -28,6 +28,12 @@ const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
   </div>
 );
 
+const shouldGlowSeeAllTarots = (tarots) => {
+  const visibleName = tarots[0]?.name;
+  return tarots.slice(1).some(card => card.glowing && card.name !== visibleName);
+};
+
+
 const Game = () => {
   const {
     players,
@@ -63,10 +69,11 @@ const Game = () => {
     earthClonePending, setEarthClonePending,
 
     activeTarots, setActiveTarots,
-    selectedTarotIndex, setSelectedTarotIndex,
+    selectedTarot, setSelectedTarot,
+    seeAllTarotsOpen, setSeeAllTarotsOpen,
     glowingTarotIDs, setGlowingTarotIDs,
     tarotPopupOpen, setTarotPopupOpen,
-
+    
 
     
   } = useGameContext();
@@ -147,11 +154,13 @@ const Game = () => {
   isEarthDrawPending && !earthClonePending;
 
 
-
-
   //End of Round feature
   const [endOfRoundOpen, setEndOfRoundOpen] = useState(false);
   const [endOfRoundEntries, setEndOfRoundEntries] = useState([]);
+
+  // TAROTs
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+
   
 
 
@@ -442,6 +451,12 @@ const Game = () => {
     });
 
 
+    socket.on("triggerTarotActivation", ({ card }) => {
+      console.log(`🔮 TAROT - Activating ${card.name}`);
+      setActiveTarots((prev) => [...prev, card]);
+    });
+
+
 
 
 
@@ -472,18 +487,41 @@ const Game = () => {
       socket.off("planetGlow");
       socket.off("clearPlanetGlow");
       socket.off("updateEndOfRound");
+      socket.off("triggerTarotActivation");
       socket.off("gameOver");
     };
   }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
+      // 🌍 PLANET
       if (
         !e.target.closest(".planet-info-box") &&
         !e.target.closest(".planet-card-image")
       ) {
         setSelectedPlanet(null);
       }
+
+      // 🃏 TAROT
+      if (
+        !e.target.closest(".tarot-info-box") &&
+        !e.target.closest(".tarot-card-image") &&
+        !e.target.closest(".tarot-card-image-smaller")
+      ) {
+        setSelectedTarot(null);
+      }
+
+      // 🃏 Also close the TAROT menu panel
+      if (
+        !e.target.closest(".tarot-panel-row") &&
+        !e.target.closest(".see-all-tarots-button") &&
+        !e.target.closest(".tarot-card-image-smaller") &&
+        !e.target.closest(".tarot-info-box") &&
+        !e.target.closest(".tarot-card-image")
+      ) {
+        setSeeAllTarotsOpen(false);
+      }
+
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -492,23 +530,62 @@ const Game = () => {
     };
   }, []);
 
+
   useEffect(() => {
     const entries = [];
 
     // 1. PLANET effects
     if (activePlanets.some(card => card.name === "Uranus")) {
-      entries.push({ name: "Uranus", text: "Ha valaki kockával dob, annyit iszik, amilyen számot dobott", icon: "/CardImages/PLANET/uranus.png" });
+      entries.push({
+        name: "Uranus",
+        text: "Ha valaki kockával dob, annyit iszik, amilyen számot dobott",
+        icon: "/CardImages/PLANET/uranus.png"
+      });
     }
     if (activePlanets.some(card => card.name === "Venus")) {
-      entries.push({ name: "Venus", text: "Minden lány iszik 1-et", icon: "/CardImages/PLANET/venus.png" });
+      entries.push({
+        name: "Venus",
+        text: "Minden lány iszik 1-et",
+        icon: "/CardImages/PLANET/venus.png"
+      });
     }
     if (activePlanets.some(card => card.name === "Jupiter")) {
-      entries.push({ name: "Jupiter", text: "Minden fiú iszik 1-et", icon: "/CardImages/PLANET/jupiter.png" });
+      entries.push({
+        name: "Jupiter",
+        text: "Minden fiú iszik 1-et",
+        icon: "/CardImages/PLANET/jupiter.png"
+      });
     }
-    
+
+    // 2. TAROT effects:
+    players.forEach((p) => {
+      if (p.tarots?.some(card => card.id === 93)) {
+        entries.push({
+          name: "Wheel of Fortune",
+          text: `${p.name} dobjon egyet a D20-al, az effekt kijátszódik`,
+          icon: "/CardImages/TAROT/wheel of fortune.png"
+        });
+      }
+    });
+
+    players.forEach((p) => {
+      if (p.tarots?.some(card => card.id === 95)) {
+        const base = 3;
+        const flat = p.drinkModifiers?.flat ?? 0;
+        const mult = p.drinkModifiers?.mult ?? 1;
+        const total = Math.round((base + flat) * mult);
+
+        entries.push({
+          name: "Hanged Man",
+          text: `${p.name} iszik ${total}-at`,
+          icon: "/CardImages/TAROT/hanged man.png"
+        });
+      }
+    });
 
     setEndOfRoundEntries(entries);
-  }, [activePlanets]);
+  }, [activePlanets, players, activeTarots]);
+
 
   useEffect(() => {
     socket.on("triggerPlanetXShuffle", ({ roomID }) => {
@@ -1091,6 +1168,11 @@ const Game = () => {
         </div>
       )}
 
+      
+
+
+
+
       {rulesModalOpen && (
         <div className="rules-modal-overlay">
           <div className="rules-modal">
@@ -1297,57 +1379,81 @@ const Game = () => {
       </div>
 
       <div className="tarot-panel">
-        <h3 className="tarot-panel-title">Tarots</h3>
-        {activeTarots.length > 0 ? (
-          <div className="tarot-slot-wrapper">
-            <button
-              className={`tarot-arrow-button ${glowingTarotIDs.length > 0 && !glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "arrow-glow" : ""}`}
-              onClick={() =>
-                setSelectedTarotIndex((prev) =>
-                  (prev - 1 + activeTarots.length) % activeTarots.length
-                )
-              }
-            >
-              ←
-            </button>
-            <img
-              key={`${activeTarots[selectedTarotIndex]?.id}-${glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "glow" : "static"}`}
-              src={activeTarots[selectedTarotIndex].src}
-              alt={activeTarots[selectedTarotIndex].name}
-              className={`tarot-card-image ${glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "tarot-glow" : ""}`}
-              onClick={() => setTarotPopupOpen(true)}
-              style={{ cursor: "pointer" }}
-            />
-            <button
-              className={`tarot-arrow-button ${glowingTarotIDs.length > 0 && !glowingTarotIDs.includes(activeTarots[selectedTarotIndex]?.id) ? "arrow-glow" : ""}`}
-              onClick={() =>
-                setSelectedTarotIndex((prev) =>
-                  (prev + 1) % activeTarots.length
-                )
-              }
-            >
-              →
-            </button>
-            <div className="tarot-index-text">
-              {selectedTarotIndex + 1}/{activeTarots.length}
-            </div>
+        {/* Left column: main tarot slot + title + see-all button */}
+        <div className="tarot-panel-column">
+          <h3 className="tarot-panel-title">Tarots</h3>
+
+          <div className="tarot-slot">
+            {activeTarots.length > 0 ? (
+              <img
+                key={activeTarots[0].name}
+                src={activeTarots[0].src}
+                alt={activeTarots[0].name}
+                className="tarot-card-image"
+                onClick={(e) => {
+                  setSelectedTarot(activeTarots[0]);
+                  const rect = e.target.getBoundingClientRect();
+                  setTooltipPosition({
+                    top: rect.top + window.scrollY,
+                    left: rect.right + 10,
+                  });
+                }}
+                style={{ cursor: "pointer" }}
+              />
+            ) : (
+              <div className="tarot-card-placeholder" />
+            )}
           </div>
-        ) : (
-          <div className="tarot-card-placeholder" />
+
+          {activeTarots.length > 1 && (
+            <button
+              className={`see-all-tarots-button ${
+                shouldGlowSeeAllTarots(activeTarots) ? "see-all-glow" : ""
+              }`}
+              onClick={() => setSeeAllTarotsOpen(!seeAllTarotsOpen)}
+            >
+              See All
+            </button>
+          )}
+        </div>
+
+        {/* Right side: remaining tarots */}
+        {seeAllTarotsOpen && (
+          <div className="tarot-panel-row">
+            {activeTarots.slice(1).map((tarot) => (
+              <img
+                key={tarot.name}
+                src={tarot.src}
+                alt={tarot.name}
+                className="tarot-card-image-smaller"
+                onClick={(e) => {
+                  setSelectedTarot(tarot);
+                  const rect = e.target.getBoundingClientRect();
+                  setTooltipPosition({
+                    top: rect.top + window.scrollY,
+                    left: rect.right + 10,
+                  });
+                }}
+              />
+            ))}
+          </div>
         )}
 
-        {tarotPopupOpen && (
-          <div className="planet-info-box tarot-info-box" onClick={() => setTarotPopupOpen(false)}>
-            <strong>{activeTarots[selectedTarotIndex].name}:</strong>{" "}
-            {activeTarots[selectedTarotIndex].effect || "No effect."}
+        {/* Floating tooltip box for TAROT info */}
+        {selectedTarot && (
+          <div
+            className="tarot-info-box"
+            style={{
+              top: tooltipPosition.top,
+              left: tooltipPosition.left,
+            }}
+          >
+            <strong>{selectedTarot.name}:</strong>{" "}
+            {selectedTarot.effect || "No effect."}
           </div>
         )}
+
       </div>
-
-
-
-
-
     </div>
   );
 };

@@ -69,9 +69,10 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 80), // uranus
     Cards.find(card => card.id === 83), // fool
-    Cards.find(card => card.id === 84), // magician
+    Cards.find(card => card.id === 93), // wheel of fortune
+    Cards.find(card => card.id === 93), // wheel of fortune
     Cards.find(card => card.id === 86), // empress
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 13), // king
@@ -122,6 +123,7 @@ const createPlayerState = (socketID) => ({
   team: null,
   isHost: false,
   cardsDrawn: [],
+  tarots: [],
   effectState: {
   isChoosingBrother: false,
   isChoosingMediumCard: false,
@@ -253,10 +255,12 @@ io.on('connection', (socket) => {
           sid,
           {
             ...player,
+            tarots: [...(player.tarots || [])],
             effectState: { ...player.effectState },
           },
         ])
       ),
+
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: gameState.brothersGraph,
       drinkEquation: gameState.drinkEquation,
@@ -429,10 +433,24 @@ io.on('connection', (socket) => {
     
     gameState.lastDrawnCard = drawnCard;
 
-    // only push non planet cards into hand
-    if (drawnCard.cardType !== "PLANET") {
+    // only push non-PLANET and non-TAROT cards into hand
+    if (drawnCard.cardType !== "PLANET" && drawnCard.cardType !== "TAROT") {
       currentPlayer.cardsDrawn.push(drawnCard);
     }
+
+    // Add TAROT card to personal TAROT inventory
+    if (drawnCard.cardType === "TAROT") {
+      if (!currentPlayer.tarots) currentPlayer.tarots = [];
+      currentPlayer.tarots.push(drawnCard);
+
+      console.log(`🔮 TAROT - ${currentPlayer.name} drew ${drawnCard.name}`);
+
+      io.to(currentPlayer.socketID).emit("triggerTarotActivation", {
+        card: drawnCard,
+      });
+    }
+
+
 
     if (drawnCard.source === "EARTH") {
       currentPlayer.effectState.earthClonePending = false;
@@ -938,10 +956,12 @@ io.on('connection', (socket) => {
           sid,
           {
             ...player,
+            tarots: [...(player.tarots || [])],
             effectState: { ...player.effectState },
           },
         ])
       ),
+
 
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
@@ -1025,6 +1045,7 @@ io.on('connection', (socket) => {
         sid,
         {
           ...player,
+          tarots: [...(player.tarots || [])],
           effectState: { ...player.effectState },
         },
       ])
