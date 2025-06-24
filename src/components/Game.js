@@ -588,7 +588,7 @@ const Game = () => {
 
         entries.push({
           name: "Fool",
-          text: `${p.name} feldob egy érmét, ha fejet dob, iszik ${result}-t`,
+          text: `${p.name} feldob egy érmét, ha fejet dob, iszik ${result} kortyot`,
           icon: "/CardImages/TAROT/fool.png"
         });
       }
