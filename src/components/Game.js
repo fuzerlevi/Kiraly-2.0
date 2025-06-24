@@ -557,7 +557,7 @@ const Game = () => {
       });
     }
 
-    // 2. TAROT effects (Wheel of Fortune)
+    // Wheel of Fortune
     players.forEach((p) => {
       if (p.tarots?.some(card => card.id === 93)) {
         entries.push({
@@ -568,7 +568,7 @@ const Game = () => {
       }
     });
 
-    // 3. TAROT effects (Hanged Man)
+    // Hanged Man
     players.forEach((p) => {
       if (p.tarots?.some(card => card.id === 95)) {
         const eq = drinkEquation?.[p.name];
@@ -579,6 +579,21 @@ const Game = () => {
           icon: "/CardImages/TAROT/hanged man.png"
       });
     }});
+
+    // Fool
+    players.forEach((p) => {
+      if (p.tarots?.some(card => card.id === 83)) {
+        const eq = drinkEquation[p.name] || { multipliers: 1, flats: 0 };
+        const result = Math.max(0, 2 * eq.multipliers + eq.flats);
+
+        entries.push({
+          name: "Fool",
+          text: `${p.name} feldob egy érmét, ha fejet dob, iszik ${result}-t`,
+          icon: "/CardImages/TAROT/fool.png"
+        });
+      }
+    });
+
 
 
 
