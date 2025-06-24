@@ -557,7 +557,7 @@ const Game = () => {
       });
     }
 
-    // 2. TAROT effects:
+    // 2. TAROT effects (Wheel of Fortune)
     players.forEach((p) => {
       if (p.tarots?.some(card => card.id === 93)) {
         entries.push({
@@ -568,23 +568,23 @@ const Game = () => {
       }
     });
 
+    // 3. TAROT effects (Hanged Man)
     players.forEach((p) => {
       if (p.tarots?.some(card => card.id === 95)) {
-        const base = 3;
-        const flat = p.drinkModifiers?.flat ?? 0;
-        const mult = p.drinkModifiers?.mult ?? 1;
-        const total = Math.round((base + flat) * mult);
-
+        const eq = drinkEquation?.[p.name];
+        const sips = Math.round((3 * (eq?.multipliers || 1)) + (eq?.flats || 0));
         entries.push({
           name: "Hanged Man",
-          text: `${p.name} iszik ${total}-at`,
+          text: `${p.name} iszik ${sips} kortyot`,
           icon: "/CardImages/TAROT/hanged man.png"
-        });
-      }
-    });
+      });
+    }});
+
+
 
     setEndOfRoundEntries(entries);
-  }, [activePlanets, players, activeTarots]);
+  }, [activePlanets, players, activeTarots, drinkEquation]);
+
 
 
   useEffect(() => {

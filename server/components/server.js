@@ -70,10 +70,8 @@ const createGameState = (gameID) => {
   // TEST DECK
   const deck = [
     Cards.find(card => card.id === 80), // uranus
-    Cards.find(card => card.id === 83), // fool
-    Cards.find(card => card.id === 93), // wheel of fortune
-    Cards.find(card => card.id === 93), // wheel of fortune
-    Cards.find(card => card.id === 86), // empress
+    Cards.find(card => card.id === 95), // wheel of fortune
+    Cards.find(card => card.id === 95), // wheel of fortune
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 13), // king
