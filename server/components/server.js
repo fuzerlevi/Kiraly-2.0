@@ -72,8 +72,8 @@ const createGameState = (gameID) => {
   const deck = [
     Cards.find(card => card.id === 83), // fool
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 97), // temperance
-    Cards.find(card => card.id === 97), // temperance
+    Cards.find(card => card.id === 88), // hierophant
+    Cards.find(card => card.id === 88), // hierophant
     Cards.find(card => card.id === 2), // 2
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
