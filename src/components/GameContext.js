@@ -37,11 +37,12 @@ export const GameProvider = ({ children }) => {
   const [earthClonePending, setEarthClonePending] = useState(false);
 
   const [activeTarots, setActiveTarots] = useState([]);
-  const [glowingTarotIDs, setGlowingTarotIDs] = useState([]);
   const [tarotPopupOpen, setTarotPopupOpen] = useState(false);
 
   const [selectedTarot, setSelectedTarot] = useState(null); // clicked for tooltip
   const [seeAllTarotsOpen, setSeeAllTarotsOpen] = useState(false);
+  const [tarotGlowKeys, setTarotGlowKeys] = useState({});
+
 
 
 
@@ -86,11 +87,11 @@ export const GameProvider = ({ children }) => {
       earthClonePending, setEarthClonePending,
 
       activeTarots, setActiveTarots,
-      glowingTarotIDs, setGlowingTarotIDs,
       tarotPopupOpen, setTarotPopupOpen,
 
       selectedTarot, setSelectedTarot,
       seeAllTarotsOpen, setSeeAllTarotsOpen,
+      tarotGlowKeys, setTarotGlowKeys,
 
     }}>
       {children}

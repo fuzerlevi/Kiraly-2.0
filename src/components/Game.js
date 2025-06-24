@@ -71,8 +71,8 @@ const Game = () => {
     activeTarots, setActiveTarots,
     selectedTarot, setSelectedTarot,
     seeAllTarotsOpen, setSeeAllTarotsOpen,
-    glowingTarotIDs, setGlowingTarotIDs,
     tarotPopupOpen, setTarotPopupOpen,
+    tarotGlowKeys, setTarotGlowKeys,
     
 
     
@@ -81,6 +81,11 @@ const Game = () => {
   if (!window.__planetGlowIntervals) {
     window.__planetGlowIntervals = {};
   }
+
+  if (!window.__tarotGlowIntervals) {
+    window.__tarotGlowIntervals = {};
+  }
+
 
 
   const { roomID } = useParams();
@@ -196,6 +201,7 @@ const Game = () => {
       setActivePlanets(data.activePlanets || []);
       setCurrentPlayerName(data.currentPlayerName || null);
       setKingsRemaining(data.kingsRemaining ?? 4);
+      
 
       if (data.brothersGraph) {
         setBrothersGraph(data.brothersGraph);
@@ -204,6 +210,19 @@ const Game = () => {
       const me = playerList.find(p => p.socketID === socket.id);
       setMySocketID(socket.id);
 
+      setActiveTarots(me?.tarots || []);
+      setTarotGlowKeys(data.tarotGlowKeys || {});
+
+
+      console.log("[RECONNECT][CLIENT] tarotGlowKeys:", data.tarotGlowKeys);
+
+      Object.entries(data.tarotGlowKeys || {}).forEach(([id, key]) => {
+        console.log(`[RECONNECT][CLIENT] Requesting tarot glow for ID ${id} (key=${key})`);
+        socket.emit("tarotGlow", { tarotID: Number(id) });
+      });
+
+
+
       if (me?.effectState?.earthClonePending) {
         setIsEarthDrawPending(true);
         setEarthClonePending(true);
@@ -211,11 +230,6 @@ const Game = () => {
         setIsEarthDrawPending(false);
         setEarthClonePending(false);
       }
-
-
-
-
-
 
       // ✅ Always set the drawn card from server state
       setCardDrawn(data.lastDrawnCard || null);
@@ -410,6 +424,36 @@ const Game = () => {
       window.__planetGlowIntervals[planetName] = interval;
     });
 
+    socket.on("tarotGlow", ({ tarotID }) => {
+      console.log(`[CLIENT] Received tarotGlow for ID ${tarotID}`);
+
+      if (!tarotID) return;
+
+      if (!window.__tarotGlowIntervals) {
+        window.__tarotGlowIntervals = {};
+      }
+
+      if (window.__tarotGlowIntervals[tarotID]) {
+        clearInterval(window.__tarotGlowIntervals[tarotID]);
+      }
+
+      let glowKey = 0;
+
+      setTarotGlowKeys(prev => ({
+        ...prev,
+        [tarotID]: glowKey,
+      }));
+
+      const interval = setInterval(() => {
+        glowKey++;
+        setTarotGlowKeys(prev => ({
+          ...prev,
+          [tarotID]: glowKey,
+        }));
+      }, 2000);
+
+      window.__tarotGlowIntervals[tarotID] = interval;
+    });
 
 
 
@@ -421,6 +465,18 @@ const Game = () => {
 
       setPlanetGlowKeys({});
     });
+
+    socket.on("clearTarotGlow", () => {
+      // 🧹 Clear all glow intervals
+      if (window.__tarotGlowIntervals) {
+        Object.values(window.__tarotGlowIntervals).forEach(clearInterval);
+        window.__tarotGlowIntervals = {};
+      }
+
+      // Reset glowing state
+      setTarotGlowKeys({});
+    });
+
 
     socket.on("updateEndOfRound", (status) => {
       console.log("[SOCKET] updateEndOfRound received:", status);
@@ -1401,10 +1457,10 @@ const Game = () => {
           <div className="tarot-slot">
             {activeTarots.length > 0 ? (
               <img
-                key={activeTarots[0].name}
+                key={`${activeTarots[0].name}-${tarotGlowKeys[activeTarots[0]?.id] ?? 0}`}
                 src={activeTarots[0].src}
                 alt={activeTarots[0].name}
-                className="tarot-card-image"
+                className={`tarot-card-image ${tarotGlowKeys[activeTarots[0]?.id] !== undefined ? "tarot-glow" : ""}`}
                 onClick={(e) => {
                   setSelectedTarot(activeTarots[0]);
                   const rect = e.target.getBoundingClientRect();
@@ -1437,7 +1493,7 @@ const Game = () => {
           <div className="tarot-panel-row">
             {activeTarots.slice(1).map((tarot) => (
               <img
-                key={tarot.name}
+                key={`${tarot.name}-${tarotGlowKeys[tarot.id] ?? 0}`}
                 src={tarot.src}
                 alt={tarot.name}
                 className="tarot-card-image-smaller"

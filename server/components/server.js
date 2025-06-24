@@ -54,7 +54,8 @@ const isEarthCloneEligible = (card) => {
   const forbiddenSpectralIDs = [57, 63, 64, 65, 66, 68, 69];
   const isFrench = card.id >= 1 && card.id <= 52;
   const isSafeSpectral = card.id >= 53 && card.id <= 70 && !forbiddenSpectralIDs.includes(card.id);
-  return isFrench || isSafeSpectral;
+  const isSafeTarot = card.id >= 83 && card.id <= 104;
+  return isFrench || isSafeSpectral || isSafeTarot;
 };
 
 
@@ -69,16 +70,18 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 83), // fool
-    Cards.find(card => card.id === 83), // fool
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 13), // king
-    Cards.find(card => card.id === 13), // king
+    Cards.find(card => card.id === 97), // temperance
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 2), // 2
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 97), // temperance
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 1), // ace
     
     
-    
-
     
 
     // Cards.find(card => card.id === 9), // blood brother
@@ -262,6 +265,8 @@ io.on('connection', (socket) => {
       rulesText: gameState.rulesText,
       lastDrawnCard,
       activePlanets: gameState.activePlanets,
+      activeTarots: gameState.activeTarots,
+      tarotGlowKeys: gameState.tarotGlowKeys,
     });
     
     if (player?.effectState?.isChoosingMediumCard) {
@@ -356,9 +361,21 @@ io.on('connection', (socket) => {
   socket.on('joinGamePage', ({ roomID }) => {
     const gameState = games[roomID];
     if (gameState) {
+
+      console.log("[SERVER] Emitting updateGameState with tarotGlowKeys:", gameState.tarotGlowKeys);
+
       io.to(roomID).emit('updateGameState', {
         deck: gameState.deck,
-        players: gameState.players,
+        players: Object.fromEntries(
+          Object.entries(gameState.players).map(([sid, player]) => [
+            sid,
+            {
+              ...player,
+              tarots: [...(player.tarots || [])],
+              effectState: { ...player.effectState },
+            },
+          ])
+        ),
         currentPlayerName: gameState.currentPlayerName,
         brothersGraph: gameState.brothersGraph,
         drinkEquation: gameState.drinkEquation,
@@ -366,6 +383,8 @@ io.on('connection', (socket) => {
         kingsRemaining: gameState.kingsRemaining,
         lastDrawnCard: gameState.lastDrawnCard,
         activePlanets: gameState.activePlanets,
+        activeTarots: gameState.activeTarots,
+        tarotGlowKeys: gameState.tarotGlowKeys,
       });
 
       const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
@@ -392,13 +411,25 @@ io.on('connection', (socket) => {
         socket.emit("planetGlow", { planetName });
       }
 
+      // 🔁 Re-trigger glow for all currently glowing TAROTs
+      if (gameState.glowingTarotIDs?.length) {
+        const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
+        if (player) {
+          const hasMatching = player.tarots?.some(tarot => gameState.glowingTarotIDs.includes(tarot.id));
+          if (hasMatching) {
+            gameState.glowingTarotIDs.forEach(tarotID => {
+              socket.emit("tarotGlow", { tarotID });
+            });
+          }
+        }
+      }
+
+
 
       socket.emit("updateRulesText", gameState.rulesText);
       socket.emit("updateDrinkEquation", gameState.drinkEquation);
       socket.emit("updateEndOfRound", gameState.isEndOfRound);
       socket.emit("updateEarthDrawPending", gameState.isEarthDrawPending);
-
-
     }
   });
 
@@ -626,13 +657,20 @@ io.on('connection', (socket) => {
       }
     }
 
-
-
-
-
-
-
-
+    // 🌡️ Temperance TAROT glow on Ace draw
+    if (aceIDs.includes(drawnCard.id)) {
+      const players = Object.values(gameState.players || {});
+      players.forEach((p) => {
+        const hasTemperance = p.tarots?.some(card => card.id === 97);
+        if (hasTemperance) {
+          if (!gameState.glowingTarotIDs) gameState.glowingTarotIDs = [];
+          if (!gameState.glowingTarotIDs.includes(97)) {
+            gameState.glowingTarotIDs.push(97); // ✅ Track glow for sync
+          }
+          io.to(p.socketID).emit("tarotGlow", { tarotID: 97 });
+        }
+      });
+    }
 
 
 
@@ -970,6 +1008,9 @@ io.on('connection', (socket) => {
     gameState.glowingPlanets = []; // ✅ Clear tracked glows
     io.to(roomID).emit("clearPlanetGlow");
 
+    gameState.glowingTarots = []; // ✅ Clear tracked glows
+    io.to(roomID).emit("clearTarotGlow");
+
   });
 
   socket.on("endTurnEarth", ({ roomID }) => {
@@ -1297,6 +1338,22 @@ io.on('connection', (socket) => {
       io.to(player.socketID).emit("forceDrawCard", { roomID });
     }
   });
+
+  socket.on("tarotGlow", ({ tarotID }) => {
+    console.log(`[SERVER] tarotGlow event received from ${socket.id} for ID ${tarotID}`);
+
+
+    if (!tarotID) return;
+    if (!gameState.tarotGlowKeys) gameState.tarotGlowKeys = {};
+
+    // Increment the glowKey or initialize it
+    const currentKey = gameState.tarotGlowKeys[tarotID] || 0;
+    gameState.tarotGlowKeys[tarotID] = currentKey;
+
+    // Re-emit to the reconnecting client
+    io.to(socket.id).emit("tarotGlow", { tarotID });
+  });
+
 
   socket.on("planetXShuffle", ({ roomID, playerName }) => {
   const gameState = games[roomID];

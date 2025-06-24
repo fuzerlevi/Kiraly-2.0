@@ -712,8 +712,13 @@
 }
 
 .see-all-glow {
-  animation: tarotGlowLoop 2s ease-in-out infinite;
+  animation: tarotGlowLoop 2s ease-in-out;
 }
+
+.tarot-glow {
+  animation: tarotGlowLoop 2s ease-in-out;
+}
+
 
 .tarot-menu-overlay {
   position: fixed;
