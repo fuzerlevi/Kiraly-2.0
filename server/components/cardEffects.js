@@ -231,6 +231,36 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
+  86: ({ player, roomID, games }) => {
+    const gameState = games[roomID];
+    if (!gameState || !player?.name) return;
+
+    const equation = gameState.drinkEquation[player.name];
+    if (equation) {
+      const girls = Object.values(gameState.players).filter(p => p.team === "girl").length;
+      equation.flats -= girls;
+      console.log(`[EMPRESS] ${player.name} loses ${girls} from flats (girls count). Result:`, equation);
+    }
+
+    return { updatedDrinkEquation: true };
+  },
+
+
+  87: ({ player, roomID, games }) => {
+    const gameState = games[roomID];
+    if (!gameState || !player?.name) return;
+
+    const equation = gameState.drinkEquation[player.name];
+    if (equation) {
+      const boys = Object.values(gameState.players).filter(p => p.team === "boy").length;
+      equation.flats -= boys;
+      console.log(`[EMPEROR] ${player.name} loses ${boys} from flats (boys count). Result:`, equation);
+    }
+
+    return { updatedDrinkEquation: true };
+  },
+
+
 
 
 };
