@@ -72,7 +72,7 @@ const createGameState = (gameID) => {
     Cards.find(card => card.id === 80), // uranus
     Cards.find(card => card.id === 95), // hman
     Cards.find(card => card.id === 95), // hman
-    Cards.find(card => card.id === 96), // death
+    Cards.find(card => card.id === 94), // strength
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 13), // king
     Cards.find(card => card.id === 13), // king

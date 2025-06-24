@@ -218,6 +218,20 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
+  94: ({ player, roomID, games }) => {
+    const gameState = games[roomID];
+    if (!gameState || !player?.name) return;
+
+    const equation = gameState.drinkEquation[player.name];
+    if (equation) {
+      equation.flats -= 2;
+      console.log(`[STRENGTH] Subtracted 2 from flats for ${player.name}`, equation);
+    }
+
+    return { updatedDrinkEquation: true };
+  },
+
+
 
 };
 

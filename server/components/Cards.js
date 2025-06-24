@@ -104,7 +104,7 @@ const Cards = [
   { id: 91, cardType: "TAROT", name: "Justice", effect: "Minimum 2-t iszik, de maximum 10-et (rendes játékmenet)", color: "", src: "/CardImages/TAROT/justice.png", source: "" },
   { id: 92, cardType: "TAROT", name: "Hermit", effect: "Nem lehet testvéred (LOVER-ed se)", color: "", src: "/CardImages/TAROT/hermit.png", source: "" },
   { id: 93, cardType: "TAROT", name: "Wheel Of Fortune", effect: "Minden kör végén rollol egy d20-al (kijátszódik az effektje)", color: "", src: "/CardImages/TAROT/wheel of fortune.png", source: "" },
-  { id: 94, cardType: "TAROT", name: "Strenght", effect: "-2-t iszik, de a pohara kétszer akkora (min. 500ml, ha sör akkor 1L)", color: "", src: "/CardImages/TAROT/strenght.png", source: "" },
+  { id: 94, cardType: "TAROT", name: "Strength", effect: "-2-t iszik, de a pohara kétszer akkora (min. 500ml, ha sör akkor 1L)", color: "", src: "/CardImages/TAROT/strength.png", source: "" },
   { id: 95, cardType: "TAROT", name: "Hanged Man", effect: "Kör végén iszik 3-at", color: "", src: "/CardImages/TAROT/hanged man.png", source: "" },
   { id: 96, cardType: "TAROT", name: "Death", effect: "A játék végéig 2x annyit iszik", color: "", src: "/CardImages/TAROT/death.png", source: "" },
   { id: 97, cardType: "TAROT", name: "Temperance", effect: "Minden vízesés tőled indul", color: "", src: "/CardImages/TAROT/temperance.png", source: "" },
