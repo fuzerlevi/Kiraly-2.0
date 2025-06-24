@@ -205,6 +205,20 @@ const cardEffects = {
     };
   },
 
+  96: ({ player, roomID, games }) => {
+    const gameState = games[roomID];
+    if (!gameState || !player?.name) return;
+
+    const equation = gameState.drinkEquation[player.name];
+    if (equation) {
+      equation.multipliers = 2;
+      console.log(`[DEATH] Doubled multiplier for ${player.name}`, equation);
+    }
+
+    return { updatedDrinkEquation: true };
+  },
+
+
 };
 
 module.exports = cardEffects;
