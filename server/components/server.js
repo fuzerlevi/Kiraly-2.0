@@ -98,12 +98,10 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 83), // fool
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 103), // judgement
-    Cards.find(card => card.id === 10), // 10
-    
     Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 89), // lovers
+    Cards.find(card => card.id === 54), // aura
     
     
     
@@ -129,6 +127,7 @@ const createGameState = (gameID) => {
     deck: deck,
     currentPlayerName: null,
     brothersGraph: {},
+    loversGraph: {},
     drinkEquation: {},
     rulesText: "",
     kingsRemaining: kingsInDeck,
@@ -286,6 +285,7 @@ io.on('connection', (socket) => {
 
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: gameState.brothersGraph,
+      loversGraph: gameState.loversGraph,
       drinkEquation: gameState.drinkEquation,
       rulesText: gameState.rulesText,
       lastDrawnCard,
@@ -302,6 +302,9 @@ io.on('connection', (socket) => {
     }
     if (player?.effectState?.isChoosingBrother) {
       socket.emit("chooseBrotherPopup", { roomID: gameID, playerName: player.name });
+    }
+    if (player?.effectState?.isChoosingLover) {
+      socket.emit("chooseLoverPopup", { roomID: gameID, playerName: player.name });
     }
     if (player?.effectState?.hasActiveDejaVu) {
       socket.emit("triggerDejaVu", { roomID: gameID, playerName: player.name });
@@ -336,7 +339,7 @@ io.on('connection', (socket) => {
     }
 
 
-    // If game already started, emit gameStarted only to this reconnecting socket
+    // RECONNECTION EMIT
     if (gameState.hasStarted) {
       io.to(gameID).emit("playerReconnected", { playerName });
       socket.emit("gameStarted", {
@@ -352,6 +355,8 @@ io.on('connection', (socket) => {
     socket.emit("updateRulesText", gameState.rulesText);
     socket.emit("updateDrinkEquation", gameState.drinkEquation);
     socket.emit("updateEarthDrawPending", gameState.isEarthDrawPending);
+
+    socket.emit("updateLoversGraph", gameState.loversGraph);
 
 
 
@@ -400,6 +405,7 @@ io.on('connection', (socket) => {
         ),
         currentPlayerName: gameState.currentPlayerName,
         brothersGraph: gameState.brothersGraph,
+        loversGraph: gameState.loversGraph,
         drinkEquation: gameState.drinkEquation,
         rulesText: gameState.rulesText,
         kingsRemaining: gameState.kingsRemaining,
@@ -414,6 +420,11 @@ io.on('connection', (socket) => {
       if (player?.effectState?.isChoosingBrother) {
         socket.emit("chooseBrotherPopup", { roomID, playerName: player.name });
       }
+
+      if (player?.effectState?.isChoosingLover) {
+        socket.emit("chooseLoverPopup", { roomID, playerName: player.name });
+      }
+
 
       if (player?.effectState?.isChoosingMediumCard) {
         socket.emit("triggerMediumChooseCard", { roomID, playerName: player.name });
@@ -514,9 +525,23 @@ io.on('connection', (socket) => {
         updateStarEffect(roomID, games); // 👈 run it once
       }
 
+
+      // LOVERS Tarot 
+      if (drawnCard.id === 89) {
+        currentPlayer.effectState.isChoosingLover = true;
+        io.to(currentPlayer.socketID).emit("chooseLoverPopup", {
+          roomID,
+          playerName: currentPlayer.name,
+        });
+      }
+
+
       console.log(`🔮 TAROT - ${currentPlayer.name} drew ${drawnCard.name}`);
       io.to(currentPlayer.socketID).emit("triggerTarotActivation", { card: drawnCard });
     }
+
+    
+
 
 
 
@@ -1073,6 +1098,7 @@ io.on('connection', (socket) => {
 
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
+      loversGraph: cloneGraph(gameState.loversGraph),
       drinkEquation: gameState.drinkEquation,
       rulesText: gameState.rulesText,
       kingsRemaining: gameState.kingsRemaining,
@@ -1204,11 +1230,7 @@ io.on('connection', (socket) => {
     if (sourcePlayer) {
       sourcePlayer.effectState.isChoosingBrother = false;
     }
-
-
   });
-
-
 
   socket.on('removeBrotherConnection', ({ roomID, sourceName, targetName }) => {
     const gameState = games[roomID];
@@ -1227,6 +1249,46 @@ io.on('connection', (socket) => {
 
     updateStarEffect(roomID, games);
   });
+
+  socket.on('addLoverConnection', ({ roomID, sourceName, targetName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    // Init loversGraph
+    if (!gameState.loversGraph) gameState.loversGraph = {};
+
+    // Remove existing brother connection first
+    if (gameState.brothersGraph?.[sourceName]) {
+      gameState.brothersGraph[sourceName] = gameState.brothersGraph[sourceName].filter(name => name !== targetName);
+    }
+
+    // Add to loversGraph
+    if (!gameState.loversGraph[sourceName]) {
+      gameState.loversGraph[sourceName] = [];
+    }
+
+    if (!gameState.loversGraph[sourceName].includes(targetName)) {
+      gameState.loversGraph[sourceName].push(targetName);
+      console.log(`[LOVERS] Added ${sourceName} 💛→ ${targetName}`);
+    } else {
+      console.log(`[LOVERS] Duplicate ${sourceName} 💛→ ${targetName}, skipping add.`);
+    }
+
+    // Emit both graphs
+    io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
+    io.to(roomID).emit("updateLoversGraph", cloneGraph(gameState.loversGraph));
+
+    updateStarEffect(roomID, games);
+
+    // Update local state
+    console.log("[Updated loversGraph]", gameState.loversGraph);
+
+    const sourcePlayer = Object.values(gameState.players).find(p => p.name === sourceName);
+    if (sourcePlayer) {
+      sourcePlayer.effectState.isChoosingLover = false;
+    }
+  });
+
 
   socket.on("updateDrinkValue", ({ roomID, playerName, field, delta }) => {
     const gameState = games[roomID];
@@ -1254,6 +1316,19 @@ io.on('connection', (socket) => {
 
     if (playerSocketID) {
       io.to(playerSocketID).emit("chooseBrotherPopup");
+    }
+  });
+
+  socket.on("triggerChooseLover", ({ roomID, playerName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    const playerSocketID = Object.keys(gameState.players).find(
+      sid => gameState.players[sid].name === playerName
+    );
+
+    if (playerSocketID) {
+      io.to(playerSocketID).emit("chooseLoverPopup");
     }
   });
 
@@ -1369,6 +1444,7 @@ io.on('connection', (socket) => {
       ),
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
+      loversGraph: cloneGraph(gameState.loversGraph),
       drinkEquation: gameState.drinkEquation,
       rulesText: gameState.rulesText,
       kingsRemaining: gameState.kingsRemaining,
@@ -1437,66 +1513,96 @@ io.on('connection', (socket) => {
 
 
   socket.on("planetXShuffle", ({ roomID, playerName }) => {
-  const gameState = games[roomID];
-  if (!gameState) return;
+    const gameState = games[roomID];
+    if (!gameState) return;
 
-  const allCards = [];
+    const allCards = [];
 
-  for (const player of Object.values(gameState.players)) {
-    const nonPlanetCards = player.cardsDrawn.filter(c => c.cardType !== "PLANET");
-    const toShuffle = nonPlanetCards.map(card => ({
-      ...card,
-      source: `${player.name} - PLANET X`
-    }));
+    for (const player of Object.values(gameState.players)) {
+      const nonPlanetCards = player.cardsDrawn.filter(c => c.cardType !== "PLANET");
+      const toShuffle = nonPlanetCards.map(card => ({
+        ...card,
+        source: `${player.name} - PLANET X`
+      }));
 
-    allCards.push(...toShuffle);
-    player.cardsDrawn = [];
-  }
+      allCards.push(...toShuffle);
+      player.cardsDrawn = [];
+    }
 
-  for (const card of allCards) {
-    const index = Math.floor(Math.random() * (gameState.deck.length + 1));
-    gameState.deck.splice(index, 0, card);
-  }
+    for (const card of allCards) {
+      const index = Math.floor(Math.random() * (gameState.deck.length + 1));
+      gameState.deck.splice(index, 0, card);
+    }
 
-  recalculateKingsRemaining(gameState);
+    recalculateKingsRemaining(gameState);
 
-  console.log(`[PLANET X] Shuffled ${allCards.length} cards from all players into the deck`);
+    console.log(`[PLANET X] Shuffled ${allCards.length} cards from all players into the deck`);
 
-  // Broadcast updated game state to all clients
-  io.to(roomID).emit("updateGameState", {
-    deck: gameState.deck,
-    players: Object.fromEntries(
-      Object.entries(gameState.players).map(([sid, player]) => [
-        sid,
-        {
-          ...player,
-          effectState: { ...player.effectState },
-        },
-      ])
-    ),
-    currentPlayerName: gameState.currentPlayerName,
-    brothersGraph: cloneGraph(gameState.brothersGraph),
-    drinkEquation: gameState.drinkEquation,
-    rulesText: gameState.rulesText,
-    kingsRemaining: gameState.kingsRemaining,
-    lastDrawnCard: null,
-    activePlanets: gameState.activePlanets,
+    // Broadcast updated game state to all clients
+    io.to(roomID).emit("updateGameState", {
+      deck: gameState.deck,
+      players: Object.fromEntries(
+        Object.entries(gameState.players).map(([sid, player]) => [
+          sid,
+          {
+            ...player,
+            effectState: { ...player.effectState },
+          },
+        ])
+      ),
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: cloneGraph(gameState.brothersGraph),
+      loversGraph: cloneGraph(gameState.loversGraph),
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      kingsRemaining: gameState.kingsRemaining,
+      lastDrawnCard: null,
+      activePlanets: gameState.activePlanets,
+    });
+
+    // 🔧 Find the player who triggered it
+    const triggeringPlayer = Object.values(gameState.players).find(p => p.name === playerName);
+    if (triggeringPlayer) {
+      io.to(triggeringPlayer.socketID).emit("planetXShuffleComplete");
+    }
+
+    // Reset planetXActive flag for everyone
+    for (const player of Object.values(gameState.players)) {
+      player.effectState.isPlanetXActive = false;
+    }
+
+    gameState.glowingPlanets = [];
+    io.to(roomID).emit("clearPlanetGlow");
   });
 
-  // 🔧 Find the player who triggered it
-  const triggeringPlayer = Object.values(gameState.players).find(p => p.name === playerName);
-  if (triggeringPlayer) {
-    io.to(triggeringPlayer.socketID).emit("planetXShuffleComplete");
-  }
+  socket.on("chooseLover", ({ roomID, sourceName, targetName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
 
-  // Reset planetXActive flag for everyone
-  for (const player of Object.values(gameState.players)) {
-    player.effectState.isPlanetXActive = false;
-  }
+    if (!gameState.loversGraph) gameState.loversGraph = {};
+    if (!gameState.brothersGraph) gameState.brothersGraph = {};
 
-  gameState.glowingPlanets = [];
-  io.to(roomID).emit("clearPlanetGlow");
-});
+    // Remove old brother connection if present
+    if (gameState.brothersGraph[sourceName]) {
+      gameState.brothersGraph[sourceName] = gameState.brothersGraph[sourceName].filter(
+        (name) => name !== targetName
+      );
+    }
+
+    // Add to Lovers graph (directional, permanent)
+    gameState.loversGraph[sourceName] = targetName;
+
+    // Turn off popup flag
+    const player = Object.values(gameState.players).find(p => p.name === sourceName);
+    if (player) {
+      player.effectState.isChoosingLover = false;
+    }
+
+    // Emit updated graphs
+    io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph); // Still valid
+    io.to(roomID).emit("updateLoversGraph", gameState.loversGraph);     // New
+  });
+
 
 
 

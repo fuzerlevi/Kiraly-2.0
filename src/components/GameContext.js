@@ -12,6 +12,7 @@ export const GameProvider = ({ children }) => {
 
   // Card effect states (global)
   const [isChoosingBrother, setIsChoosingBrother] = useState(false);
+  const [isChoosingLover, setIsChoosingLover] = useState(false);
   const [isChoosingMediumCard, setIsChoosingMediumCard] = useState(false);
   const [isTranceActive, setIsTranceActive] = useState(false);
   const [hasActiveDejaVu, setHasActiveDejaVu] = useState(false); // 🆕
@@ -43,6 +44,8 @@ export const GameProvider = ({ children }) => {
   const [seeAllTarotsOpen, setSeeAllTarotsOpen] = useState(false);
   const [tarotGlowKeys, setTarotGlowKeys] = useState({});
 
+  const [loversGraph, setLoversGraph] = useState({});
+
 
 
 
@@ -62,6 +65,7 @@ export const GameProvider = ({ children }) => {
       drinkEquation, setDrinkEquation,
 
       isChoosingBrother, setIsChoosingBrother,
+      isChoosingLover, setIsChoosingLover,
       isChoosingMediumCard, setIsChoosingMediumCard,
       isTranceActive, setIsTranceActive,
       hasActiveDejaVu, setHasActiveDejaVu,
@@ -93,6 +97,7 @@ export const GameProvider = ({ children }) => {
       seeAllTarotsOpen, setSeeAllTarotsOpen,
       tarotGlowKeys, setTarotGlowKeys,
 
+      loversGraph, setLoversGraph,
     }}>
       {children}
     </GameContext.Provider>

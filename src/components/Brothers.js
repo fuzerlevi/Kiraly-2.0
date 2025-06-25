@@ -6,7 +6,7 @@ import "../assets/Brothers.css";
 const radius = 200;
 
 const Brothers = () => {
-  const { players, setPlayers, brothersGraph, setBrothersGraph } = useGameContext();
+  const { players, setPlayers, brothersGraph, setBrothersGraph, loversGraph, setLoversGraph } = useGameContext();
   const [fromPlayer, setFromPlayer] = useState("");
   const [toPlayer, setToPlayer] = useState("");
 
@@ -56,16 +56,14 @@ const Brothers = () => {
       <div className="brothers-layout">
         <svg className="brothers-svg" width="600" height="600" viewBox="0 0 600 600">
           <defs>
-            <marker
-              id="arrowhead"
-              markerWidth="10"
-              markerHeight="7"
-              refX="10"
-              refY="3.5"
-              orient="auto"
-              markerUnits="strokeWidth"
-            >
+            {/* Existing black arrowhead */}
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="strokeWidth">
               <polygon points="0 0, 10 3.5, 0 7" fill="#000" />
+            </marker>
+
+            {/* Yellow arrowhead for Lovers */}
+            <marker id="yellow-arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="strokeWidth">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#f1c232" />
             </marker>
           </defs>
 
@@ -90,6 +88,35 @@ const Brothers = () => {
               );
             });
           })}
+
+          {players.map((player, i) => {
+            const from = playerPositions[i];
+            const lovers = loversGraph?.[player.name] || [];
+            return lovers.map((loverName) => {
+              console.log(`[DRAW] Lover arrow from ${player.name} to ${loverName}`);
+              const toIndex = players.findIndex((x) => x.name === loverName);
+              if (toIndex === -1) return null;
+              const to = playerPositions[toIndex];
+
+              // Check if the target has a brother back to the source
+              const hasBrotherBack = brothersGraph?.[loverName]?.includes(player.name);
+
+              return (
+                <line
+                  key={`lover-${i}-${toIndex}`}
+                  x1={from.x}
+                  y1={from.y}
+                  x2={to.x}
+                  y2={to.y}
+                  stroke="#f1c232"
+                  strokeWidth="3"
+                  markerEnd={hasBrotherBack ? "url(#arrowhead)" : "url(#yellow-arrowhead)"}
+                  markerStart={hasBrotherBack ? "url(#yellow-arrowhead)" : undefined}
+                />
+              );
+            });
+          })}
+
 
           {players.map((player, index) => {
             const { x, y } = playerPositions[index];

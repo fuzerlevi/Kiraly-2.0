@@ -39,15 +39,15 @@ const Game = () => {
     players,
     deck,
     currentPlayerName,
-    brothersGraph,
+    brothersGraph, setBrothersGraph,
+    loversGraph, setLoversGraph,
     drinkEquation,
     setDeck,
     setPlayers,
     setCurrentPlayerName,
-    setBrothersGraph,
     setDrinkEquation,
-    isChoosingBrother,
-    setIsChoosingBrother,
+    isChoosingBrother, setIsChoosingBrother,
+    isChoosingLover, setIsChoosingLover,
     isChoosingMediumCard,
     setIsChoosingMediumCard,
     isTranceActive,
@@ -114,10 +114,13 @@ const Game = () => {
   // Drink Equation
   const [drinkEquationOpen, setDrinkEquationOpen] = useState(false);
 
-  // 9
+  // 9 & lover
   const [chosenBrother, setChosenBrother] = useState("");
   const [brotherModalOpen, setBrotherModalOpen] = useState(false);
   const [forceOpenBrothers, setForceOpenBrothers] = useState(false);
+  const [chosenLover, setChosenLover] = useState("");
+
+  const [loverModalOpen, setLoverModalOpen] = useState(false);
 
 
   // king counter
@@ -248,6 +251,7 @@ const Game = () => {
 
       if (me?.effectState) {
         setIsChoosingBrother(me.effectState.isChoosingBrother || false);
+        setIsChoosingLover(me.effectState.isChoosingLover || false);
         setIsChoosingMediumCard(me.effectState.isChoosingMediumCard || false);
         setIsTranceActive(me.effectState.isTranceActive || false);
         setHasActiveDejaVu(me.effectState.hasActiveDejaVu || false);
@@ -279,6 +283,10 @@ const Game = () => {
         setIncantationDrawsRemaining(myPlayer.effectState.incantationDrawsRemaining);
       }
 
+      if (myPlayer?.effectState?.isChoosingLover) {
+        socket.emit("chooseLoverPopup", { roomID, playerName: myPlayer.name });
+      }
+
       if (drawnCard?.source === "EARTH") {
         console.log("[EARTH] Earth clone card drawn. Setting flags.");
         setIsEarthDrawPending(true);
@@ -295,6 +303,7 @@ const Game = () => {
           players: updatedPlayers,
           roomID,
           setIsChoosingBrother,
+          setIsChoosingLover,
           setIsChoosingMediumCard,
           setIsTranceActive,
           setHasActiveDejaVu,
@@ -324,6 +333,12 @@ const Game = () => {
       console.log("[CLIENT] Received updated brothersGraph:", graph);
       setBrothersGraph({ ...graph }); // 🔁 shallow clone to force re-render
     });
+
+    socket.on("updateLoversGraph", (graph) => {
+      console.log("[CLIENT] Received updated loversGraph:", graph);
+      setLoversGraph({ ...graph }); // 🔁 shallow clone to force re-render
+    });
+
 
     socket.on("updateDrinkEquation", (drinkData) => {
       setDrinkEquation({ ...drinkData }); // force shallow clone to trigger re-render
@@ -525,6 +540,11 @@ const Game = () => {
       setOnlyOneTarotPopup(true);
     });
 
+    socket.on("chooseLoverPopup", ({ roomID, playerName }) => {
+      // Set a flag or trigger the popup/button
+      setIsChoosingLover(true);
+    });
+
 
 
 
@@ -546,6 +566,7 @@ const Game = () => {
       socket.off("playerReconnected");
       socket.off("gameStarted");
       socket.off("updateBrothersGraph");
+      socket.off("updateLoversGraph");
       socket.off("updateRulesText");
       socket.off("triggerTrance");
       socket.off("triggerMediumChooseCard");
@@ -559,7 +580,7 @@ const Game = () => {
       socket.off("triggerTarotActivation");
       socket.off("gameOver");
     };
-  }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph]);
+  }, [roomID, setDeck, setPlayers, setCurrentPlayerName, setBrothersGraph, setLoversGraph]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -948,6 +969,12 @@ const Game = () => {
                     Choose Brother
                   </button>
                 );
+              } else if (isChoosingLover) {
+                return (
+                  <button className="floating-button" onClick={() => setLoverModalOpen(true)}>
+                    Choose Lover
+                  </button>
+                );
               } else if (isChoosingMediumCard) {
                 return (
                   <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
@@ -1237,6 +1264,51 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {loverModalOpen && (
+        <div className="brother-modal-overlay">
+          <div className="brother-modal">
+            <h3>Pick a lover</h3>
+            <select
+              value={chosenLover}
+              onChange={(e) => setChosenLover(e.target.value)}
+              className="brother-dropdown"
+            >
+              <option value="">- Pick -</option>
+              {players
+                .filter((p) => p.name !== myPlayer.name)
+                .map((p) => (
+                  <option key={p.socketID} value={p.name}>
+                    {p.name}
+                  </option>
+                ))}
+            </select>
+            <button
+              onClick={() => {
+                if (!chosenLover) return;
+
+                const roomID = window.location.pathname.split("/").pop();
+
+                socket.emit("addLoverConnection", {
+                  roomID,
+                  sourceName: myPlayer.name,
+                  targetName: chosenLover,
+                });
+
+                setLoverModalOpen(false);
+                setIsChoosingLover(false);
+                setChosenLover("");
+
+                setReadyToEndTurn(true);
+                setCardDrawn(null);
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {brothersOpen && (
         <div className="brothers-modal-overlay">
