@@ -26,6 +26,7 @@ const socketToGameMap = {};
 const forbiddenSpawnIDs = [57, 65, 69]; // Déjà Vu, Ouija, Trance
 const kingIDs = [13, 26, 39, 52];
 const aceIDs = [1, 14, 27, 40];
+const tenIDs = [10, 23, 36, 49];
 
 
 
@@ -99,18 +100,11 @@ const createGameState = (gameID) => {
   const deck = [
     Cards.find(card => card.id === 83), // fool
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 97), // temperance
+    Cards.find(card => card.id === 103), // judgement
+    Cards.find(card => card.id === 10), // 10
+    
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 100), // star
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 9), // blood brother
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 54), // aura
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 89), // lovers
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
+    
     
     
     
@@ -446,7 +440,7 @@ io.on('connection', (socket) => {
           const hasMatching = player.tarots?.some(tarot => gameState.glowingTarotIDs.includes(tarot.id));
           if (hasMatching) {
             gameState.glowingTarotIDs.forEach(tarotID => {
-              socket.emit("tarotGlow", { tarotID });
+              socket.emit("tarotGlow", { tarotID, roomID});
             });
           }
         }
@@ -717,6 +711,21 @@ io.on('connection', (socket) => {
             gameState.glowingTarotIDs.push(97); // ✅ Track glow for sync
           }
           io.to(p.socketID).emit("tarotGlow", { tarotID: 97 });
+        }
+      });
+    }
+
+    // HIEROPHANT TAROT glow on 10 draw
+    if (tenIDs.includes(drawnCard.id)) {
+      const players = Object.values(gameState.players || {});
+      players.forEach((p) => {
+        const hasHierophant = p.tarots?.some(card => card.id === 88);
+        if (hasHierophant) {
+          if (!gameState.glowingTarotIDs) gameState.glowingTarotIDs = [];
+          if (!gameState.glowingTarotIDs.includes(88)) {
+            gameState.glowingTarotIDs.push(88); // ✅ Track glow for sync
+          }
+          io.to(p.socketID).emit("tarotGlow", { tarotID: 88 });
         }
       });
     }
@@ -1410,7 +1419,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on("tarotGlow", ({ tarotID }) => {
+  socket.on("tarotGlow", ({ roomID, tarotID }) => {
+    const gameState = games[roomID];
     console.log(`[SERVER] tarotGlow event received from ${socket.id} for ID ${tarotID}`);
 
 

@@ -226,7 +226,7 @@ const Game = () => {
 
       Object.entries(data.tarotGlowKeys || {}).forEach(([id, key]) => {
         console.log(`[RECONNECT][CLIENT] Requesting tarot glow for ID ${id} (key=${key})`);
-        socket.emit("tarotGlow", { tarotID: Number(id) });
+        socket.emit("tarotGlow", { tarotID: Number(id), roomID });
       });
 
 
@@ -659,6 +659,17 @@ const Game = () => {
           name: "Fool",
           text: `${p.name} feldob egy érmét, ha fejet dob, iszik ${result} kortyot`,
           icon: "/CardImages/TAROT/fool.png"
+        });
+      }
+    });
+
+    // Judgement
+    players.forEach((p) => {
+      if (p.tarots?.some(card => card.id === 103)) {
+        entries.push({
+          name: "Judgement",
+          text: `Ha ${p.name} ivott ebben a körben, kioszthat 5 kortyot`,
+          icon: "/CardImages/TAROT/judgement.png"
         });
       }
     });
