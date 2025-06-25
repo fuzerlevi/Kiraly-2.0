@@ -58,6 +58,33 @@ const isEarthCloneEligible = (card) => {
   return isFrench || isSafeSpectral || isSafeTarot;
 };
 
+function updateStarEffect(roomID, games) {
+  const gameState = games[roomID];
+  if (!gameState) return;
+
+  const graph = gameState.brothersGraph || {};
+  const players = Object.values(gameState.players || {});
+  const drinkEq = gameState.drinkEquation || {};
+
+  players.forEach((p) => {
+    const hasStar = p.tarots?.some(card => card.id === 100);
+    if (!hasStar) return;
+
+    const currentBrothers = graph[p.name]?.length || 0;
+
+    const baseFlats = p.baseFlats ?? 0; // default to 0 if never set
+    const updatedFlats = baseFlats - currentBrothers;
+
+    if (!drinkEq[p.name]) drinkEq[p.name] = { flats: 0, multipliers: 1 };
+    drinkEq[p.name].flats = updatedFlats;
+
+    console.log(`[STAR] ${p.name} has ${currentBrothers} brothers. Setting flats to ${updatedFlats}`);
+  });
+
+  io.to(roomID).emit("updateDrinkEquation", drinkEq);
+}
+
+
 
 
 
@@ -72,12 +99,15 @@ const createGameState = (gameID) => {
   const deck = [
     Cards.find(card => card.id === 83), // fool
     Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 88), // hierophant
-    Cards.find(card => card.id === 88), // hierophant
-    Cards.find(card => card.id === 2), // 2
+    Cards.find(card => card.id === 97), // temperance
     Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 100), // star
     Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 9), // blood brother
     Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 1), // ace
+    Cards.find(card => card.id === 89), // lovers
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 1), // ace
@@ -480,6 +510,16 @@ io.on('connection', (socket) => {
       if (!currentPlayer.tarots) currentPlayer.tarots = [];
       currentPlayer.tarots.push(drawnCard);
 
+      
+      // 👇 Store baseFlats only when the tarot is drawn
+      if (drawnCard.id === 100) {
+        if (!gameState.drinkEquation[currentPlayer.name]) {
+          gameState.drinkEquation[currentPlayer.name] = { flats: 0, multipliers: 1 };
+        }
+        currentPlayer.baseFlats = gameState.drinkEquation[currentPlayer.name].flats;
+        updateStarEffect(roomID, games); // 👈 run it once
+      }
+
       console.log(`🔮 TAROT - ${currentPlayer.name} drew ${drawnCard.name}`);
       io.to(currentPlayer.socketID).emit("triggerTarotActivation", { card: drawnCard });
     }
@@ -680,6 +720,23 @@ io.on('connection', (socket) => {
         }
       });
     }
+
+    // STAR glows
+    const starGlowTriggerIDs = [9, 22, 35, 48, 54, 89]; // Brother cards, Aura, Lovers
+    if (starGlowTriggerIDs.includes(drawnCard.id)) {
+      const hasStar = currentPlayer.tarots?.some(card => card.id === 100);
+      if (hasStar) {
+        if (!gameState.tarotGlowKeys) gameState.tarotGlowKeys = {};
+        if (!gameState.tarotGlowKeys[100]) gameState.tarotGlowKeys[100] = 0;
+
+        gameState.tarotGlowKeys[100] += 1; // 🔁 Bump the glow key
+        io.to(currentPlayer.socketID).emit("tarotGlow", { tarotID: 100 });
+
+        console.log(`[STAR] ${currentPlayer.name} drew ${drawnCard.name}, triggering STAR glow.`);
+      }
+    }
+
+
 
 
 
@@ -1120,8 +1177,11 @@ io.on('connection', (socket) => {
       console.log(`[BROTHERS] Duplicate ${sourceName} → ${targetName}, skipping add.`);
     }
 
+
     // Always emit a fresh clone
     io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
+
+    updateStarEffect(roomID, games);
 
 
     console.log(`[BROTHERS] Re-added ${sourceName} → ${targetName}`);
@@ -1155,6 +1215,8 @@ io.on('connection', (socket) => {
     console.log("[Updated brothersGraph]", gameState.brothersGraph);
 
     io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph);
+
+    updateStarEffect(roomID, games);
   });
 
   socket.on("updateDrinkValue", ({ roomID, playerName, field, delta }) => {

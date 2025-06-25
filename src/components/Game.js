@@ -169,6 +169,10 @@ const Game = () => {
   const [onlyOneTarotPopup, setOnlyOneTarotPopup] = useState(false);
   const [onlyOneTarotName, setOnlyOneTarotName] = useState("");
 
+  const seeAllGlowKey = activeTarots
+  .slice(1)
+  .reduce((acc, card) => acc + (tarotGlowKeys[card.id] || 0), 0);
+
 
   
 
@@ -1487,6 +1491,7 @@ const Game = () => {
 
           {activeTarots.length > 1 && (
             <button
+              key={`see-all-${seeAllGlowKey}`}
               className={`see-all-tarots-button ${
                 activeTarots.slice(1).some(t => tarotGlowKeys[t.id] !== undefined) ? "see-all-glow" : ""
               }`}

@@ -99,7 +99,7 @@ const Cards = [
   { id: 86, cardType: "TAROT", name: "Empress", effect: "Annyival kevesebbet iszik, ahány lány van. Kitalálhat egy szabályt, ami csak a lányokra hat", color: "", src: "/CardImages/TAROT/empress.png", source: "" },
   { id: 87, cardType: "TAROT", name: "Emperor", effect: "Annyival kevesebbet iszik, ahány fiú van. Kitalálhat egy szabályt, ami csak a fiúkra hat", color: "", src: "/CardImages/TAROT/emperor.png", source: "" },
   { id: 88, cardType: "TAROT", name: "Hierophant", effect: "Mostantól minden 10-es szabályt te hozol meg", color: "", src: "/CardImages/TAROT/hierophant.png", source: "" },
-  { id: 89, cardType: "TAROT", name: "Lovers", effect: "1 általad választott player a LOVER-ed lesz, a kortyaid felét ő issza", color: "", src: "/CardImages/TAROT/lovers.png", source: "" },
+  { id: 89, cardType: "TAROT", name: "Lovers", effect: "Választhatsz egy LOVER-t, aki mostantól a kortyaid felét megissza", color: "", src: "/CardImages/TAROT/lovers.png", source: "" },
   { id: 90, cardType: "TAROT", name: "Chariot", effect: "Ha innia kellene, dobhat egy D6-tal. Ha 6-ost dob, visszaadja annak, akitől kapta", color: "", src: "/CardImages/TAROT/chariot.png", source: "" },
   { id: 91, cardType: "TAROT", name: "Justice", effect: "Minimum 2-t iszik, de maximum 10-et (rendes játékmenet)", color: "", src: "/CardImages/TAROT/justice.png", source: "" },
   { id: 92, cardType: "TAROT", name: "Hermit", effect: "Nem lehet testvéred (LOVER-ed se)", color: "", src: "/CardImages/TAROT/hermit.png", source: "" },
