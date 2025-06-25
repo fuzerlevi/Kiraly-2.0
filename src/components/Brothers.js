@@ -92,16 +92,15 @@ const Brothers = () => {
           {players.map((player, i) => {
             const from = playerPositions[i];
             const lovers = loversGraph?.[player.name] || [];
-            return lovers.map((loverName) => {
-              console.log(`[DRAW] Lover arrow from ${player.name} to ${loverName}`);
-              const toIndex = players.findIndex((x) => x.name === loverName);
-              if (toIndex === -1) return null;
-              const to = playerPositions[toIndex];
 
-              // Check if the target has a brother back to the source
+            return lovers.flatMap((loverName) => {
+              const toIndex = players.findIndex((x) => x.name === loverName);
+              if (toIndex === -1) return [];
+
+              const to = playerPositions[toIndex];
               const hasBrotherBack = brothersGraph?.[loverName]?.includes(player.name);
 
-              return (
+              const loverArrow = (
                 <line
                   key={`lover-${i}-${toIndex}`}
                   x1={from.x}
@@ -110,12 +109,27 @@ const Brothers = () => {
                   y2={to.y}
                   stroke="#f1c232"
                   strokeWidth="3"
-                  markerEnd={hasBrotherBack ? "url(#arrowhead)" : "url(#yellow-arrowhead)"}
-                  markerStart={hasBrotherBack ? "url(#yellow-arrowhead)" : undefined}
+                  markerEnd="url(#yellow-arrowhead)"
                 />
               );
+
+              const brotherBackArrow = hasBrotherBack ? (
+                <line
+                  key={`brotherBack-${toIndex}-${i}`}
+                  x1={to.x}
+                  y1={to.y}
+                  x2={from.x}
+                  y2={from.y}
+                  stroke="black"
+                  strokeWidth="2"
+                  markerEnd="url(#arrowhead)"
+                />
+              ) : null;
+
+              return [loverArrow, brotherBackArrow];
             });
           })}
+
 
 
           {players.map((player, index) => {

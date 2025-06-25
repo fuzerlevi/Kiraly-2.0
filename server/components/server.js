@@ -98,10 +98,12 @@ const createGameState = (gameID) => {
 
   // TEST DECK
   const deck = [
-    Cards.find(card => card.id === 1), // ace
-    Cards.find(card => card.id === 1), // ace
     Cards.find(card => card.id === 89), // lovers
-    Cards.find(card => card.id === 54), // aura
+    Cards.find(card => card.id === 92), // hermit
+    Cards.find(card => card.id === 9), // blood brother
+    Cards.find(card => card.id === 89), // lovers
+    Cards.find(card => card.id === 9), // blood brother
+    Cards.find(card => card.id === 9), // blood brother
     
     
     
@@ -535,6 +537,39 @@ io.on('connection', (socket) => {
         });
       }
 
+      // HERMIT TAROT — Remove all brother and lover connections from player
+      if (drawnCard.id === 92) {
+        const name = currentPlayer.name;
+
+        // Remove outgoing brother connections
+        if (gameState.brothersGraph[name]) {
+          delete gameState.brothersGraph[name];
+        }
+
+        // Remove incoming brother connections
+        for (const [otherName, connections] of Object.entries(gameState.brothersGraph)) {
+          gameState.brothersGraph[otherName] = connections.filter(conn => conn !== name);
+        }
+
+        // Remove outgoing lover connections
+        if (gameState.loversGraph[name]) {
+          delete gameState.loversGraph[name];
+        }
+
+        // Remove incoming lover connections
+        for (const [otherName, connections] of Object.entries(gameState.loversGraph)) {
+          gameState.loversGraph[otherName] = connections.filter(conn => conn !== name);
+        }
+
+        console.log(`[HERMIT] ${name}'s connections have been purged from brothersGraph and loversGraph.`);
+
+        // Emit updated graphs to clients
+        io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
+        io.to(roomID).emit("updateLoversGraph", cloneGraph(gameState.loversGraph));
+      }
+
+
+  
 
       console.log(`🔮 TAROT - ${currentPlayer.name} drew ${drawnCard.name}`);
       io.to(currentPlayer.socketID).emit("triggerTarotActivation", { card: drawnCard });

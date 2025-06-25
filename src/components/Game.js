@@ -177,15 +177,9 @@ const Game = () => {
   .reduce((acc, card) => acc + (tarotGlowKeys[card.id] || 0), 0);
 
 
-  
 
 
 
-
-
-
-
-  
 
   useEffect(() => {
     if (!socket.connected) {
@@ -855,6 +849,11 @@ const Game = () => {
     setCardDrawn(null);            // ✅ hide the old Trance card
   };
 
+
+  
+  const isHermit = myPlayer.tarots?.some(card => card.id === 92);
+
+  
   
 
   return (
@@ -1213,23 +1212,40 @@ const Game = () => {
         <div className="brother-modal-overlay">
           <div className="brother-modal">
             <h3>Pick a brother</h3>
-            <select
-              value={chosenBrother}
-              onChange={(e) => setChosenBrother(e.target.value)}
-              className="brother-dropdown"
-            >
-              <option value="">- Pick -</option>
-              {players
-                .filter((p) => p.name !== myPlayer.name)
-                .map((p) => (
-                  <option key={p.socketID} value={p.name}>
-                    {p.name}
-                  </option>
-                ))}
-            </select>
+            {isHermit ? (
+              <p style={{ color: "#888", marginBottom: "1em" }}>A Hermit can't have brothers :(</p>
+            ) : (
+              <select
+                value={chosenBrother}
+                onChange={(e) => setChosenBrother(e.target.value)}
+                className="brother-dropdown"
+              >
+                <option value="">- Pick -</option>
+                {players
+                  .filter((p) => {
+                    if (p.name === myPlayer.name) return false;
+                    const myLover = loversGraph?.[myPlayer.name]?.[0];
+                    const isTargetHermit = p.tarots?.some((t) => t.id === 92);
+                    return p.name !== myLover && !isTargetHermit;
+                  })
+                  .map((p) => (
+                    <option key={p.socketID} value={p.name}>
+                      {p.name}
+                    </option>
+                  ))}
+              </select>
+            )}
+
             <button
               onClick={() => {
-                if (!chosenBrother) return;
+                if (isHermit || !chosenBrother) {
+                  setBrotherModalOpen(false);
+                  setIsChoosingBrother(false);
+                  setChosenBrother("");
+                  setReadyToEndTurn(true);
+                  setCardDrawn(null);
+                  return;
+                }
 
                 const alreadyConnected =
                   players &&
@@ -1241,23 +1257,20 @@ const Game = () => {
                   );
 
                 if (!alreadyConnected) {
-                setForceOpenBrothers(true);
-                socket.emit("addBrotherConnection", {
-                  roomID,
-                  sourceName: myPlayer.name,
-                  targetName: chosenBrother,
-                });
-              }
-
+                  setForceOpenBrothers(true);
+                  socket.emit("addBrotherConnection", {
+                    roomID,
+                    sourceName: myPlayer.name,
+                    targetName: chosenBrother,
+                  });
+                }
 
                 setBrotherModalOpen(false);
                 setIsChoosingBrother(false);
                 setChosenBrother("");
-
                 setReadyToEndTurn(true);
                 setCardDrawn(null);
               }}
-
             >
               Confirm
             </button>
@@ -1265,27 +1278,44 @@ const Game = () => {
         </div>
       )}
 
+  
       {loverModalOpen && (
         <div className="brother-modal-overlay">
           <div className="brother-modal">
             <h3>Pick a lover</h3>
-            <select
-              value={chosenLover}
-              onChange={(e) => setChosenLover(e.target.value)}
-              className="brother-dropdown"
-            >
-              <option value="">- Pick -</option>
-              {players
-                .filter((p) => p.name !== myPlayer.name)
-                .map((p) => (
-                  <option key={p.socketID} value={p.name}>
-                    {p.name}
-                  </option>
-                ))}
-            </select>
+            {isHermit ? (
+              <p style={{ color: "#888", marginBottom: "1em" }}>A Hermit can't have lovers :(</p>
+            ) : (
+              <select
+                value={chosenLover}
+                onChange={(e) => setChosenLover(e.target.value)}
+                className="brother-dropdown"
+              >
+                <option value="">- Pick -</option>
+                {players
+                  .filter((p) => {
+                    const currentLovers = loversGraph?.[myPlayer.name] || [];
+                    const isTargetHermit = p.tarots?.some((t) => t.id === 92);
+                    return p.name !== myPlayer.name && !currentLovers.includes(p.name) && !isTargetHermit;
+                  })
+                  .map((p) => (
+                    <option key={p.socketID} value={p.name}>
+                      {p.name}
+                    </option>
+                  ))}
+              </select>
+            )}
+
             <button
               onClick={() => {
-                if (!chosenLover) return;
+                if (isHermit || !chosenLover) {
+                  setLoverModalOpen(false);
+                  setIsChoosingLover(false);
+                  setChosenLover("");
+                  setReadyToEndTurn(true);
+                  setCardDrawn(null);
+                  return;
+                }
 
                 const roomID = window.location.pathname.split("/").pop();
 
@@ -1298,7 +1328,6 @@ const Game = () => {
                 setLoverModalOpen(false);
                 setIsChoosingLover(false);
                 setChosenLover("");
-
                 setReadyToEndTurn(true);
                 setCardDrawn(null);
               }}
@@ -1308,6 +1337,7 @@ const Game = () => {
           </div>
         </div>
       )}
+
 
 
       {brothersOpen && (
