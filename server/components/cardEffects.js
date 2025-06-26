@@ -260,6 +260,20 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
+  113: ({ player, roomID, games }) => {
+    const gameState = games[roomID];
+    if (!gameState || !player?.name) return;
+
+    const equation = gameState.drinkEquation[player.name];
+    if (equation) {
+      equation.multipliers = 0.5;
+      console.log(`[HALF JOKER] Multiplier set to 0.5 for ${player.name}`, equation);
+    }
+
+    return { updatedDrinkEquation: true };
+  },
+
+
 
 
 

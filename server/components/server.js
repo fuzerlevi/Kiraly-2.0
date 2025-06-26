@@ -393,8 +393,8 @@ io.on('connection', (socket) => {
     
     // TEST DECK
     const deck = [
-      Cards.find(card => card.id === 122), // joker
-      Cards.find(card => card.id === 123), // devious Joker
+      Cards.find(card => card.id === 113), // half joker
+      Cards.find(card => card.id === 123), // vagabond
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 8), // d20   
       Cards.find(card => card.id === 1), // ace
@@ -557,12 +557,31 @@ io.on('connection', (socket) => {
     // 🃏 JOKER CARD handling
     if (drawnCard.cardType === "JOKER") {
       console.log(`[JOKER] ${currentPlayer.name} drew a Joker: ${drawnCard.name}`);
-      
+
       // Assign to joker slot
       currentPlayer.joker = { ...drawnCard, source: "JOKER ROUND" };
 
       // Do NOT add to cardsDrawn
       gameState.lastDrawnCard = drawnCard;
+
+      // 🔥 Run the Joker's effect immediately
+      const effectFn = cardEffects[drawnCard.id];
+      if (effectFn) {
+        const result = effectFn({
+          player: currentPlayer,
+          roomID,
+          games,
+          Cards,
+        });
+
+        if (result?.updatedDrinkEquation) {
+          io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+        }
+
+        if (result?.updatedBrothersGraph) {
+          io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
+        }
+      }
 
       // Emit updated game state
       io.to(roomID).emit("updateGameState", {
@@ -597,10 +616,10 @@ io.on('connection', (socket) => {
         playerOrder: gameState.playerOrder,
       });
 
-
       // Don't continue with normal draw logic
       return;
     }
+
 
 
     
