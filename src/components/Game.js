@@ -814,7 +814,7 @@ const Game = () => {
       if (p.joker?.id === 111) {
         entries.push({
           name: "Crazy Joker",
-          text: `${p.name} dobjon egyet a D20-al, az effekt kijátszódik`,
+          text: `${p.name} dob egy D6-al, ha 6-ot dob, valaki italába rakhat akármit, ha mást, iszik 3-at`,
           icon: "/CardImages/JOKER/crazy joker.png"
         });
       }
