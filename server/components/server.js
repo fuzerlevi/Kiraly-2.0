@@ -297,6 +297,7 @@ io.on('connection', (socket) => {
       activePlanets: gameState.activePlanets,
       activeTarots: gameState.activeTarots,
       tarotGlowKeys: gameState.tarotGlowKeys,
+      jokerGlowKeys: gameState.jokerGlowKeys,
       roundNumber: gameState.roundNumber,
       isJokerRound: gameState.isJokerRound,
       playerOrder: gameState.playerOrder,
@@ -393,9 +394,10 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 105), // joker
-      Cards.find(card => card.id === 106), // greedy joker
+      Cards.find(card => card.id === 109), // jolly joker
       Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace   
+      Cards.find(card => card.id === 8), // d20   
+      Cards.find(card => card.id === 1), // ace
 
       // Cards.find(card => card.id === 9), // blood brother
       // Cards.find(card => card.id === 65), // ouija
@@ -456,6 +458,7 @@ io.on('connection', (socket) => {
         activePlanets: gameState.activePlanets,
         activeTarots: gameState.activeTarots,
         tarotGlowKeys: gameState.tarotGlowKeys,
+        jokerGlowKeys: gameState.jokerGlowKeys,
         roundNumber: gameState.roundNumber,
         isJokerRound: gameState.isJokerRound,
         playerOrder: gameState.playerOrder,
@@ -503,6 +506,20 @@ io.on('connection', (socket) => {
           }
         }
       }
+
+      // 🔁 Re-trigger glow for all currently glowing JOKERs
+      if (gameState.glowingJokerIDs?.length) {
+        const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
+        if (player?.joker) {
+          const hasMatching = gameState.glowingJokerIDs.includes(player.joker.id);
+          if (hasMatching) {
+            gameState.glowingJokerIDs.forEach(jokerID => {
+              socket.emit("jokerGlow", { jokerID, roomID });
+            });
+          }
+        }
+      }
+
 
 
 
@@ -899,6 +916,22 @@ io.on('connection', (socket) => {
         console.log(`[STAR] ${currentPlayer.name} drew ${drawnCard.name}, triggering STAR glow.`);
       }
     }
+
+    // JOLLY JOKER glow
+    const jollyJokerTriggerIDs = [8, 21, 34, 47, 56, 60];
+    if (jollyJokerTriggerIDs.includes(drawnCard.id)) {
+      const players = Object.values(gameState.players || {});
+      players.forEach((p) => {
+        if (p.joker?.id === 109) {
+          if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+          if (!gameState.glowingJokerIDs.includes(109)) {
+            gameState.glowingJokerIDs.push(109); // ✅ Track glow for reconnects
+          }
+          io.to(p.socketID).emit("jokerGlow", { jokerID: 109 });
+        }
+      });
+    }
+
 
 
 

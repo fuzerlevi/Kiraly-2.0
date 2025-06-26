@@ -51,6 +51,8 @@ export const GameProvider = ({ children }) => {
 
   const [playerOrder, setPlayerOrder] = useState([]);
 
+  const [jokerGlowKeys, setJokerGlowKeys] = useState({});
+
 
 
 
@@ -110,6 +112,8 @@ export const GameProvider = ({ children }) => {
       roundNumber, setRoundNumber,
 
       playerOrder, setPlayerOrder,
+
+      jokerGlowKeys, setJokerGlowKeys,
 
     }}>
       {children}

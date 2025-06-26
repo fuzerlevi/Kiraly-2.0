@@ -836,9 +836,9 @@
 }
 
 @keyframes jokerGlowLoop {
-  0%   { box-shadow: 0 0 0px orange; }
-  50%  { box-shadow: 0 0 20px 10px orange; }
-  100% { box-shadow: 0 0 0px orange; }
+  0%   { box-shadow: 0 0 0px #351c75; }
+  50%  { box-shadow: 0 0 20px 10px #351c75; }
+  100% { box-shadow: 0 0 0px #351c75; }
 }
 
 

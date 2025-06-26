@@ -65,6 +65,8 @@ const Game = () => {
     
     playerOrder, setPlayerOrder,
 
+    jokerGlowKeys, setJokerGlowKeys
+
   } = useGameContext();
 
   const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
@@ -234,13 +236,16 @@ const Game = () => {
 
       setActiveTarots(me?.tarots || []);
       setTarotGlowKeys(data.tarotGlowKeys || {});
-
-
-      console.log("[RECONNECT][CLIENT] tarotGlowKeys:", data.tarotGlowKeys);
+      setJokerGlowKeys(data.jokerGlowKeys || {});
 
       Object.entries(data.tarotGlowKeys || {}).forEach(([id, key]) => {
         console.log(`[RECONNECT][CLIENT] Requesting tarot glow for ID ${id} (key=${key})`);
         socket.emit("tarotGlow", { tarotID: Number(id), roomID });
+      });
+
+      Object.entries(data.jokerGlowKeys || {}).forEach(([id, key]) => {
+        console.log(`[RECONNECT][CLIENT] Requesting joker glow for ID ${id} (key=${key})`);
+        socket.emit("jokerGlow", { jokerID: Number(id), roomID });
       });
 
 
@@ -489,7 +494,37 @@ const Game = () => {
       window.__tarotGlowIntervals[tarotID] = interval;
     });
 
+    // 🃏 Joker Glow
+    socket.on("jokerGlow", ({ jokerID }) => {
+      console.log(`[CLIENT] Received jokerGlow for ID ${jokerID}`);
 
+      if (!jokerID) return;
+
+      if (!window.__jokerGlowIntervals) {
+        window.__jokerGlowIntervals = {};
+      }
+
+      if (window.__jokerGlowIntervals[jokerID]) {
+        clearInterval(window.__jokerGlowIntervals[jokerID]);
+      }
+
+      let glowKey = 0;
+
+      setJokerGlowKeys(prev => ({
+        ...prev,
+        [jokerID]: glowKey,
+      }));
+
+      const interval = setInterval(() => {
+        glowKey++;
+        setJokerGlowKeys(prev => ({
+          ...prev,
+          [jokerID]: glowKey,
+        }));
+      }, 2000);
+
+      window.__jokerGlowIntervals[jokerID] = interval;
+    });
 
     socket.on("clearPlanetGlow", () => {
       if (window.__planetGlowIntervals) {
@@ -510,6 +545,20 @@ const Game = () => {
       // Reset glowing state
       setTarotGlowKeys({});
     });
+
+    // 🧹 Joker Glow Clear
+    socket.on("clearJokerGlow", () => {
+      if (window.__jokerGlowIntervals) {
+        Object.values(window.__jokerGlowIntervals).forEach(clearInterval);
+        window.__jokerGlowIntervals = {};
+      }
+
+      setJokerGlowKeys({});
+    });
+
+
+
+
 
 
     socket.on("updateEndOfRound", (status) => {
@@ -716,6 +765,17 @@ const Game = () => {
     });
 
     // JOKERS
+
+    // Jolly Joker (Joker)
+    players.forEach((p) => {
+      if (p.joker?.id === 109) {
+        entries.push({
+          name: "Jolly Joker",
+          text: `Ha bárki kockával dob, ${p.name} kioszt 1 kortyot`,
+          icon: "/CardImages/JOKER/jolly joker.png",
+        });
+      }
+    });
     // Joker (End of Round)
     players.forEach((p) => {
       if (p.joker?.id === 105) {
@@ -737,6 +797,10 @@ const Game = () => {
         });
       }
     });
+
+    
+
+    
 
 
 
@@ -1728,10 +1792,10 @@ const Game = () => {
           <div className="joker-slot">
             {myPlayer?.joker ? (
               <img
-                key={`${myPlayer.joker.name}-${myPlayer.joker.id}`}
+                key={`${myPlayer.joker.name}-${jokerGlowKeys[myPlayer.joker.id] ?? 0}`}
                 src={myPlayer.joker.src}
                 alt={myPlayer.joker.name}
-                className="joker-card-image"
+                className={`joker-card-image ${jokerGlowKeys[myPlayer.joker.id] !== undefined ? "joker-glow" : ""}`}
                 onClick={(e) => {
                   setSelectedJoker(myPlayer.joker);
                   const rect = e.target.getBoundingClientRect();
@@ -1762,6 +1826,7 @@ const Game = () => {
           </div>
         )}
       </div>
+
 
     </div>
   );
