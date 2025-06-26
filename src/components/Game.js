@@ -820,6 +820,17 @@ const Game = () => {
       }
     });
 
+    // 🃏 Devious Joker end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 112) {
+        entries.push({
+          name: "Devious Joker",
+          text: `${p.name} dob egy D20-al, majd annyi kortyot kioszt valakinek ahányat dobott`,
+          icon: "/CardImages/JOKER/devious joker.png"
+        });
+      }
+    });
+
 
 
     
