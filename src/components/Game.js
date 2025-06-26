@@ -864,6 +864,18 @@ const Game = () => {
       }
     });
 
+    // The Drunkard
+    players.forEach((p) => {
+      if (p.joker?.id === 126) {
+        const eq = drinkEquation?.[p.name];
+        const sips = Math.round((3 * (eq?.multipliers || 1)) + (eq?.flats || 0));
+        entries.push({
+          name: "The Drunkard",
+          text: `${p.name} iszik ${sips} kortyot`,
+          icon: "/CardImages/JOKER/the drunkard.png"
+      });
+    }});
+
 
     
 
