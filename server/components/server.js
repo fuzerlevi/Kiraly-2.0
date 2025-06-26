@@ -103,7 +103,7 @@ function updateStarEffect(roomID, games) {
 
 
 
-//Toggle between shuffled and preassembled decks
+
 const createGameState = (gameID) => {
 
   return {
@@ -384,8 +384,10 @@ io.on('connection', (socket) => {
     const playerList = Object.values(gameState.players); // keep join order
     gameState.currentPlayerName = playerList[0]?.name || null;
 
+
+    //Toggle between shuffled and preassembled decks
     // SHUFFLED DECK
-    const deck = buildShuffledDeck(Object.values(playerList));
+    // const deck = buildShuffledDeck(Object.values(playerList));
     gameState.deck = deck;
 
     const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;

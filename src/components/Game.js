@@ -623,6 +623,15 @@ const Game = () => {
         setSeeAllTarotsOpen(false);
       }
 
+      // 🃏 JOKER
+      if (
+        !e.target.closest(".joker-info-box") &&
+        !e.target.closest(".joker-card-image")
+      ) {
+        setSelectedJoker(null);
+      }
+
+
     };
 
     document.addEventListener("mousedown", handleClickOutside);
