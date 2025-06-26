@@ -727,6 +727,18 @@ const Game = () => {
       }
     });
 
+    // Greedy Joker (End of Round)
+    players.forEach((p) => {
+      if (p.joker?.id === 106) {
+        entries.push({
+          name: "Greedy Joker",
+          text: `Ha a körben ${p.name} itta a legtöbbet, kioszt 10 kortyot, ha a legkevesebbet, akkor iszik 5-öt `,
+          icon: "/CardImages/JOKER/greedy joker.png",
+        });
+      }
+    });
+
+
 
 
 
