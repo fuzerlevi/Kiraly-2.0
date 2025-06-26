@@ -74,7 +74,8 @@ const Game = () => {
     tarotPopupOpen, setTarotPopupOpen,
     tarotGlowKeys, setTarotGlowKeys,
     
-
+    isJokerRound, setIsJokerRound,
+    roundNumber, setRoundNumber,
     
   } = useGameContext();
 
@@ -176,6 +177,11 @@ const Game = () => {
   .slice(1)
   .reduce((acc, card) => acc + (tarotGlowKeys[card.id] || 0), 0);
 
+  // JOKERs
+  const [selectedJoker, setSelectedJoker] = useState(null);
+  
+
+
 
 
 
@@ -206,6 +212,9 @@ const Game = () => {
       setActivePlanets(data.activePlanets || []);
       setCurrentPlayerName(data.currentPlayerName || null);
       setKingsRemaining(data.kingsRemaining ?? 4);
+      setIsJokerRound(data.isJokerRound ?? false);
+      setRoundNumber(data.roundNumber ?? 0);
+
       
 
       if (data.brothersGraph) {
@@ -858,7 +867,10 @@ const Game = () => {
 
   return (
     <div className="game-container">
-      <h1 className="game-title">KIRALY 2.0</h1>
+      <h1 className="game-title">
+        {isJokerRound ? "Joker Round" : `Round ${roundNumber}`}
+      </h1>
+
 
       <div className="card-container">
         {cardDrawn ? (
@@ -1665,6 +1677,50 @@ const Game = () => {
 
 
       </div>
+
+      {/* === Joker Panel === */}
+      <div className="joker-panel">
+        <div className="joker-panel-column">
+          <h3 className="joker-panel-title">Joker</h3>
+
+          <div className="joker-slot">
+            {myPlayer?.joker ? (
+              <img
+                key={`${myPlayer.joker.name}-${myPlayer.joker.id}`}
+                src={myPlayer.joker.src}
+                alt={myPlayer.joker.name}
+                className="joker-card-image"
+                onClick={(e) => {
+                  setSelectedJoker(myPlayer.joker);
+                  const rect = e.target.getBoundingClientRect();
+                  setTooltipPosition({
+                    top: rect.top + window.scrollY,
+                    left: rect.right + 10,
+                  });
+                }}
+                style={{ cursor: "pointer" }}
+              />
+            ) : (
+              <div className="joker-card-placeholder" />
+            )}
+          </div>
+        </div>
+
+        {/* Floating tooltip box for JOKER info */}
+        {selectedJoker && (
+          <div
+            className="joker-info-box"
+            style={{
+              top: tooltipPosition.top,
+              left: tooltipPosition.left,
+            }}
+          >
+            <strong>{selectedJoker.name}:</strong>{" "}
+            {selectedJoker.effect || "No effect."}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

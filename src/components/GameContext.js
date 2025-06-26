@@ -46,6 +46,11 @@ export const GameProvider = ({ children }) => {
 
   const [loversGraph, setLoversGraph] = useState({});
 
+  const [isJokerRound, setIsJokerRound] = useState(true);
+  const [roundNumber, setRoundNumber] = useState(0);
+
+
+
 
 
 
@@ -98,6 +103,10 @@ export const GameProvider = ({ children }) => {
       tarotGlowKeys, setTarotGlowKeys,
 
       loversGraph, setLoversGraph,
+
+      isJokerRound, setIsJokerRound,
+      roundNumber, setRoundNumber,
+      
     }}>
       {children}
     </GameContext.Provider>

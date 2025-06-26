@@ -5,8 +5,6 @@ const crypto = require("crypto");
 const path = require('path');
 const bodyParser = require('body-parser');
 
-
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -27,24 +25,6 @@ const forbiddenSpawnIDs = [57, 65, 69]; // Déjà Vu, Ouija, Trance
 const kingIDs = [13, 26, 39, 52];
 const aceIDs = [1, 14, 27, 40];
 const tenIDs = [10, 23, 36, 49];
-
-
-
-const buildShuffledDeck = () => {
-  const allCards = require("./Cards"); // or wherever your Cards array is
-
-  const frenchAndSpectral = allCards.filter(
-    (card) => card.cardType === "French" || card.cardType === "SPECTRAL"
-  );
-
-  const planetCards = allCards.filter(card => card.cardType === "PLANET");
-  const selectedPlanets = shuffleArray(planetCards).slice(0, 2); // Pick 2 random PLANET cards
-
-  const fullDeck = [...frenchAndSpectral, ...selectedPlanets];
-  return shuffleArray(fullDeck); // Shuffle the final deck
-};
-
-const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
 
 const recalculateKingsRemaining = (gameState) => {
   const kingsInDeck = gameState.deck.filter(card => kingIDs.includes(card.id)).length;
@@ -67,6 +47,8 @@ function updateStarEffect(roomID, games) {
   const players = Object.values(gameState.players || {});
   const drinkEq = gameState.drinkEquation || {};
 
+ 
+
   players.forEach((p) => {
     const hasStar = p.tarots?.some(card => card.id === 100);
     if (!hasStar) return;
@@ -85,58 +67,62 @@ function updateStarEffect(roomID, games) {
   io.to(roomID).emit("updateDrinkEquation", drinkEq);
 }
 
+ const buildShuffledDeck = (players) => {
+    const allCards = require("./Cards");
+    const playerCount = players.length;
+
+    // Separate card types
+    const frenchAndSpectral = allCards.filter(
+      (card) => card.cardType === "French" || card.cardType === "SPECTRAL"
+    );
+
+    const planetCards = allCards.filter((card) => card.cardType === "PLANET");
+    const tarotCards = allCards.filter((card) => card.cardType === "TAROT");
+    const jokerCards = allCards.filter((card) => card.cardType === "JOKER");
+
+    // Random selection
+    const selectedPlanets = shuffleArray(planetCards).slice(0, 2);
+    const selectedTarots = shuffleArray(tarotCards).slice(0, playerCount);
+    const selectedJokers = shuffleArray(jokerCards).slice(0, playerCount);
+
+    // Build and shuffle main deck
+    const mainDeck = shuffleArray([
+      ...frenchAndSpectral,
+      ...selectedPlanets,
+      ...selectedTarots,
+    ]);
+
+    // Jokers go on top
+    const finalDeck = [...selectedJokers, ...mainDeck];
+    return finalDeck;
+  };
+
+  const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+
 
 
 
 
 //Toggle between shuffled and preassembled decks
 const createGameState = (gameID) => {
-  
-  // SHUFFLED DECK
-  // const deck = buildShuffledDeck();
-
-
-  // TEST DECK
-  const deck = [
-    Cards.find(card => card.id === 89), // lovers
-    Cards.find(card => card.id === 92), // hermit
-    Cards.find(card => card.id === 9), // blood brother
-    Cards.find(card => card.id === 89), // lovers
-    Cards.find(card => card.id === 9), // blood brother
-    Cards.find(card => card.id === 9), // blood brother
-    
-    
-    
-    
-
-    // Cards.find(card => card.id === 9), // blood brother
-    // Cards.find(card => card.id === 65), // ouija
-    // Cards.find(card => card.id === 69), // trance
-    // Cards.find(card => card.id === 57), // deja vu
-    // Cards.find(card => card.id === 64), // medium
-    // Cards.find(card => card.id === 66), // sigil
-    // Cards.find(card => card.id === 54), // aura
-    // Cards.find(card => card.id === 68), // talisman
-    // Cards.find(card => card.id === 63), // Incantation
-  ];
-
-  const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
 
   return {
     gameID,
     hasStarted: false,
     players: {},
-    deck: deck,
+    deck: [], // set later
     currentPlayerName: null,
     brothersGraph: {},
     loversGraph: {},
     drinkEquation: {},
     rulesText: "",
-    kingsRemaining: kingsInDeck,
+    kingsRemaining: 4, // set later
     lastDrawnCard: null,
     activePlanets: [],
     glowingPlanets: [],
     isEndOfRound: false,
+    isJokerRound: true,
+    roundNumber: 0,
   };
 };
 
@@ -148,6 +134,7 @@ const createPlayerState = (socketID) => ({
   isHost: false,
   cardsDrawn: [],
   tarots: [],
+  joker: null,
   effectState: {
   isChoosingBrother: false,
   isChoosingMediumCard: false,
@@ -183,6 +170,9 @@ io.on('connection', (socket) => {
     socketToGameMap[socket.id] = gameID;
     games[gameID] = gameState;
     socket.join(gameID);
+
+
+    
 
     callback?.({ gameID: gameID, success: true });
   });
@@ -280,6 +270,7 @@ io.on('connection', (socket) => {
           {
             ...player,
             tarots: [...(player.tarots || [])],
+            joker: player.joker || null,
             effectState: { ...player.effectState },
           },
         ])
@@ -294,6 +285,10 @@ io.on('connection', (socket) => {
       activePlanets: gameState.activePlanets,
       activeTarots: gameState.activeTarots,
       tarotGlowKeys: gameState.tarotGlowKeys,
+
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
+
     });
     
     if (player?.effectState?.isChoosingMediumCard) {
@@ -376,6 +371,30 @@ io.on('connection', (socket) => {
   
     const playerList = Object.values(gameState.players); // keep join order
     gameState.currentPlayerName = playerList[0]?.name || null;
+
+    // SHUFFLED DECK
+    const deck = buildShuffledDeck(Object.values(playerList));
+    gameState.deck = deck;
+
+    const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
+    gameState.kingsRemaining = kingsInDeck;
+
+
+    // TEST DECK
+    // const deck = [
+    //   Cards.find(card => card.id === 1), // ace
+ 
+
+    //   // Cards.find(card => card.id === 9), // blood brother
+    //   // Cards.find(card => card.id === 65), // ouija
+    //   // Cards.find(card => card.id === 69), // trance
+    //   // Cards.find(card => card.id === 57), // deja vu
+    //   // Cards.find(card => card.id === 64), // medium
+    //   // Cards.find(card => card.id === 66), // sigil
+    //   // Cards.find(card => card.id === 54), // aura
+    //   // Cards.find(card => card.id === 68), // talisman
+    //   // Cards.find(card => card.id === 63), // Incantation
+    // ];
   
     io.to(roomID).emit("gameStarted", {
       roomID,
@@ -401,6 +420,7 @@ io.on('connection', (socket) => {
             {
               ...player,
               tarots: [...(player.tarots || [])],
+              joker: player.joker || null,
               effectState: { ...player.effectState },
             },
           ])
@@ -415,6 +435,9 @@ io.on('connection', (socket) => {
         activePlanets: gameState.activePlanets,
         activeTarots: gameState.activeTarots,
         tarotGlowKeys: gameState.tarotGlowKeys,
+
+        roundNumber: gameState.roundNumber,
+        isJokerRound: gameState.isJokerRound,
       });
 
       const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
@@ -491,6 +514,49 @@ io.on('connection', (socket) => {
     if (!currentPlayer) return;
 
     const drawnCard = gameState.deck.shift();
+
+    // 🃏 JOKER CARD handling
+    if (drawnCard.cardType === "JOKER") {
+      console.log(`[JOKER] ${currentPlayer.name} drew a Joker: ${drawnCard.name}`);
+      
+      // Assign to joker slot
+      currentPlayer.joker = { ...drawnCard, source: "JOKER ROUND" };
+
+      // Do NOT add to cardsDrawn
+      gameState.lastDrawnCard = drawnCard;
+
+      // Emit updated game state
+      io.to(roomID).emit("updateGameState", {
+        deck: gameState.deck,
+        players: Object.fromEntries(
+          Object.entries(gameState.players).map(([sid, myPlayer]) => [
+            sid,
+            {
+              ...myPlayer,
+              tarots: [...(myPlayer.tarots || [])],
+              joker: myPlayer.joker || null, // ✅ include Joker
+              effectState: { ...myPlayer.effectState },
+            },
+          ])
+        ),
+        currentPlayerName: gameState.currentPlayerName,
+        brothersGraph: cloneGraph(gameState.brothersGraph),
+        loversGraph: cloneGraph(gameState.loversGraph),
+        drinkEquation: gameState.drinkEquation,
+        rulesText: gameState.rulesText,
+        kingsRemaining: gameState.kingsRemaining,
+        lastDrawnCard: gameState.lastDrawnCard,
+        activePlanets: gameState.activePlanets,
+
+        roundNumber: gameState.roundNumber,
+        isJokerRound: gameState.isJokerRound,
+      });
+
+      // Don't continue with normal draw logic
+      return;
+    }
+
+
     
     gameState.lastDrawnCard = drawnCard;
 
@@ -1053,6 +1119,15 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // At the end of jokerEndTurn or first turn in endTurn
+    const remainingJokers = gameState.deck.filter(card => card.cardType === "JOKER").length;
+    if (gameState.roundNumber === 0 && remainingJokers === 0) {
+      gameState.roundNumber = 0;
+      gameState.isJokerRound = false;
+      console.log(`[ROUND] Joker Round complete. Starting Round 1`);
+    }
+
+
 
 
 
@@ -1061,6 +1136,14 @@ io.on('connection', (socket) => {
     const playerList = Object.values(gameState.players); // keep join order
     const currentIndex = playerList.findIndex(p => p.name === gameState.currentPlayerName);
     const nextIndex = (currentIndex + 1) % playerList.length;
+
+    // Update round count
+    const isEndOfRound = nextIndex === 0 && !gameState.isJokerRound;
+    if (isEndOfRound) {
+      gameState.roundNumber = (gameState.roundNumber || 0) + 1;
+      console.log(`[ROUND] Advancing to round ${gameState.roundNumber}`);
+    }
+
 
     const isLastPlayer = nextIndex === 0;
     gameState.isEndOfRound = isLastPlayer;
@@ -1125,6 +1208,7 @@ io.on('connection', (socket) => {
           {
             ...player,
             tarots: [...(player.tarots || [])],
+            joker: player.joker || null,
             effectState: { ...player.effectState },
           },
         ])
@@ -1139,6 +1223,10 @@ io.on('connection', (socket) => {
       kingsRemaining: gameState.kingsRemaining,
       lastDrawnCard: gameState.lastDrawnCard,
       activePlanets: gameState.activePlanets,
+
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
+
     });
 
     gameState.glowingPlanets = []; // ✅ Clear tracked glows
@@ -1218,6 +1306,7 @@ io.on('connection', (socket) => {
         {
           ...player,
           tarots: [...(player.tarots || [])],
+          joker: player.joker || null,
           effectState: { ...player.effectState },
         },
       ])
@@ -1483,6 +1572,9 @@ io.on('connection', (socket) => {
       drinkEquation: gameState.drinkEquation,
       rulesText: gameState.rulesText,
       kingsRemaining: gameState.kingsRemaining,
+
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
     });
 
     if (socketID) {
@@ -1593,6 +1685,9 @@ io.on('connection', (socket) => {
       kingsRemaining: gameState.kingsRemaining,
       lastDrawnCard: null,
       activePlanets: gameState.activePlanets,
+
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
     });
 
     // 🔧 Find the player who triggered it
