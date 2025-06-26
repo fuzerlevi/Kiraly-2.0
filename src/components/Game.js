@@ -715,6 +715,19 @@ const Game = () => {
       }
     });
 
+    // JOKERS
+    // Joker (End of Round)
+    players.forEach((p) => {
+      if (p.joker?.id === 105) {
+        entries.push({
+          name: "Joker",
+          text: `${p.name} dob egy D20-al, ha 20-ast dob, kioszt egy egész italt`,
+          icon: "/CardImages/JOKER/joker.png",
+        });
+      }
+    });
+
+
 
 
 

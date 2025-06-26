@@ -386,30 +386,32 @@ io.on('connection', (socket) => {
 
 
     //Toggle between shuffled and preassembled decks
+
     // SHUFFLED DECK
     // const deck = buildShuffledDeck(Object.values(playerList));
-    gameState.deck = deck;
+    
+    // TEST DECK
+    const deck = [
+      Cards.find(card => card.id === 105), // joker
+      Cards.find(card => card.id === 106), // greedy joker
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace   
 
+      // Cards.find(card => card.id === 9), // blood brother
+      // Cards.find(card => card.id === 65), // ouija
+      // Cards.find(card => card.id === 69), // trance
+      // Cards.find(card => card.id === 57), // deja vu
+      // Cards.find(card => card.id === 64), // medium
+      // Cards.find(card => card.id === 66), // sigil
+      // Cards.find(card => card.id === 54), // aura
+      // Cards.find(card => card.id === 68), // talisman
+      // Cards.find(card => card.id === 63), // Incantation
+    ];
+
+    gameState.deck = deck;
     const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
     gameState.kingsRemaining = kingsInDeck;
 
-
-    // TEST DECK
-    // const deck = [
-    //   Cards.find(card => card.id === 1), // ace
- 
-
-    //   // Cards.find(card => card.id === 9), // blood brother
-    //   // Cards.find(card => card.id === 65), // ouija
-    //   // Cards.find(card => card.id === 69), // trance
-    //   // Cards.find(card => card.id === 57), // deja vu
-    //   // Cards.find(card => card.id === 64), // medium
-    //   // Cards.find(card => card.id === 66), // sigil
-    //   // Cards.find(card => card.id === 54), // aura
-    //   // Cards.find(card => card.id === 68), // talisman
-    //   // Cards.find(card => card.id === 63), // Incantation
-    // ];
-  
     io.to(roomID).emit("gameStarted", {
       roomID,
       players: playerList.map(player => ({
