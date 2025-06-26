@@ -842,6 +842,28 @@ const Game = () => {
       }
     });
 
+    // 🃏 Brainstorm end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 131) {
+        entries.push({
+          name: "Brainstorm",
+          text: `${p.name} dob egy D20-al, ha 20-ast dob, kitalálhat egy új szabályt`,
+          icon: "/CardImages/JOKER/brainstorm.png"
+        });
+      }
+    });
+
+    // 🃏 Burnt Joker end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 132) {
+        entries.push({
+          name: "Burnt Joker",
+          text: `${p.name} feldob egy érmét, ha fej, annyit iszik ahányadik kör van, ha írás, annyit kioszt`,
+          icon: "/CardImages/JOKER/burnt joker.png"
+        });
+      }
+    });
+
 
     
 
