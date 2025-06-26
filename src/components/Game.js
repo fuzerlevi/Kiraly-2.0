@@ -12,21 +12,7 @@ import cardEffects from "./cardEffects";
 
 
 
-const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
-  <div className="turn-order-panel">
-    <h3 className="turn-order-title">Ki jön?</h3>
-    <ul className="turn-order-list">
-      {players.map((player, index) => (
-        <li
-          key={index}
-          className={`turn-order-item ${player.name === currentPlayerName ? "current-turn" : ""}`}
-        >
-          {player.name}
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+
 
 const shouldGlowSeeAllTarots = (tarots) => {
   const visibleName = tarots[0]?.name;
@@ -77,7 +63,28 @@ const Game = () => {
     isJokerRound, setIsJokerRound,
     roundNumber, setRoundNumber,
     
+    playerOrder, setPlayerOrder,
+
   } = useGameContext();
+
+  const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
+    <div className="turn-order-panel">
+      <h3  className="turn-order-title">Ki jön?</h3>
+      <ul className="turn-order-list">
+        {playerOrder
+          .map((playerName) => players.find((p) => p.name === playerName))
+          .filter(Boolean)
+          .map((player) => (
+            <li
+              key={player.socketID}
+              className={`turn-order-item ${player.name === currentPlayerName ? "current-turn" : ""}`}
+            >
+              {player.name}
+            </li>
+          ))}
+      </ul>
+    </div>
+  );
 
   if (!window.__planetGlowIntervals) {
     window.__planetGlowIntervals = {};
@@ -214,6 +221,7 @@ const Game = () => {
       setKingsRemaining(data.kingsRemaining ?? 4);
       setIsJokerRound(data.isJokerRound ?? false);
       setRoundNumber(data.roundNumber ?? 0);
+      setPlayerOrder(data.playerOrder);
 
       
 

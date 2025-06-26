@@ -49,6 +49,8 @@ export const GameProvider = ({ children }) => {
   const [isJokerRound, setIsJokerRound] = useState(true);
   const [roundNumber, setRoundNumber] = useState(0);
 
+  const [playerOrder, setPlayerOrder] = useState([]);
+
 
 
 
@@ -106,7 +108,9 @@ export const GameProvider = ({ children }) => {
 
       isJokerRound, setIsJokerRound,
       roundNumber, setRoundNumber,
-      
+
+      playerOrder, setPlayerOrder,
+
     }}>
       {children}
     </GameContext.Provider>

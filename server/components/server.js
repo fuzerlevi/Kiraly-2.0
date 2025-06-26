@@ -110,6 +110,7 @@ const createGameState = (gameID) => {
     gameID,
     hasStarted: false,
     players: {},
+    playerOrder: [],
     deck: [], // set later
     currentPlayerName: null,
     brothersGraph: {},
@@ -160,6 +161,8 @@ io.on('connection', (socket) => {
       team: user.gender,
       isHost: user.isHost,
     };
+
+    gameState.playerOrder.push(user.name); // preserve order
 
     gameState.drinkEquation[user.name] = {
       flats: 0,
@@ -215,20 +218,21 @@ io.on('connection', (socket) => {
     );
 
     if (existingSocketID) {
-      // Reconnect logic
       const oldPlayer = gameState.players[existingSocketID];
       oldPlayer.socketID = socket.id;
 
-      // Reassign under new socket ID (preserve player object in memory)
       gameState.players[socket.id] = oldPlayer;
-
-      // Remove only after reassignment (to prevent mutation issues)
       if (existingSocketID !== socket.id) {
         delete gameState.players[existingSocketID];
       }
 
+      if (!gameState.playerOrder.includes(oldPlayer.name)) {
+        gameState.playerOrder.push(oldPlayer.name);
+      }
+
       socketToGameMap[socket.id] = gameID;
       delete socketToGameMap[existingSocketID];
+
       console.log(`Player ${playerName} reconnected with new socket ${socket.id}`);
     } else {
       // Fresh join
@@ -239,6 +243,10 @@ io.on('connection', (socket) => {
         isHost,
         socketID: socket.id,
       };
+
+      if (!gameState.playerOrder.includes(playerName)) {
+        gameState.playerOrder.push(playerName);
+      }
 
       if (!gameState.drinkEquation[playerName]) {
         gameState.drinkEquation[playerName] = {
@@ -264,16 +272,20 @@ io.on('connection', (socket) => {
     // Refresh full game state for everyone (safety)
     io.to(gameID).emit("updateGameState", {
       deck: gameState.deck,
+
       players: Object.fromEntries(
-        Object.entries(gameState.players).map(([sid, player]) => [
-          sid,
-          {
-            ...player,
-            tarots: [...(player.tarots || [])],
-            joker: player.joker || null,
-            effectState: { ...player.effectState },
-          },
-        ])
+        gameState.playerOrder
+          .map(name => Object.values(gameState.players).find(p => p.name === name))
+          .filter(Boolean)
+          .map(player => [
+            player.socketID,
+            {
+              ...player,
+              tarots: [...(player.tarots || [])],
+              joker: player.joker || null,
+              effectState: { ...player.effectState },
+            },
+          ])
       ),
 
       currentPlayerName: gameState.currentPlayerName,
@@ -285,11 +297,11 @@ io.on('connection', (socket) => {
       activePlanets: gameState.activePlanets,
       activeTarots: gameState.activeTarots,
       tarotGlowKeys: gameState.tarotGlowKeys,
-
       roundNumber: gameState.roundNumber,
       isJokerRound: gameState.isJokerRound,
-
+      playerOrder: gameState.playerOrder,
     });
+
     
     if (player?.effectState?.isChoosingMediumCard) {
       socket.emit("triggerMediumChooseCard", { roomID: gameID, playerName: player.name });
@@ -414,17 +426,22 @@ io.on('connection', (socket) => {
     if (gameState) {
       io.to(roomID).emit('updateGameState', {
         deck: gameState.deck,
+
         players: Object.fromEntries(
-          Object.entries(gameState.players).map(([sid, player]) => [
-            sid,
-            {
-              ...player,
-              tarots: [...(player.tarots || [])],
-              joker: player.joker || null,
-              effectState: { ...player.effectState },
-            },
-          ])
+          gameState.playerOrder
+            .map(name => Object.values(gameState.players).find(p => p.name === name))
+            .filter(Boolean)
+            .map(player => [
+              player.socketID,
+              {
+                ...player,
+                tarots: [...(player.tarots || [])],
+                joker: player.joker || null,
+                effectState: { ...player.effectState },
+              },
+            ])
         ),
+
         currentPlayerName: gameState.currentPlayerName,
         brothersGraph: gameState.brothersGraph,
         loversGraph: gameState.loversGraph,
@@ -435,10 +452,11 @@ io.on('connection', (socket) => {
         activePlanets: gameState.activePlanets,
         activeTarots: gameState.activeTarots,
         tarotGlowKeys: gameState.tarotGlowKeys,
-
         roundNumber: gameState.roundNumber,
         isJokerRound: gameState.isJokerRound,
+        playerOrder: gameState.playerOrder,
       });
+
 
       const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
 
@@ -528,17 +546,22 @@ io.on('connection', (socket) => {
       // Emit updated game state
       io.to(roomID).emit("updateGameState", {
         deck: gameState.deck,
+
         players: Object.fromEntries(
-          Object.entries(gameState.players).map(([sid, myPlayer]) => [
-            sid,
-            {
-              ...myPlayer,
-              tarots: [...(myPlayer.tarots || [])],
-              joker: myPlayer.joker || null, // ✅ include Joker
-              effectState: { ...myPlayer.effectState },
-            },
-          ])
+          gameState.playerOrder
+            .map(name => Object.values(gameState.players).find(p => p.name === name))
+            .filter(Boolean)
+            .map(myPlayer => [
+              myPlayer.socketID,
+              {
+                ...myPlayer,
+                tarots: [...(myPlayer.tarots || [])],
+                joker: myPlayer.joker || null, // ✅ include Joker
+                effectState: { ...myPlayer.effectState },
+              },
+            ])
         ),
+
         currentPlayerName: gameState.currentPlayerName,
         brothersGraph: cloneGraph(gameState.brothersGraph),
         loversGraph: cloneGraph(gameState.loversGraph),
@@ -550,7 +573,9 @@ io.on('connection', (socket) => {
 
         roundNumber: gameState.roundNumber,
         isJokerRound: gameState.isJokerRound,
+        playerOrder: gameState.playerOrder,
       });
+
 
       // Don't continue with normal draw logic
       return;
@@ -1128,14 +1153,9 @@ io.on('connection', (socket) => {
     }
 
 
-
-
-
-
-
-    const playerList = Object.values(gameState.players); // keep join order
-    const currentIndex = playerList.findIndex(p => p.name === gameState.currentPlayerName);
-    const nextIndex = (currentIndex + 1) % playerList.length;
+    const playerOrder = gameState.playerOrder || Object.values(gameState.players).map(p => p.name);
+    const currentIndex = playerOrder.indexOf(gameState.currentPlayerName);
+    const nextIndex = (currentIndex + 1) % playerOrder.length;
 
     // Update round count
     const isEndOfRound = nextIndex === 0 && !gameState.isJokerRound;
@@ -1145,46 +1165,50 @@ io.on('connection', (socket) => {
     }
 
 
+
     const isLastPlayer = nextIndex === 0;
     gameState.isEndOfRound = isLastPlayer;
     io.to(roomID).emit("updateEndOfRound", gameState.isEndOfRound);
 
 
-    const isEarthOnlyTurn = playerList[nextIndex]?.effectState?.earthClonePending;
+    
+    const nextPlayerName = playerOrder[nextIndex];
+    const nextPlayer = Object.values(gameState.players).find(p => p.name === nextPlayerName);
+
+    // EARTH-only turn check
+    const isEarthOnlyTurn = nextPlayer?.effectState?.earthClonePending;
 
     if (isEarthOnlyTurn) {
       // Clear pending EARTH flag from next player
-      playerList[nextIndex].effectState.earthClonePending = false;
-      console.log(`[EARTH] ${playerList[nextIndex].name} finished Earth clone — keeping turn at ${currentPlayer.name}`);
+      nextPlayer.effectState.earthClonePending = false;
+      console.log(`[EARTH] ${nextPlayer.name} finished Earth clone — keeping turn at ${currentPlayer.name}`);
       // Do NOT change currentPlayerName!
     } else {
-      gameState.currentPlayerName = playerList[nextIndex]?.name || null;
+      gameState.currentPlayerName = nextPlayer?.name || null;
     }
-
 
     gameState.lastDrawnCard = null;
 
+    // Reset effectState for everyone if not Earth-only
     if (!isEarthOnlyTurn) {
       for (const player of Object.values(gameState.players)) {
-      player.effectState = {
-        isChoosingBrother: false,
-        isChoosingMediumCard: false,
-        isTranceActive: false,
-        hasActiveDejaVu: false,
-        isChoosingOuijaCard: false,
-        sigilDrawsRemaining: 0,
-      };
+        player.effectState = {
+          isChoosingBrother: false,
+          isChoosingMediumCard: false,
+          isTranceActive: false,
+          hasActiveDejaVu: false,
+          isChoosingOuijaCard: false,
+          sigilDrawsRemaining: 0,
+        };
+      }
     }
-    }
-    
 
+    // EARTH planet cloning logic
     if (gameState.activePlanets?.some(card => card.name === "Earth")) {
       const lastCard = currentPlayer.cardsDrawn[currentPlayer.cardsDrawn.length - 1];
       if (lastCard && isEarthCloneEligible(lastCard)) {
-        const playerList = Object.values(gameState.players);
-        const currentIndex = playerList.findIndex(p => p.name === currentPlayer.name);
-        const nextIndex = (currentIndex + 1) % playerList.length;
-        const nextPlayer = playerList[nextIndex];
+        const nextPlayerName = playerOrder[(currentIndex + 1) % playerOrder.length];
+        const nextPlayer = Object.values(gameState.players).find(p => p.name === nextPlayerName);
 
         if (nextPlayer) {
           currentPlayer.effectState.earthClonePending = false;
@@ -1198,22 +1222,26 @@ io.on('connection', (socket) => {
 
 
 
+
     console.log(`Turn ended. Next: ${gameState.currentPlayerName}`);
 
     io.to(roomID).emit('updateGameState', {
       deck: gameState.deck,
-      players: Object.fromEntries(
-        Object.entries(gameState.players).map(([sid, player]) => [
-          sid,
-          {
-            ...player,
-            tarots: [...(player.tarots || [])],
-            joker: player.joker || null,
-            effectState: { ...player.effectState },
-          },
-        ])
-      ),
 
+      players: Object.fromEntries(
+        gameState.playerOrder
+          .map(name => Object.values(gameState.players).find(p => p.name === name))
+          .filter(Boolean)
+          .map(player => [
+            player.socketID,
+            {
+              ...player,
+              tarots: [...(player.tarots || [])],
+              joker: player.joker || null,
+              effectState: { ...player.effectState },
+            },
+          ])
+      ),
 
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
@@ -1226,8 +1254,9 @@ io.on('connection', (socket) => {
 
       roundNumber: gameState.roundNumber,
       isJokerRound: gameState.isJokerRound,
-
+      playerOrder: gameState.playerOrder,
     });
+
 
     gameState.glowingPlanets = []; // ✅ Clear tracked glows
     io.to(roomID).emit("clearPlanetGlow");
@@ -1557,15 +1586,20 @@ io.on('connection', (socket) => {
 
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
+
       players: Object.fromEntries(
-        Object.entries(gameState.players).map(([sid, player]) => [
-          sid,
-          {
-            ...player,
-            effectState: { ...player.effectState },
-          },
-        ])
+        gameState.playerOrder
+          .map(name => Object.values(gameState.players).find(p => p.name === name))
+          .filter(Boolean)
+          .map(player => [
+            player.socketID,
+            {
+              ...player,
+              effectState: { ...player.effectState },
+            },
+          ])
       ),
+
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
       loversGraph: cloneGraph(gameState.loversGraph),
@@ -1575,7 +1609,9 @@ io.on('connection', (socket) => {
 
       roundNumber: gameState.roundNumber,
       isJokerRound: gameState.isJokerRound,
+      playerOrder: gameState.playerOrder,
     });
+
 
     if (socketID) {
       io.to(socketID).emit("tranceShuffleComplete");
@@ -1668,15 +1704,20 @@ io.on('connection', (socket) => {
     // Broadcast updated game state to all clients
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
+
       players: Object.fromEntries(
-        Object.entries(gameState.players).map(([sid, player]) => [
-          sid,
-          {
-            ...player,
-            effectState: { ...player.effectState },
-          },
-        ])
+        gameState.playerOrder
+          .map(name => Object.values(gameState.players).find(p => p.name === name))
+          .filter(Boolean)
+          .map(player => [
+            player.socketID,
+            {
+              ...player,
+              effectState: { ...player.effectState },
+            },
+          ])
       ),
+
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
       loversGraph: cloneGraph(gameState.loversGraph),
@@ -1688,7 +1729,9 @@ io.on('connection', (socket) => {
 
       roundNumber: gameState.roundNumber,
       isJokerRound: gameState.isJokerRound,
+      playerOrder: gameState.playerOrder,
     });
+
 
     // 🔧 Find the player who triggered it
     const triggeringPlayer = Object.values(gameState.players).find(p => p.name === playerName);
@@ -1732,14 +1775,6 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph); // Still valid
     io.to(roomID).emit("updateLoversGraph", gameState.loversGraph);     // New
   });
-
-
-
-
-
-
-
-
 
 
 
