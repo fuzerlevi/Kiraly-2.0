@@ -831,6 +831,17 @@ const Game = () => {
       }
     });
 
+    // 🃏 The Baron end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 124) {
+        entries.push({
+          name: "The Baron",
+          text: `${p.name} dob egy D6-al, ha 6-ost dob, egy általa válaszott játékos iszik helyette a következő kör végéig, ha 1-est, iszik 5-öt`,
+          icon: "/CardImages/JOKER/the baron.png"
+        });
+      }
+    });
+
 
 
     
