@@ -798,6 +798,30 @@ const Game = () => {
       }
     });
 
+    // 🃏 Mad Joker end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 110) {
+        entries.push({
+          name: "Mad Joker",
+          text: `Ha ${p.name} a körben 5-nél több kortyot ivott, iszik még 5-öt és kioszt 10-et, akármilyen felosztásban`,
+          icon: "/CardImages/JOKER/mad joker.png"
+        });
+      }
+    });
+
+    // 🃏 Crazy Joker end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 111) {
+        entries.push({
+          name: "Crazy Joker",
+          text: `${p.name} dobjon egyet a D20-al, az effekt kijátszódik`,
+          icon: "/CardImages/JOKER/crazy joker.png"
+        });
+      }
+    });
+
+
+
     
 
     

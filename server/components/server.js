@@ -394,7 +394,7 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 105), // joker
-      Cards.find(card => card.id === 109), // jolly joker
+      Cards.find(card => card.id === 110), // Mad Joker
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 8), // d20   
       Cards.find(card => card.id === 1), // ace
