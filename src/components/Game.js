@@ -969,7 +969,7 @@ const Game = () => {
                   } else {
                     return (
                       <button className="floating-button" onClick={drawACard}>
-                        Draw Card
+                        {isJokerRound ? "Draw Joker" : "Draw Card"}
                       </button>
                     );
                   }
