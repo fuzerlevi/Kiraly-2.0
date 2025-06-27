@@ -375,14 +375,14 @@ io.on('connection', (socket) => {
     //Toggle between shuffled and preassembled decks
 
     // SHUFFLED DECK
-    const deck = buildShuffledDeck(Object.values(playerList));
+    // const deck = buildShuffledDeck(Object.values(playerList));
     
     // TEST DECK
-    // const deck = [
-    //   Cards.find(card => card.id === 135), // scary face
-    //   Cards.find(card => card.id === 105), // joker
-    //   Cards.find(card => card.id === 2), // 2 of spades
-    //   Cards.find(card => card.id === 1), // ace of pades
+    const deck = [
+      Cards.find(card => card.id === 116), // fibo
+      Cards.find(card => card.id === 105), // joker
+      Cards.find(card => card.id === 2), // 2 of spades
+      Cards.find(card => card.id === 1), // ace of pades
 
       // Cards.find(card => card.id === 9), // blood brother
       // Cards.find(card => card.id === 65), // ouija
@@ -393,7 +393,7 @@ io.on('connection', (socket) => {
       // Cards.find(card => card.id === 54), // aura
       // Cards.find(card => card.id === 68), // talisman
       // Cards.find(card => card.id === 63), // Incantation
-    // ];
+    ];
 
     gameState.deck = deck;
     const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;

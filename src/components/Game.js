@@ -203,6 +203,23 @@ const Game = () => {
   const [isChoosingScaryFace, setIsChoosingScaryFace] = useState(false);
 
 
+  // Fibonacci
+  const hasFibonacciJoker = myPlayer?.joker?.id === 116;
+
+  const [isFibonacciModalOpen, setIsFibonacciModalOpen] = useState(false);
+  const [fibInput, setFibInput] = useState('');
+  const [fibResult, setFibResult] = useState([]);
+
+  function generateFibonacciUpTo(n) {
+    const result = [];
+    let a = 0, b = 1;
+    while (a <= n) {
+      result.push(a);
+      [a, b] = [b, a + b];
+    }
+    return result;
+  }
+
 
 
 
@@ -1686,13 +1703,58 @@ const Game = () => {
         </div>
       )}
 
+      
 
+      {myPlayer?.joker?.id === 116 && (
+  <>
+          {isFibonacciModalOpen && (
+            <div className="fibonacci-modal-overlay">
+              <div className="fibonacci-modal-box">
+                <h2 className="fibonacci-title">Fibonacci Calculator</h2>
 
+                <input
+                  type="number"
+                  placeholder="Enter a number"
+                  value={fibInput}
+                  onChange={(e) => setFibInput(e.target.value)}
+                  className="fibonacci-input"
+                />
 
+                <button
+                  className="fibonacci-button"
+                  onClick={() => {
+                    const n = parseInt(fibInput);
+                    if (!isNaN(n)) {
+                      setFibResult(generateFibonacciUpTo(n));
+                    }
+                  }}
+                >
+                  Calculate
+                </button>
 
+                {fibResult.length > 0 && (
+                  <div className="fibonacci-output">
+                    <p className="fibonacci-sequence">
+                      Sequence: {fibResult.join(', ')}
+                    </p>
+                  </div>
+                )}
 
-
-
+                <button
+                  onClick={() => {
+                    setIsFibonacciModalOpen(false);
+                    setFibInput('');
+                    setFibResult([]);
+                  }}
+                  className="fibonacci-close-button"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {brothersOpen && (
         <div className="brothers-modal-overlay">
@@ -2027,24 +2089,37 @@ const Game = () => {
 
           <div className="joker-slot">
             {myPlayer?.joker ? (
-              <img
-                key={`${myPlayer.joker.name}-${jokerGlowKeys[myPlayer.joker.id] ?? 0}`}
-                src={myPlayer.joker.src}
-                alt={myPlayer.joker.name}
-                className={`joker-card-image ${jokerGlowKeys[myPlayer.joker.id] !== undefined ? "joker-glow" : ""}`}
-                onClick={(e) => {
-                  setSelectedJoker(myPlayer.joker);
-                  const rect = e.target.getBoundingClientRect();
-                  setTooltipPosition({
-                    top: rect.top + window.scrollY,
-                    left: rect.right + 10,
-                  });
-                }}
-                style={{ cursor: "pointer" }}
-              />
+              <div className="joker-image-wrapper">
+                <img
+                  key={`${myPlayer.joker.name}-${jokerGlowKeys[myPlayer.joker.id] ?? 0}`}
+                  src={myPlayer.joker.src}
+                  alt={myPlayer.joker.name}
+                  className={`joker-card-image ${jokerGlowKeys[myPlayer.joker.id] !== undefined ? "joker-glow" : ""}`}
+                  onClick={(e) => {
+                    setSelectedJoker(myPlayer.joker);
+                    const rect = e.target.getBoundingClientRect();
+                    setTooltipPosition({
+                      top: rect.top + window.scrollY,
+                      left: rect.right + 10,
+                    });
+                  }}
+                  style={{ cursor: "pointer" }}
+                />
+
+                {/* Floating Calculate button for Fibonacci Joker */}
+                {myPlayer.joker.id === 116 && (
+                  <button
+                    className="fibonacci-floating-button"
+                    onClick={() => setIsFibonacciModalOpen(true)}
+                  >
+                    Use
+                  </button>
+                )}
+              </div>
             ) : (
               <div className="joker-card-placeholder" />
             )}
+
           </div>
         </div>
 
