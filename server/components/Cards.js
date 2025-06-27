@@ -143,7 +143,7 @@ const Cards = [
   { id: 127, cardType: "JOKER", name: "The Bull", effect: "Minden testvéred +3 kortyot iszik", color: "", src: "/CardImages/JOKER/the bull.png", source: "" },
   { id: 128, cardType: "JOKER", name: "Ancient Joker", effect: "Választhat egy TAROT és egy JOKER kártyát", color: "", src: "/CardImages/JOKER/ancient joker.png", source: "" },
   { id: 129, cardType: "JOKER", name: "The Bard", effect: "A játék DJ-je, -2-t iszik, +1-et oszt ki", color: "", src: "/CardImages/JOKER/the bard.png", source: "" },
-  { id: 130, cardType: "JOKER", name: "Smeared Joker", effect: "Minden kör végén dob egy 10-es kockával, amikor/ha a játék alatt összegyűlik 100 (összeadva), megiszik és kioszt 50 kortyot", color: "", src: "/CardImages/JOKER/smeared joker.png", source: "" },
+  { id: 130, cardType: "JOKER", name: "Smeared Joker", effect: "Minden kör végén dob egy 6-os kockával, amikor/ha a játék alatt a dobásainak összege meghaladja az 50-et, megiszik és kioszt egy-egy általa kevert italt", color: "", src: "/CardImages/JOKER/smeared joker.png", source: "" },
   { id: 131, cardType: "JOKER", name: "Brainstorm", effect: "A kör végén dob egy D20-al, ha 20-ast dob, kitalálhat egy új szabályt", color: "", src: "/CardImages/JOKER/brainstorm.png", source: "" },
   { id: 132, cardType: "JOKER", name: "Burnt Joker", effect: "Minden kör végén feldob egy érmét, ha fej, annyit iszik ahányadik kör van, ha írás, annyit kioszt", color: "", src: "/CardImages/JOKER/burnt joker.png", source: "" },
   { id: 133, cardType: "JOKER", name: "Arthur", effect: "A játék elején dob egy 6-os kockával, ha 6-ost dob, kitalálhat egy új szabályt, ha mást, akkor a játék végéig minden kör végén iszik 5 kortyot", color: "", src: "/CardImages/JOKER/arthur.png", source: "" },

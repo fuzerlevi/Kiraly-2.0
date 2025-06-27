@@ -197,6 +197,13 @@ const Game = () => {
 
   const [staticEndOfRoundEntries, setStaticEndOfRoundEntries] = useState([]);
 
+  const [scaryFaceModalOpen, setScaryFaceModalOpen] = useState(false);
+  const [selectedScaryFaceID, setSelectedScaryFaceID] = useState(1);
+
+  const [isChoosingScaryFace, setIsChoosingScaryFace] = useState(false);
+
+
+
 
 
 
@@ -244,6 +251,12 @@ const Game = () => {
       }
 
       const me = playerList.find(p => p.socketID === socket.id);
+
+      if (me?.joker?.id === 135) {
+        console.log(`[CLIENT][SCARY FACE] Your target ID is: ${me.effectState?.scaryFaceTargetID}`);
+      }
+      console.log(`[CLIENT][DRAWN CARD]`, data.lastDrawnCard);
+
       setMySocketID(socket.id);
 
       setActiveTarots(me?.tarots || []);
@@ -905,6 +918,15 @@ const Game = () => {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on("triggerScaryFaceChoose", ({ roomID, playerName }) => {
+      if (myPlayer?.name === playerName) {
+        setIsChoosingScaryFace(true);
+      }
+    });
+  }, [myPlayer]);
+
+
 
 
 
@@ -1074,7 +1096,7 @@ const Game = () => {
 
 
   
-  const isHermit = myPlayer.tarots?.some(card => card.id === 92);
+  const isHermit = myPlayer?.tarots?.some(card => card.id === 92);
 
   
   
@@ -1236,7 +1258,13 @@ const Game = () => {
                     Choose Path
                   </button>
                 );
-              } else {
+                } else if (isChoosingScaryFace) {
+                  return (
+                    <button className="floating-button" onClick={() => setScaryFaceModalOpen(true)}>
+                      Choose Card
+                    </button>
+                  );
+                } else {
                   return (
                     <button className="floating-button" onClick={endTurn}>
                       End Turn
@@ -1619,6 +1647,46 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {scaryFaceModalOpen && (
+        <div className="brother-modal-overlay">
+          <div className="brother-modal">
+            <h3>Choose a card</h3>
+
+            <select
+              className="brother-dropdown"
+              value={selectedScaryFaceID}
+              onChange={(e) => setSelectedScaryFaceID(Number(e.target.value))}
+              style={{ height: "30px", overflowY: "auto" }} // 👈 makes it scrollable
+            >
+              {allCardMetadata
+                .filter(card => card.id >= 1 && card.id <= 52)
+                .map(card => (
+                  <option key={card.id} value={card.id}>
+                    {card.name}
+                  </option>
+                ))}
+            </select>
+
+            <button
+              onClick={() => {
+                socket.emit("scaryFaceCardChosen", {
+                  roomID,
+                  playerName: myPlayer.name,
+                  chosenCardID: selectedScaryFaceID,
+                });
+
+                setScaryFaceModalOpen(false);
+                setIsChoosingScaryFace(false);
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+
 
 
 

@@ -273,21 +273,7 @@ io.on('connection', (socket) => {
     io.to(gameID).emit("updateGameState", {
       deck: gameState.deck,
 
-      players: Object.fromEntries(
-        gameState.playerOrder
-          .map(name => Object.values(gameState.players).find(p => p.name === name))
-          .filter(Boolean)
-          .map(player => [
-            player.socketID,
-            {
-              ...player,
-              tarots: [...(player.tarots || [])],
-              joker: player.joker || null,
-              effectState: { ...player.effectState },
-            },
-          ])
-      ),
-
+      players: { ...gameState.players },
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: gameState.brothersGraph,
       loversGraph: gameState.loversGraph,
@@ -389,15 +375,14 @@ io.on('connection', (socket) => {
     //Toggle between shuffled and preassembled decks
 
     // SHUFFLED DECK
-    // const deck = buildShuffledDeck(Object.values(playerList));
+    const deck = buildShuffledDeck(Object.values(playerList));
     
     // TEST DECK
-    const deck = [
-      Cards.find(card => card.id === 126), // drunkard
-      Cards.find(card => card.id === 133), // brainstorm
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 8), // d20   
-      Cards.find(card => card.id === 1), // ace
+    // const deck = [
+    //   Cards.find(card => card.id === 135), // scary face
+    //   Cards.find(card => card.id === 105), // joker
+    //   Cards.find(card => card.id === 2), // 2 of spades
+    //   Cards.find(card => card.id === 1), // ace of pades
 
       // Cards.find(card => card.id === 9), // blood brother
       // Cards.find(card => card.id === 65), // ouija
@@ -408,7 +393,7 @@ io.on('connection', (socket) => {
       // Cards.find(card => card.id === 54), // aura
       // Cards.find(card => card.id === 68), // talisman
       // Cards.find(card => card.id === 63), // Incantation
-    ];
+    // ];
 
     gameState.deck = deck;
     const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
@@ -433,20 +418,7 @@ io.on('connection', (socket) => {
       io.to(roomID).emit('updateGameState', {
         deck: gameState.deck,
 
-        players: Object.fromEntries(
-          gameState.playerOrder
-            .map(name => Object.values(gameState.players).find(p => p.name === name))
-            .filter(Boolean)
-            .map(player => [
-              player.socketID,
-              {
-                ...player,
-                tarots: [...(player.tarots || [])],
-                joker: player.joker || null,
-                effectState: { ...player.effectState },
-              },
-            ])
-        ),
+        players: { ...gameState.players },
 
         currentPlayerName: gameState.currentPlayerName,
         brothersGraph: gameState.brothersGraph,
@@ -577,6 +549,19 @@ io.on('connection', (socket) => {
         console.log(`[ARTHUR] isChoosingArthurPath set to true for ${currentPlayer.name}`);
       }
 
+      // Scary Face
+      if (drawnCard.id === 135) {
+        currentPlayer.effectState.isChoosingScaryFace = true;
+
+        io.to(currentPlayer.socketID).emit("triggerScaryFaceChoose", {
+          roomID,
+          playerName: currentPlayer.name,
+        });
+
+        console.log(`[SCARY FACE] isChoosingScaryFace set to true for ${currentPlayer.name}`);
+      }
+
+
       // 🔥 Run the Joker's effect immediately
       const effectFn = cardEffects[drawnCard.id];
       if (effectFn) {
@@ -600,20 +585,7 @@ io.on('connection', (socket) => {
       io.to(roomID).emit("updateGameState", {
         deck: gameState.deck,
 
-        players: Object.fromEntries(
-          gameState.playerOrder
-            .map(name => Object.values(gameState.players).find(p => p.name === name))
-            .filter(Boolean)
-            .map(myPlayer => [
-              myPlayer.socketID,
-              {
-                ...myPlayer,
-                tarots: [...(myPlayer.tarots || [])],
-                joker: myPlayer.joker || null, // ✅ include Joker
-                effectState: { ...myPlayer.effectState },
-              },
-            ])
-        ),
+        players: { ...gameState.players },
 
         currentPlayerName: gameState.currentPlayerName,
         brothersGraph: cloneGraph(gameState.brothersGraph),
@@ -745,6 +717,9 @@ io.on('connection', (socket) => {
       currentPlayer.effectState.incantationDrawsRemaining--;
       console.log(`[INCANTATION] Decremented due to PLANET card. Remaining: ${currentPlayer.effectState.incantationDrawsRemaining}`);
     }
+
+
+    
 
 
     if (drawnCard.id === 73) {
@@ -967,6 +942,43 @@ io.on('connection', (socket) => {
       });
     }
 
+
+    console.log("[SCARY FACE] Full player state before glow check:");
+    Object.entries(gameState.players).forEach(([socketID, player]) => {
+      console.log(`- ${player.name}:`, player.effectState);
+    });
+
+    
+    // 🃏 Scary Face Joker glow logic
+    const scaryFaceTriggerID = drawnCard.id;
+    const playerNames = gameState.playerOrder || [];
+    playerNames.forEach((name) => {
+      const playerEntry = Object.entries(gameState.players).find(
+        ([, p]) => p.name === name
+      );
+      if (!playerEntry) return;
+
+      const [socketID, p] = playerEntry;
+      const targetID = p.effectState?.scaryFaceTargetID;
+      const isMatch = targetID === drawnCard.id;
+
+      
+
+      console.log("[SCARY FACE] Checking", name, {
+        jokerID: p.joker?.id,
+        scaryFaceTargetID: targetID,
+        drawnCardID: drawnCard.id,
+        isMatch,
+      });
+
+      if (p.joker?.id === 135 && isMatch) {
+        if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+        if (!gameState.glowingJokerIDs.includes(135)) {
+          gameState.glowingJokerIDs.push(135);
+        }
+        io.to(socketID).emit("jokerGlow", { jokerID: 135 });
+      }
+    });
 
 
 
@@ -1265,6 +1277,7 @@ io.on('connection', (socket) => {
     if (!isEarthOnlyTurn) {
       for (const player of Object.values(gameState.players)) {
         player.effectState = {
+          ...player.effectState,
           isChoosingBrother: false,
           isChoosingMediumCard: false,
           isTranceActive: false,
@@ -1300,20 +1313,7 @@ io.on('connection', (socket) => {
     io.to(roomID).emit('updateGameState', {
       deck: gameState.deck,
 
-      players: Object.fromEntries(
-        gameState.playerOrder
-          .map(name => Object.values(gameState.players).find(p => p.name === name))
-          .filter(Boolean)
-          .map(player => [
-            player.socketID,
-            {
-              ...player,
-              tarots: [...(player.tarots || [])],
-              joker: player.joker || null,
-              effectState: { ...player.effectState },
-            },
-          ])
-      ),
+      players: { ...gameState.players },
 
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
@@ -1408,7 +1408,7 @@ io.on('connection', (socket) => {
         sid,
         {
           ...player,
-          tarots: [...(player.tarots || [])],
+          tarots: Array.isArray(player.tarots) ? [...player.tarots] : [],
           joker: player.joker || null,
           effectState: { ...player.effectState },
         },
@@ -1661,19 +1661,7 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
 
-      players: Object.fromEntries(
-        gameState.playerOrder
-          .map(name => Object.values(gameState.players).find(p => p.name === name))
-          .filter(Boolean)
-          .map(player => [
-            player.socketID,
-            {
-              ...player,
-              effectState: { ...player.effectState },
-            },
-          ])
-      ),
-
+      players: { ...gameState.players },
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
       loversGraph: cloneGraph(gameState.loversGraph),
@@ -1779,19 +1767,7 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
 
-      players: Object.fromEntries(
-        gameState.playerOrder
-          .map(name => Object.values(gameState.players).find(p => p.name === name))
-          .filter(Boolean)
-          .map(player => [
-            player.socketID,
-            {
-              ...player,
-              effectState: { ...player.effectState },
-            },
-          ])
-      ),
-
+      players: { ...gameState.players },
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
       loversGraph: cloneGraph(gameState.loversGraph),
@@ -1872,20 +1848,7 @@ io.on('connection', (socket) => {
 
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
-      players: Object.fromEntries(
-        gameState.playerOrder
-          .map(name => Object.values(gameState.players).find(p => p.name === name))
-          .filter(Boolean)
-          .map(player => [
-            player.socketID,
-            {
-              ...player,
-              tarots: [...(player.tarots || [])],
-              joker: player.joker || null,
-              effectState: { ...player.effectState },
-            },
-          ])
-      ),
+      players: { ...gameState.players },
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
       loversGraph: cloneGraph(gameState.loversGraph),
@@ -1899,6 +1862,53 @@ io.on('connection', (socket) => {
       playerOrder: gameState.playerOrder,
     });
 
+  });
+
+  socket.on("scaryFaceCardChosen", ({ roomID, playerName, chosenCardID }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    const playerEntry = Object.entries(gameState.players).find(
+      ([, p]) => p.name === playerName
+    );
+    if (!playerEntry) return;
+
+    const [socketID, player] = playerEntry;
+
+    // 🛠️ Update effect state safely
+    const updatedEffectState = {
+      ...(player.effectState || {}),
+      isChoosingScaryFace: false,
+      scaryFaceTargetID: chosenCardID,
+    };
+
+    gameState.players[socketID] = {
+      ...player,
+      effectState: updatedEffectState,
+    };
+
+    console.log(`[SCARY FACE] ${player.name} chose target card ID ${chosenCardID}`);
+    console.log(`[SCARY FACE] Effect state for ${player.name} now:`, updatedEffectState);
+
+
+    
+
+    // ✅ Emit updated game state
+    io.to(roomID).emit("updateGameState", {
+      deck: gameState.deck,
+      players:{ ...gameState.players },
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: cloneGraph(gameState.brothersGraph),
+      loversGraph: cloneGraph(gameState.loversGraph),
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      kingsRemaining: gameState.kingsRemaining,
+      lastDrawnCard: gameState.lastDrawnCard,
+      activePlanets: gameState.activePlanets,
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
+      playerOrder: gameState.playerOrder,
+    });
   });
 
 
