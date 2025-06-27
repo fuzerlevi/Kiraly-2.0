@@ -380,7 +380,7 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 116), // fibo
-      Cards.find(card => card.id === 105), // joker
+      Cards.find(card => card.id === 108), // joker
       Cards.find(card => card.id === 2), // 2 of spades
       Cards.find(card => card.id === 1), // ace of pades
 
@@ -1246,7 +1246,21 @@ io.on('connection', (socket) => {
     if (isEndOfRound) {
       gameState.roundNumber = (gameState.roundNumber || 0) + 1;
       console.log(`[ROUND] Advancing to round ${gameState.roundNumber}`);
+
+      // 🍽️ Gluttonous Joker effect: increase flats by 1
+      Object.values(gameState.players).forEach(p => {
+        if (p.joker?.id === 108) {
+          const eq = gameState.drinkEquation[p.name];
+          if (eq) {
+            eq.flats += 1;
+            io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+
+            console.log(`[GLUTTONOUS] Increased ${p.name}'s flats to ${eq.flats}`);
+          }
+        }
+      });
     }
+
 
 
 
