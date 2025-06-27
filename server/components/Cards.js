@@ -121,7 +121,7 @@ const Cards = [
   { id: 105, cardType: "JOKER", name: "Joker", effect: "A kör végén dob egy D20-al, ha 20-ast dob, kioszt egy egész italt", color: "", src: "/CardImages/JOKER/joker.png", source: "" },
   { id: 106, cardType: "JOKER", name: "Greedy Joker", effect: "Ha a kör végén a legtöbbet ivott, kioszt 10 kortyot, ha a legkevesebbet, iszik 5-öt", color: "", src: "/CardImages/JOKER/greedy joker.png", source: "" },
   { id: 107, cardType: "JOKER", name: "Wrathful Joker", effect: "Kiválaszt egy játékost, csak ellene használhat lapokat. Az ellen a játékos ellen minden lapja duplát ér, ha attól a játékostól kap lapot, az fele annyit ér", color: "", src: "/CardImages/JOKER/wrathful joker.png", source: "" },
-  { id: 108, cardType: "JOKER", name: "Gluttonous Joker", effect: "rework", color: "", src: "/CardImages/JOKER/gluttonous joker.png", source: "" },
+  { id: 108, cardType: "JOKER", name: "Gluttonous Joker", effect: "A játék elején -8 kortyot iszik, viszont ez körönként 1-el növekszik", color: "", src: "/CardImages/JOKER/gluttonous joker.png", source: "" },
   { id: 109, cardType: "JOKER", name: "Jolly Joker", effect: "Minden alkalommal amikor valaki kockával dob, kioszt 1 kortyot", color: "", src: "/CardImages/JOKER/jolly joker.png", source: "" },
   { id: 110, cardType: "JOKER", name: "Mad Joker", effect: "Ha a körben 5-nél többet iszik, iszik még 5-öt és kioszt 10-et, akármilyen felosztásban (akár oszthat 5 embernek 2 kortyot)", color: "", src: "/CardImages/JOKER/mad joker.png", source: "" },
   { id: 111, cardType: "JOKER", name: "Crazy Joker", effect: "A kör végén dob egy D6-al, ha 6-ot dob, valaki italába rakhat akármit, ha mást, iszik 3-at", color: "", src: "/CardImages/JOKER/crazy joker.png", source: "" },
@@ -154,7 +154,7 @@ const Cards = [
   { id: 138, cardType: "JOKER", name: "Hiker", effect: "Minden itala 1 alapanyagból kell hogy készüljön, ha felhúz QUEEN, JACK, vagy KING kártyákat, akkor a következő italának 1-el több alapanyagból kell készülnie", color: "", src: "/CardImages/JOKER/hiker.png", source: "" },
   { id: 139, cardType: "JOKER", name: "Burglar", effect: "tbd", color: "", src: "/CardImages/JOKER/burglar.png", source: "" },
   { id: 140, cardType: "JOKER", name: "Credit Card", effect: "tbd", color: "", src: "/CardImages/JOKER/credit card.png", source: "" },
-  { id: 141, cardType: "JOKER", name: "Mr. Bones", effect: "tbd", color: "", src: "/CardImages/JOKER/mr. bones.png", source: "" },
+  { id: 141, cardType: "JOKER", name: "Mr. Bones", effect: "+7 kortyot iszik 💀", color: "", src: "/CardImages/JOKER/mr. bones.png", source: "" },
   { id: 142, cardType: "JOKER", name: "8 Ball", effect: "tbd", color: "", src: "/CardImages/JOKER/8 ball.png", source: "" },
   { id: 143, cardType: "JOKER", name: "Ice Cream", effect: "tbd", color: "", src: "/CardImages/JOKER/ice cream.png", source: "" },
   { id: 144, cardType: "JOKER", name: "Sixth Sense", effect: "tbd", color: "", src: "/CardImages/JOKER/sixth sense.png", source: "" },
@@ -163,6 +163,7 @@ const Cards = [
   { id: 147, cardType: "JOKER", name: "Madness", effect: "tbd", color: "", src: "/CardImages/JOKER/madness.png", source: "" },
   { id: 148, cardType: "JOKER", name: "Business Card", effect: "tbd", color: "", src: "/CardImages/JOKER/business card.png", source: "" },
   { id: 149, cardType: "JOKER", name: "Merry Andy", effect: "tbd", color: "", src: "/CardImages/JOKER/merry andy.png", source: "" },
+  { id: 150, cardType: "JOKER", name: "To The Moon", effect: "Mielőtt iszik, feldob egy érmét. Ha fejet dob, a kapott kortyok -100%-át kell innia, ha írást, a +100%-át", color: "", src: "/CardImages/JOKER/to the moon.png", source: "" },
 
 
 ];

@@ -394,7 +394,7 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 126), // drunkard
-      Cards.find(card => card.id === 131), // brainstorm
+      Cards.find(card => card.id === 133), // brainstorm
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 8), // d20   
       Cards.find(card => card.id === 1), // ace
@@ -462,6 +462,7 @@ io.on('connection', (socket) => {
         roundNumber: gameState.roundNumber,
         isJokerRound: gameState.isJokerRound,
         playerOrder: gameState.playerOrder,
+        isChoosingArthurPath: gameState.isChoosingArthurPath,
       });
 
 
@@ -475,7 +476,6 @@ io.on('connection', (socket) => {
         socket.emit("chooseLoverPopup", { roomID, playerName: player.name });
       }
 
-
       if (player?.effectState?.isChoosingMediumCard) {
         socket.emit("triggerMediumChooseCard", { roomID, playerName: player.name });
       }
@@ -486,6 +486,10 @@ io.on('connection', (socket) => {
 
       if (player?.effectState?.isPlanetXActive) {
         socket.emit("triggerPlanetXShuffle", { roomID, playerName: player.name });
+      }
+
+      if (player?.effectState?.isChoosingArthurPath) {
+        socket.emit("triggerArthurChoosePath", { roomID, playerName: player.name });
       }
 
 
@@ -564,6 +568,15 @@ io.on('connection', (socket) => {
       // Do NOT add to cardsDrawn
       gameState.lastDrawnCard = drawnCard;
 
+      // Arthur
+      if (drawnCard.id === 133) {
+        currentPlayer.effectState.isChoosingArthurPath = true;
+
+        socket.emit("triggerArthurChoosePath", { roomID, playerName: currentPlayer.name });
+
+        console.log(`[ARTHUR] isChoosingArthurPath set to true for ${currentPlayer.name}`);
+      }
+
       // 🔥 Run the Joker's effect immediately
       const effectFn = cardEffects[drawnCard.id];
       if (effectFn) {
@@ -629,6 +642,9 @@ io.on('connection', (socket) => {
     if (drawnCard.cardType !== "PLANET" && drawnCard.cardType !== "TAROT") {
       currentPlayer.cardsDrawn.push(drawnCard);
     }
+
+    
+
 
     // Add TAROT card to personal TAROT inventory
     if (drawnCard.cardType === "TAROT") {
@@ -1311,6 +1327,8 @@ io.on('connection', (socket) => {
       roundNumber: gameState.roundNumber,
       isJokerRound: gameState.isJokerRound,
       playerOrder: gameState.playerOrder,
+
+      isChoosingArthurPath: gameState.isChoosingArthurPath,
     });
 
 
@@ -1831,6 +1849,58 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph); // Still valid
     io.to(roomID).emit("updateLoversGraph", gameState.loversGraph);     // New
   });
+
+  socket.on("arthurPathChosen", ({ roomID, playerName, didBecomeJoker }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    const player = Object.values(gameState.players).find(p => p.name === playerName);
+    if (player) {
+      player.effectState.isChoosingArthurPath = false; // ✅ clear it
+      player.effectState.didArthurBecomeTheJoker = didBecomeJoker;
+      console.log(`[ARTHUR] ${player.name} chose path: ${didBecomeJoker ? "Joker" : "Not Joker"}`);
+    }
+
+    if (!didBecomeJoker) {
+      const entries = [{
+        name: "Arthur",
+        text: `${player.name} iszik 5 kortyot`,
+        icon: "/CardImages/JOKER/arthur.png"
+      }];
+      io.to(roomID).emit("endOfRoundEntries", entries);
+    }
+
+    io.to(roomID).emit("updateGameState", {
+      deck: gameState.deck,
+      players: Object.fromEntries(
+        gameState.playerOrder
+          .map(name => Object.values(gameState.players).find(p => p.name === name))
+          .filter(Boolean)
+          .map(player => [
+            player.socketID,
+            {
+              ...player,
+              tarots: [...(player.tarots || [])],
+              joker: player.joker || null,
+              effectState: { ...player.effectState },
+            },
+          ])
+      ),
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: cloneGraph(gameState.brothersGraph),
+      loversGraph: cloneGraph(gameState.loversGraph),
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      kingsRemaining: gameState.kingsRemaining,
+      lastDrawnCard: gameState.lastDrawnCard,
+      activePlanets: gameState.activePlanets,
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
+      playerOrder: gameState.playerOrder,
+    });
+
+  });
+
 
 
 

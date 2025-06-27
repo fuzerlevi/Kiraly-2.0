@@ -65,7 +65,8 @@ const Game = () => {
     
     playerOrder, setPlayerOrder,
 
-    jokerGlowKeys, setJokerGlowKeys
+    jokerGlowKeys, setJokerGlowKeys,
+
 
   } = useGameContext();
 
@@ -188,6 +189,17 @@ const Game = () => {
 
   // JOKERs
   const [selectedJoker, setSelectedJoker] = useState(null);
+  const [arthurModalOpen, setArthurModalOpen] = useState(false);
+  const [arthurRollResult, setArthurRollResult] = useState(null);
+  const [arthurGifSrc, setArthurGifSrc] = useState(null);
+  const isChoosingArthurPath = myPlayer?.effectState?.isChoosingArthurPath;
+  const [showResultText, setShowResultText] = useState(false);
+
+  const [staticEndOfRoundEntries, setStaticEndOfRoundEntries] = useState([]);
+
+
+
+
   
 
 
@@ -274,10 +286,9 @@ const Game = () => {
         setIsChoosingOuijaCard(me.effectState.isChoosingOuijaCard || false);
       }
 
+      console.log("[RECONNECT] isChoosingArthurPath:", isChoosingArthurPath);
+      console.log("[RECONNECT] isChoosingArthurPath:", data.isChoosingArthurPath);
       console.log("[RECONNECT] cardDrawn:", data.lastDrawnCard);
-      console.log("[RECONNECT] isChoosingBrother:", isChoosingBrother);
-      console.log("[RECONNECT] isChoosingMediumCard:", isChoosingMediumCard);
-      console.log("[RECONNECT] isTranceActive:", isTranceActive);
       console.log("[RECONNECT] currentPlayerName:", data.currentPlayerName);
       console.log("[RECONNECT] myPlayerName:", me?.name);
     });
@@ -876,18 +887,24 @@ const Game = () => {
       });
     }});
 
-
-    
-
     
 
 
 
-
-
-
-    setEndOfRoundEntries(entries);
+    setEndOfRoundEntries([...entries, ...staticEndOfRoundEntries]);
   }, [activePlanets, players, activeTarots, drinkEquation]);
+
+
+  useEffect(() => {
+    socket.on("endOfRoundEntries", (newEntries) => {
+      setStaticEndOfRoundEntries((prev) => [...prev, ...newEntries]);
+    });
+
+    return () => {
+      socket.off("endOfRoundEntries");
+    };
+  }, []);
+
 
 
 
@@ -900,6 +917,8 @@ const Game = () => {
       socket.off("triggerPlanetXShuffle");
     };
   }, []);
+
+ 
 
 
 
@@ -1043,6 +1062,16 @@ const Game = () => {
     setCardDrawn(null);            // ✅ hide the old Trance card
   };
 
+  const handleArthurChoice = (becameJoker) => {
+    socket.emit("arthurPathChosen", {
+      roomID,
+      playerName: myPlayer.name,
+      didBecomeJoker: becameJoker,
+    });
+    setArthurModalOpen(false);
+  };
+
+
 
   
   const isHermit = myPlayer.tarots?.some(card => card.id === 92);
@@ -1159,63 +1188,64 @@ const Game = () => {
                     );
                   }
                 }
-              } else if (isChoosingBrother) {
+                } else if (isChoosingBrother) {
+                  return (
+                    <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
+                      Choose Brother
+                    </button>
+                  );
+                } else if (isChoosingLover) {
+                  return (
+                    <button className="floating-button" onClick={() => setLoverModalOpen(true)}>
+                      Choose Lover
+                    </button>
+                  );
+                } else if (isChoosingMediumCard) {
+                  return (
+                    <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
+                      Choose Card
+                    </button>
+                  );
+                } else if (isTranceActive) {
+                  return (
+                    <button className="floating-button" onClick={handleTranceShuffle}>
+                      Shuffle
+                    </button>
+                  );
+                } else if (isChoosingOuijaCard) {
+                  return (
+                    <button className="floating-button" onClick={() => setOuijaModalOpen(true)}>
+                      Choose Card
+                    </button>
+                  );
+                } else if (planetXActive) {
+                  return (
+                    <button
+                      className="floating-button"
+                      onClick={() => {
+                        socket.emit("planetXShuffle", { roomID, playerName: myPlayer.name });
+                        setPlanetXActive(false);
+                      }}
+                    >
+                      Shuffle
+                    </button>
+                  );
+                } else if (isChoosingArthurPath) {
                 return (
-                  <button className="floating-button" onClick={() => setBrotherModalOpen(true)}>
-                    Choose Brother
-                  </button>
-                );
-              } else if (isChoosingLover) {
-                return (
-                  <button className="floating-button" onClick={() => setLoverModalOpen(true)}>
-                    Choose Lover
-                  </button>
-                );
-              } else if (isChoosingMediumCard) {
-                return (
-                  <button className="floating-button" onClick={() => setMediumModalOpen(true)}>
-                    Choose Card
-                  </button>
-                );
-              } else if (isTranceActive) {
-                return (
-                  <button className="floating-button" onClick={handleTranceShuffle}>
-                    Shuffle
-                  </button>
-                );
-              } else if (isChoosingOuijaCard) {
-                return (
-                  <button className="floating-button" onClick={() => setOuijaModalOpen(true)}>
-                    Choose Card
-                  </button>
-                );
-              } else if (planetXActive) {
-                return (
-                  <button
-                    className="floating-button"
-                    onClick={() => {
-                      socket.emit("planetXShuffle", { roomID, playerName: myPlayer.name });
-                      setPlanetXActive(false);
-                    }}
-                  >
-                    Shuffle
+                  <button className="floating-button" onClick={() => setArthurModalOpen(true)}>
+                    Choose Path
                   </button>
                 );
               } else {
-                return (
-                  <button className="floating-button" onClick={endTurn}>
-                    End Turn
-                  </button>
-                );
-              }
+                  return (
+                    <button className="floating-button" onClick={endTurn}>
+                      End Turn
+                    </button>
+                  );
+                }
             })()}
           </>
       )}
-
-
-
-
-
 
 
       <div className="turn-order-container">
@@ -1534,6 +1564,65 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {arthurModalOpen && (
+        <div className="arthur-modal-overlay">
+          <div className="arthur-modal-backdrop">
+            <div className="arthur-modal-content">
+              <h2 className="arthur-modal-title">Will Arthur become the Joker?</h2>
+
+              {!arthurRollResult ? (
+                <button
+                  className="arthur-modal-button"
+                  onClick={() => {
+                    const roll = Math.floor(Math.random() * 6) + 1;
+                    setArthurRollResult(roll);
+                    setArthurGifSrc(`/rollgifs/diceroll${roll}.gif`);
+                    setShowResultText(false); // reset in case of re-roll
+
+                    setTimeout(() => {
+                      setShowResultText(true);
+                    }, 1340); //  delay
+                  }}
+
+                >
+                  Find Out
+                </button>
+              ) : (
+                <>
+                  <img  className = "arthur-roll-gif" src={arthurGifSrc} alt={`Rolled ${arthurRollResult}`} />
+                  {showResultText && (
+                    <>
+                      <p className="arthur-result-text">
+                        {arthurRollResult === 6
+                          ? "Arthur became the Joker."
+                          : "Arthur made some new friends in prison."}
+                      </p>
+                      <button
+                        className="arthur-modal-button"
+                        onClick={() => {
+                          handleArthurChoice(arthurRollResult === 6);
+                          setArthurRollResult(null);
+                          setArthurGifSrc(null);
+                          setShowResultText(false);
+                        }}
+                      >
+                        OK
+                      </button>
+
+                    </>
+                  )}
+                </>
+
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+
 
 
 
