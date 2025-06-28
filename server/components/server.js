@@ -394,23 +394,16 @@ io.on('connection', (socket) => {
     const deck = [
       Cards.find(card => card.id === 105), // smear
       Cards.find(card => card.id === 109), // jolly
+      Cards.find(card => card.id === 100), // star
+      Cards.find(card => card.id === 54), // aura
       Cards.find(card => card.id === 97), // temp
-      Cards.find(card => card.id === 8), // 8
-      Cards.find(card => card.id === 8), // 8
-      Cards.find(card => card.id === 8), // 8
-      Cards.find(card => card.id === 8), // 8
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 13), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 12), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 12), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 54), // aura
+      Cards.find(card => card.id === 54), // aura
+      Cards.find(card => card.id === 54), // aura
+      Cards.find(card => card.id === 54), // aura
+      Cards.find(card => card.id === 54), // aura
+      Cards.find(card => card.id === 54), // aura
+      Cards.find(card => card.id === 54), // aura
       
 
       // Cards.find(card => card.id === 9), // blood brother

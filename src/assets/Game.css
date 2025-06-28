@@ -698,10 +698,11 @@
 .see-all-tarots-button {
   margin-top: 4px;
   padding: 4px 10px;
+  background-color: #ffcc00;
+  color: black;
   font-size: 13px;
-  border-radius: 6px;
-  border: 2px solid #888;
-  background-color: #eee;
+  border: 3px solid #2f3542;
+  border-radius: 10px;
   cursor: pointer;
 }
 
