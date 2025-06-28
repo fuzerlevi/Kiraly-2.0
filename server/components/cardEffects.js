@@ -209,6 +209,11 @@ const cardEffects = {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
 
+    if (player.joker?.id === 119) {
+      console.log(`[BLACKBOARD] ${player.name} is immune to Death (ID 96)`);
+      return;
+    }
+
     const equation = gameState.drinkEquation[player.name];
     if (equation) {
       equation.multipliers = 2;
@@ -218,9 +223,15 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
+
   94: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
+
+    if (player.joker?.id === 119) {
+      console.log(`[BLACKBOARD] ${player.name} is immune to Strength (ID 94)`);
+      return;
+    }
 
     const equation = gameState.drinkEquation[player.name];
     if (equation) {
@@ -231,9 +242,15 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
+
   86: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
+
+    if (player.joker?.id === 119) {
+      console.log(`[BLACKBOARD] ${player.name} is immune to Empress (ID 86)`);
+      return;
+    }
 
     const equation = gameState.drinkEquation[player.name];
     if (equation) {
@@ -246,9 +263,15 @@ const cardEffects = {
   },
 
 
+
   87: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
+
+    if (player.joker?.id === 119) {
+      console.log(`[BLACKBOARD] ${player.name} is immune to Emperor (ID 87)`);
+      return;
+    }
 
     const equation = gameState.drinkEquation[player.name];
     if (equation) {
@@ -259,6 +282,7 @@ const cardEffects = {
 
     return { updatedDrinkEquation: true };
   },
+
 
   113: ({ player, roomID, games }) => {
     const gameState = games[roomID];

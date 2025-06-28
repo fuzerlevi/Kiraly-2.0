@@ -215,6 +215,9 @@ const Game = () => {
   const [isSmearedModalOpen, setIsSmearedModalOpen] = useState(false);
   const [smearedRollHistory, setSmearedRollHistory] = useState([]); // [{ round: 1, result: 4 }]
 
+  const [showBlackboardPopup, setShowBlackboardPopup] = useState(false);
+
+
 
   
 
@@ -656,6 +659,12 @@ const Game = () => {
       // Set a flag or trigger the popup/button
       setIsChoosingLover(true);
     });
+
+    socket.on("blackboardTarotPopup", () => {
+      console.log("[CLIENT] Received blackboardTarotPopup");
+      setShowBlackboardPopup(true);
+    });
+
 
 
 
@@ -2183,6 +2192,23 @@ const Game = () => {
             </div>
           </div>
         )}
+
+        {showBlackboardPopup && (
+          <div className="popup-overlay">
+            <div className="popup">
+              <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
+                Blackboard can't have Tarots.
+              </p>
+              <button
+                className="ok-button"
+                onClick={() => setShowBlackboardPopup(false)}
+              >
+                Ok
+              </button>
+            </div>
+          </div>
+        )}
+
 
 
       </div>

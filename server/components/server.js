@@ -427,18 +427,56 @@ io.on('connection', (socket) => {
     
     // TEST DECK
     const deck = [
-      Cards.find(card => card.id === 105), // smear
-      Cards.find(card => card.id === 106), // smear
-      Cards.find(card => card.id === 89), // lovers
-      Cards.find(card => card.id === 54), // aura
-      Cards.find(card => card.id === 97), // temp
-      Cards.find(card => card.id === 54), // aura
-      Cards.find(card => card.id === 54), // aura
-      Cards.find(card => card.id === 54), // aura
-      Cards.find(card => card.id === 54), // aura
-      Cards.find(card => card.id === 54), // aura
-      Cards.find(card => card.id === 54), // aura
-      Cards.find(card => card.id === 54), // aura
+      Cards.find(card => card.id === 105), // joker
+      Cards.find(card => card.id === 119), // blackboard
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 83),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 84),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 85),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 86),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 87),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 88),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 89),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 90),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 91),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 92),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 93),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 94),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 95),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 96),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 97),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 98),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 99),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 100),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 101),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 102),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 103),
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 104),
+      Cards.find(card => card.id === 1), // ace
+
+      
+
       
 
       // Cards.find(card => card.id === 9), // blood brother
@@ -714,7 +752,7 @@ io.on('connection', (socket) => {
 
 
     // Add TAROT card to personal TAROT inventory
-    if (drawnCard.cardType === "TAROT") {
+    if (drawnCard.cardType === "TAROT" && currentPlayer.joker?.id !== 119) {
       const uniqueTarotIDs = [88, 97, 102];
       const isUniqueTarot = uniqueTarotIDs.includes(drawnCard.id);
 
@@ -789,8 +827,10 @@ io.on('connection', (socket) => {
       io.to(currentPlayer.socketID).emit("triggerTarotActivation", { card: drawnCard });
     }
 
-    
-
+    if (drawnCard.cardType === "TAROT" && currentPlayer.joker?.id === 119) {
+      io.to(currentPlayer.socketID).emit("blackboardTarotPopup", { cardName: drawnCard.name });
+      console.log(`[BLACKBOARD] ${currentPlayer.name} is immune to TAROTs. Skipping Tarot effect.`);
+    }
 
 
 
@@ -802,19 +842,12 @@ io.on('connection', (socket) => {
       io.to(roomID).emit("updateGameState", getUpdatedGameState(gameState));
     }
 
-
-    
-
-
-
     // Decrement incantationDrawsRemaining if the drawn card is a PLANET and incantation is active
     if (drawnCard.cardType === "PLANET" && currentPlayer.effectState.incantationDrawsRemaining > 0) {
       currentPlayer.effectState.incantationDrawsRemaining--;
       console.log(`[INCANTATION] Decremented due to PLANET card. Remaining: ${currentPlayer.effectState.incantationDrawsRemaining}`);
     }
 
-
-    
 
 
     if (drawnCard.id === 73) {
@@ -1051,6 +1084,18 @@ io.on('connection', (socket) => {
         }
       });
     }
+
+    // Blackboard glow
+    if (drawnCard.cardType === "TAROT" && currentPlayer.joker?.id === 119) {
+      if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+      if (!gameState.glowingJokerIDs.includes(119)) {
+        gameState.glowingJokerIDs.push(119); // ✅ Track for reconnects
+      }
+
+      io.to(currentPlayer.socketID).emit("jokerGlow", { jokerID: 119 });
+      console.log(`[BLACKBOARD] ${currentPlayer.name} drew ${drawnCard.name}, triggering BLACKBOARD glow.`);
+    }
+
 
     // Hiker Joker glow trigger
     const player = findPlayerBySocketID(socket.id, roomID, games);
