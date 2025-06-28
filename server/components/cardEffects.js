@@ -4,11 +4,16 @@ const cardEffects = {
   35: ({ player }) => ({ action: "chooseBrother", playerName: player.name }),
   48: ({ player }) => ({ action: "chooseBrother", playerName: player.name }),
 
+  
   64: ({ player }) => ({ action: "mediumChooseCard", playerName: player.name }),
 
   69: ({ player, roomID, games, Cards }) => {
     const gameState = games[roomID];
     const forbiddenSpawnIDs = [57, 65, 69];
+
+    if (player.joker?.id === 118) {
+      return; // prevent effect
+    }
 
     if (!player.cardsDrawn.length) {
       const spectralCards = Cards.filter(
@@ -44,6 +49,10 @@ const cardEffects = {
   57: ({ player, roomID, games, Cards }) => {
     const gameState = games[roomID];
     const cardsDrawn = player.cardsDrawn;
+
+    if (player.joker?.id === 118) {
+      return; // prevent effect
+    }
 
     const lastCard = cardsDrawn
       .slice(0, -1)
@@ -81,6 +90,10 @@ const cardEffects = {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
 
+    if (player.joker?.id === 118) {
+      return; // prevent effect
+    }
+
     const equation = gameState.drinkEquation[player.name];
     if (equation) {
       equation.multipliers = 1;
@@ -96,6 +109,10 @@ const cardEffects = {
   66: ({ player, roomID, games, Cards }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
+
+    if (player.joker?.id === 118) {
+      return; // prevent effect
+    }
 
     const frenchCards = Cards.filter(c => c.cardType === "French");
     const drawCount = 2;
@@ -130,6 +147,10 @@ const cardEffects = {
   54: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
+
+    if (player.joker?.id === 118) {
+      return; // prevent effect
+    }
 
     const playerName = player.name;
     const oldGraph = gameState.brothersGraph;
@@ -173,6 +194,10 @@ const cardEffects = {
     const gameState = games[roomID];
     const forbiddenSpawnIDs = [57, 65, 66, 69, 63, 64];
 
+    if (player.joker?.id === 118) {
+      return; // prevent effect
+    }
+
     const spectralCards = Cards.filter(
       c => c.id >= 53 && c.id <= 70 && !forbiddenSpawnIDs.includes(c.id)
     );
@@ -198,6 +223,10 @@ const cardEffects = {
   },
 
   63: ({ player }) => {
+    if (player.joker?.id === 118) {
+      return; // prevent effect
+    }
+
     player.effectState.incantationDrawsRemaining = 5;
     return {
       action: "incantationDraw",

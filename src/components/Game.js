@@ -216,6 +216,8 @@ const Game = () => {
   const [smearedRollHistory, setSmearedRollHistory] = useState([]); // [{ round: 1, result: 4 }]
 
   const [showBlackboardPopup, setShowBlackboardPopup] = useState(false);
+  const [showScholarPopup, setShowScholarPopup] = useState(false);
+
 
 
 
@@ -265,6 +267,7 @@ const Game = () => {
     });
 
     socket.on("updateGameState", (data) => {
+      console.log("[📥 updateGameState] Full payload:", JSON.parse(JSON.stringify(data)));
       const playerList = Object.values(data.players);
       setPlayers(playerList || []);
       setDeck(data.deck || []);
@@ -324,11 +327,18 @@ const Game = () => {
       if (me?.effectState) {
         setIsChoosingBrother(me.effectState.isChoosingBrother || false);
         setIsChoosingLover(me.effectState.isChoosingLover || false);
-        setIsChoosingMediumCard(me.effectState.isChoosingMediumCard || false);
+        setIsChoosingMediumCard(
+          me.effectState.isChoosingMediumCard ?? data.isChoosingMediumCard ?? false
+        );
         setIsTranceActive(me.effectState.isTranceActive || false);
-        setHasActiveDejaVu(me.effectState.hasActiveDejaVu || false);
-        setIsChoosingOuijaCard(me.effectState.isChoosingOuijaCard || false);
+        setHasActiveDejaVu(
+          me.effectState.hasActiveDejaVu ?? data.hasActiveDejaVu ?? false
+        );
+        setIsChoosingOuijaCard(
+          me.effectState.isChoosingOuijaCard ?? data.isChoosingOuijaCard ?? false
+        );
       }
+
 
       console.log("[RECONNECT] isChoosingArthurPath:", isChoosingArthurPath);
       console.log("[RECONNECT] isChoosingArthurPath:", data.isChoosingArthurPath);
@@ -665,10 +675,10 @@ const Game = () => {
       setShowBlackboardPopup(true);
     });
 
-
-
-
-
+    socket.on("scholarSpectralPopup", () => {
+      console.log("[CLIENT] Received scholarSpectralPopup");
+      setShowScholarPopup(true);
+    });
 
 
 
@@ -2208,6 +2218,23 @@ const Game = () => {
             </div>
           </div>
         )}
+
+        {showScholarPopup && (
+          <div className="popup-overlay">
+            <div className="popup">
+              <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
+                Scholars are immune to Spectral cards.
+              </p>
+              <button
+                className="ok-button"
+                onClick={() => setShowScholarPopup(false)}
+              >
+                Ok
+              </button>
+            </div>
+          </div>
+        )}
+
 
 
 

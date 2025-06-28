@@ -5,6 +5,7 @@ const cardEffects = {
   48: ({ setIsChoosingBrother }) => setIsChoosingBrother(true),
 
   64: ({ player, setIsChoosingMediumCard }) => {
+    if (player?.joker?.id === 118) return;
     console.log("[Medium] Card effect triggered");
     if (setIsChoosingMediumCard) {
       setIsChoosingMediumCard(true);
@@ -13,6 +14,7 @@ const cardEffects = {
   },
 
   69: ({ player, setIsTranceActive }) => {
+    if (player?.joker?.id === 118) return;
     console.log("[Trance] Card effect triggered by", player.name);
     if (setIsTranceActive) {
       setIsTranceActive(true);
@@ -21,6 +23,7 @@ const cardEffects = {
   },
 
   57: ({ player, setHasActiveDejaVu }) => {
+    if (player?.joker?.id === 118) return;
     console.log("[Déjà Vu] Card effect triggered by", player.name);
     if (setHasActiveDejaVu) {
       setHasActiveDejaVu(true);
@@ -30,6 +33,7 @@ const cardEffects = {
 
   // 🆕 Ouija (to enable hasActiveDejaVu for cloned draw)
   65: ({ player, setHasActiveDejaVu }) => {
+    if (player?.joker?.id === 118) return;
     console.log("[Ouija] Card effect triggered by", player.name);
     if (setHasActiveDejaVu) {
       setHasActiveDejaVu(true);

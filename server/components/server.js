@@ -350,7 +350,7 @@ io.on('connection', (socket) => {
     if (player?.effectState?.isChoosingLover) {
       socket.emit("chooseLoverPopup", { roomID: gameID, playerName: player.name });
     }
-    if (player?.effectState?.hasActiveDejaVu) {
+    if (player?.effectState?.hasActiveDejaVu ) {
       socket.emit("triggerDejaVu", { roomID: gameID, playerName: player.name });
     }
     if (player?.effectState?.isChoosingOuijaCard) {
@@ -428,54 +428,47 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 105), // joker
-      Cards.find(card => card.id === 119), // blackboard
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 83),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 84),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 85),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 86),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 87),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 88),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 89),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 90),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 91),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 92),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 93),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 94),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 95),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 96),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 97),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 98),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 99),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 100),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 101),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 102),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 103),
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 104),
-      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 105), // scholar
 
-      
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 53),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 54),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 55),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 56),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 57),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 58),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 59),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 60),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 61),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 62),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 63),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 64),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 65),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 66),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 67),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 68),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 69),
+      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 70),
+
+
+            
 
       
 
@@ -827,9 +820,16 @@ io.on('connection', (socket) => {
       io.to(currentPlayer.socketID).emit("triggerTarotActivation", { card: drawnCard });
     }
 
+
+    // Trigger popups of scholar and blackboard
     if (drawnCard.cardType === "TAROT" && currentPlayer.joker?.id === 119) {
       io.to(currentPlayer.socketID).emit("blackboardTarotPopup", { cardName: drawnCard.name });
       console.log(`[BLACKBOARD] ${currentPlayer.name} is immune to TAROTs. Skipping Tarot effect.`);
+    }
+
+    if (drawnCard.cardType === "SPECTRAL" && currentPlayer.joker?.id === 118) {
+      io.to(currentPlayer.socketID).emit("scholarSpectralPopup", { cardName: drawnCard.name });
+      console.log(`[SCHOLAR] ${currentPlayer.name} is immune to SPECTRALs. Skipping Spectral effect.`);
     }
 
 
@@ -1146,8 +1146,7 @@ io.on('connection', (socket) => {
 
 
 
-
-
+    // SKIP IF SCHOLAR
     // ✅ Deactivate Deja Vu only after drawing the DEJA VU or OUIJA clone
     const isCloneFromDejaVu = drawnCard?.source?.includes("DEJA VU");
     const isCloneFromOuija = drawnCard?.source?.includes("OUIJA");
@@ -1157,9 +1156,12 @@ io.on('connection', (socket) => {
       currentPlayer.effectState.hasActiveDejaVu = false;
     }
 
-
-
-
+    if(currentPlayer.joker?.id === 118)
+    {
+      currentPlayer.effectState.hasActiveDejaVu = false;
+      currentPlayer.effectState.isChoosingMediumCard = false;
+      currentPlayer.effectState.isChoosingOuijaCard = false;
+    }
 
     // Decrement SIGIL draw count if active
     if (currentPlayer.effectState?.sigilDrawsRemaining > 0) {
@@ -1181,7 +1183,6 @@ io.on('connection', (socket) => {
           !drawnCard.source.includes("SIGIL") &&
           !drawnCard.source.includes("DEJA VU") &&
           !drawnCard.source.includes("OUIJA")
-
         )
       );
 
@@ -1193,7 +1194,6 @@ io.on('connection', (socket) => {
 
 
 
-
     
 
     // Decrease kingsRemaining if a king is drawn
@@ -1202,9 +1202,7 @@ io.on('connection', (socket) => {
       console.log(`[KING] Drew a King! Kings remaining: ${gameState.kingsRemaining}`);
     }
 
-
     console.log(`Player ${currentPlayer.name} drew ${drawnCard.name}`);
-
 
     // Run any registered card effect
     const effectFn = cardEffects[drawnCard.id];
@@ -1225,8 +1223,6 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
       }
 
-
-
       if (result?.action === "chooseBrother") {
         currentPlayer.effectState = {
           ...currentPlayer.effectState,
@@ -1238,7 +1234,7 @@ io.on('connection', (socket) => {
           cause: drawnCard.name,
         });
 
-      } else if (result?.action === "mediumChooseCard") {
+      } else if (result?.action === "mediumChooseCard" && currentPlayer.joker?.id !== 118) {
         currentPlayer.effectState = {
           ...currentPlayer.effectState,
           isChoosingMediumCard: true
@@ -1249,7 +1245,7 @@ io.on('connection', (socket) => {
           cause: drawnCard.name,
         });
 
-      } else if (result?.action === "trance") {
+      } else if (result?.action === "trance" && currentPlayer.joker?.id !== 118) {
         currentPlayer.effectState = {
           ...currentPlayer.effectState,
           isTranceActive: true
@@ -1260,17 +1256,13 @@ io.on('connection', (socket) => {
           cause: drawnCard.name,
         });
 
-      }
-      else if (result?.action === "ouijaChooseCard") {
+      } else if (result?.action === "ouijaChooseCard" && currentPlayer.joker?.id !== 118) {
         const player = Object.values(gameState.players).find(p => p.name === currentPlayer.name);
         if (!player) return;
 
-        // Exclude the Ouija card itself
-        const nonOuija = player.cardsDrawn.filter(c => c.id !== 65 && c.id !== 57); // 65 = Ouija, 57 = Deja Vu
-
+        const nonOuija = player.cardsDrawn.filter(c => c.id !== 65 && c.id !== 57);
 
         if (nonOuija.length === 0) {
-          // Fallback: spawn a random spectral
           const spectralCards = Cards.filter(
             c => c.id >= 53 && c.id <= 70 && !forbiddenSpawnIDs.includes(c.id)
           );
@@ -1282,28 +1274,35 @@ io.on('connection', (socket) => {
           gameState.deck.unshift(randomCard);
 
           player.effectState.isChoosingOuijaCard = false;
-          player.effectState.hasActiveDejaVu = true;
-
-          const sid = Object.keys(gameState.players).find(sid => gameState.players[sid].name === player.name);
-          io.to(sid).emit("triggerDejaVu", {
-            roomID,
-            playerName: player.name,
-            cause: drawnCard.name
-          });
-
+          if(player.joker?.id !== 118)
+          {
+            player.effectState.hasActiveDejaVu = true;
+            const sid = Object.keys(gameState.players).find(sid => gameState.players[sid].name === player.name);
+            io.to(sid).emit("triggerDejaVu", {
+              roomID,
+              playerName: player.name,
+              cause: drawnCard.name
+            });
+          }
+    
+          
 
         } else {
-          player.effectState.isChoosingOuijaCard = true;
-          const sid = player.socketID;
-          io.to(sid).emit("triggerOuijaChooseCard", {
-            roomID,
-            playerName: player.name,
-            cardsDrawn: nonOuija,  // send only non-Ouija cards
-            cause: drawnCard.name
-          });
+
+          if(player.joker?.id !== 118)
+          {
+            player.effectState.isChoosingOuijaCard = true;
+            const sid = player.socketID;
+            io.to(sid).emit("triggerOuijaChooseCard", {
+              roomID,
+              playerName: player.name,
+              cardsDrawn: nonOuija,
+              cause: drawnCard.name
+            });
+          }
         }
-      }
-      else if (result?.action === "sigilDraw") {
+
+      } else if (result?.action === "sigilDraw" && currentPlayer.joker?.id !== 118) {
         const socketID = currentPlayer.socketID;
         if (socketID) {
           io.to(socketID).emit("triggerSigilDraw", {
@@ -1313,9 +1312,8 @@ io.on('connection', (socket) => {
             cause: drawnCard.name,
           });
         }
-      }
 
-      else if (result?.action === "talismanDraw") {
+      } else if (result?.action === "talismanDraw" && currentPlayer.joker?.id !== 118) {
         const socketID = currentPlayer.socketID;
         if (socketID) {
           io.to(socketID).emit("triggerTalismanDraw", {
@@ -1325,8 +1323,8 @@ io.on('connection', (socket) => {
             cause: drawnCard.name,
           });
         }
-      }
-      else if (result?.action === "incantationDraw") {
+
+      } else if (result?.action === "incantationDraw" && currentPlayer.joker?.id !== 118) {
         currentPlayer.effectState.incantationDrawsRemaining = result.incantationDrawsRemaining;
 
         const socketID = currentPlayer.socketID;
@@ -1339,11 +1337,8 @@ io.on('connection', (socket) => {
           });
         }
       }
-
-
-
-
     }
+
 
     const upcomingCard = gameState.deck[0];
 
@@ -1483,6 +1478,12 @@ io.on('connection', (socket) => {
     }
 
 
+    if(currentPlayer.joker?.id === 118)
+    {
+      currentPlayer.effectState.hasActiveDejaVu = false;
+      currentPlayer.effectState.isChoosingMediumCard = false;
+      currentPlayer.effectState.isChoosingOuijaCard = false;
+    }
 
 
     console.log(`Turn ended. Next: ${gameState.currentPlayerName}`);
@@ -1506,6 +1507,10 @@ io.on('connection', (socket) => {
       playerOrder: gameState.playerOrder,
 
       isChoosingArthurPath: gameState.isChoosingArthurPath,
+
+      isChoosingMediumCard: currentPlayer.effectState?.isChoosingMediumCard ?? false,
+      isChoosingOuijaCard: currentPlayer.effectState?.isChoosingOuijaCard ?? false,
+      hasActiveDejaVu: currentPlayer.effectState?.hasActiveDejaVu ?? false,
     });
 
 
