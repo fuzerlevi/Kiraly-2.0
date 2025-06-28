@@ -392,9 +392,35 @@ io.on('connection', (socket) => {
     
     // TEST DECK
     const deck = [
-      Cards.find(card => card.id === 130), // fibo
+      Cards.find(card => card.id === 130), // smear
       Cards.find(card => card.id === 108), // joker
       Cards.find(card => card.id === 2), // 2 of spades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades

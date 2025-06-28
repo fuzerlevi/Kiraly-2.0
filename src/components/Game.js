@@ -1735,35 +1735,40 @@ const Game = () => {
 
                   <hr className="smeared-divider" />
 
-                  <div className="smeared-sum">
-                    {smearedRollHistory.reduce((sum, e) => sum + e.result, 0)}/50
+                  <div className="smeared-sum" style={{
+                    color: smearedRollHistory.reduce((sum, e) => sum + e.result, 0) >= 50 ? "red" : "inherit",
+                    fontWeight: smearedRollHistory.reduce((sum, e) => sum + e.result, 0) >= 50 ? "bold" : "normal"
+                  }}>
+                    {smearedRollHistory.reduce((sum, e) => sum + e.result, 0) >= 50
+                      ? `THE TIME HAS COME - ${smearedRollHistory.reduce((sum, e) => sum + e.result, 0)}/50`
+                      : `${smearedRollHistory.reduce((sum, e) => sum + e.result, 0)}/50`}
                   </div>
                 </>
               )}
             </div>
 
-
             <div className="smeared-roll-buttons">
-            {(() => {
-              const unrolledRounds = Array.from({ length: roundNumber }, (_, i) => i + 1)
-                .filter(round => !smearedRollHistory.some(entry => entry.round === round));
-              const nextUnrolledRound = unrolledRounds[0];
-              return nextUnrolledRound ? (
-                <button
-                  onClick={() => {
-                    const result = Math.floor(Math.random() * 6) + 1;
-                    socket.emit("smearedRoll", { round: nextUnrolledRound, result });
-                  }}
-                  className="smeared-roll-button"
-                >
-                  Roll Round {nextUnrolledRound}
-                </button>
-              ) : null;
-            })()}
-          </div>
+              {(() => {
+                const unrolledRounds = Array.from({ length: roundNumber }, (_, i) => i + 1)
+                  .filter(round => !smearedRollHistory.some(entry => entry.round === round));
+                const nextUnrolledRound = unrolledRounds[0];
+                return nextUnrolledRound ? (
+                  <button
+                    onClick={() => {
+                      const result = Math.floor(Math.random() * 6) + 1;
+                      socket.emit("smearedRoll", { round: nextUnrolledRound, result });
+                    }}
+                    className="smeared-roll-button"
+                  >
+                    Roll Round {nextUnrolledRound}
+                  </button>
+                ) : null;
+              })()}
+            </div>
           </div>
         </div>
       )}
+
 
 
       
