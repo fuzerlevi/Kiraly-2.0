@@ -924,7 +924,23 @@ const Game = () => {
       });
     }});
 
-    
+    // Merry Andy (Joker ID 149)
+    players.forEach((p) => {
+      if (p.jokers?.some(card => card.id === 149)) {
+        const eq = drinkEquation[p.name] || { multipliers: 1, flats: 0 };
+        const baseAmount = players.length * 3;
+        const total = Math.max(0, baseAmount * eq.multipliers + eq.flats);
+
+        entries.push({
+          name: "Merry Andy",
+          text: `Ha ${p.name} nem ivott ebben a körben, akkor iszik ${total} kortyot`,
+          icon: "/CardImages/JOKER/merry andy.png"
+        });
+      }
+    });
+
+
+        
 
 
 
@@ -1740,7 +1756,7 @@ const Game = () => {
                     fontWeight: smearedRollHistory.reduce((sum, e) => sum + e.result, 0) >= 50 ? "bold" : "normal"
                   }}>
                     {smearedRollHistory.reduce((sum, e) => sum + e.result, 0) >= 50
-                      ? `THE TIME HAS COME - ${smearedRollHistory.reduce((sum, e) => sum + e.result, 0)}/50`
+                      ? `THE TIME HAS COME ${smearedRollHistory.reduce((sum, e) => sum + e.result, 0)}/50`
                       : `${smearedRollHistory.reduce((sum, e) => sum + e.result, 0)}/50`}
                   </div>
                 </>

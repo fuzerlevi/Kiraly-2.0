@@ -299,6 +299,19 @@ const cardEffects = {
     return { updatedDrinkEquation: true };
   },
 
+  141: ({ player, roomID, games }) => {
+    const gameState = games[roomID];
+    if (!gameState || !player?.name) return;
+
+    const equation = gameState.drinkEquation[player.name];
+    if (equation) {
+      equation.flats += 7;
+      console.log(`[MR. BONES] Added 7 to flats for ${player.name}`, equation);
+    }
+
+    return { updatedDrinkEquation: true };
+  },
+
 
 
 
