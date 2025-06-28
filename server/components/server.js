@@ -31,6 +31,21 @@ const recalculateKingsRemaining = (gameState) => {
   gameState.kingsRemaining = kingsInDeck;
 };
 
+function findPlayerBySocketID(socketID, roomID, games) {
+  const gameState = games[roomID];
+  if (!gameState) return null;
+
+  // Try exact match first
+  const player = gameState.players[socketID];
+  if (player) return player;
+
+  // Fallback: scan all players for matching socketID field
+  return Object.values(gameState.players).find(p => p.socketID === socketID) || null;
+}
+
+
+
+
 const isEarthCloneEligible = (card) => {
   const forbiddenSpectralIDs = [57, 63, 64, 65, 66, 68, 69];
   const isFrench = card.id >= 1 && card.id <= 52;
@@ -46,8 +61,6 @@ function updateStarEffect(roomID, games) {
   const graph = gameState.brothersGraph || {};
   const players = Object.values(gameState.players || {});
   const drinkEq = gameState.drinkEquation || {};
-
- 
 
   players.forEach((p) => {
     const hasStar = p.tarots?.some(card => card.id === 100);
@@ -379,9 +392,15 @@ io.on('connection', (socket) => {
     
     // TEST DECK
     const deck = [
-      Cards.find(card => card.id === 116), // fibo
+      Cards.find(card => card.id === 130), // fibo
       Cards.find(card => card.id === 108), // joker
       Cards.find(card => card.id === 2), // 2 of spades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades
 
       // Cards.find(card => card.id === 9), // blood brother
@@ -414,6 +433,29 @@ io.on('connection', (socket) => {
 
   socket.on('joinGamePage', ({ roomID }) => {
     const gameState = games[roomID];
+    if (!gameState) return;
+
+    const playerName = socket.handshake.auth?.playerName;
+    if (playerName) {
+      const player = Object.values(gameState.players).find(p => p.name === playerName);
+      if (player) {
+        // Remove old entry if necessary
+        const oldKey = Object.keys(gameState.players).find(k => gameState.players[k].name === playerName);
+        if (oldKey) delete gameState.players[oldKey];
+
+        // Reassign
+        player.socketID = socket.id;
+        gameState.players[socket.id] = player;
+        socketToGameMap[socket.id] = roomID;
+
+        console.log(`[SMEARED] Reassigned ${playerName} to socket ${socket.id}`);
+      } else {
+        console.log(`[SMEARED] No player found in room ${roomID} for name ${playerName}`);
+      }
+    } else {
+      console.log("[SMEARED] No playerName in socket auth");
+    }
+
     if (gameState) {
       io.to(roomID).emit('updateGameState', {
         deck: gameState.deck,
@@ -463,6 +505,11 @@ io.on('connection', (socket) => {
       if (player?.effectState?.isChoosingArthurPath) {
         socket.emit("triggerArthurChoosePath", { roomID, playerName: player.name });
       }
+
+      if (player.effectState?.smearedRolls) {
+        io.to(socket.id).emit("updateSmearedRolls", player.effectState.smearedRolls);
+      }
+
 
 
       // 🔁 Re-trigger glow for all currently glowing planets
@@ -961,15 +1008,6 @@ io.on('connection', (socket) => {
       const [socketID, p] = playerEntry;
       const targetID = p.effectState?.scaryFaceTargetID;
       const isMatch = targetID === drawnCard.id;
-
-      
-
-      console.log("[SCARY FACE] Checking", name, {
-        jokerID: p.joker?.id,
-        scaryFaceTargetID: targetID,
-        drawnCardID: drawnCard.id,
-        isMatch,
-      });
 
       if (p.joker?.id === 135 && isMatch) {
         if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
@@ -1924,6 +1962,34 @@ io.on('connection', (socket) => {
       playerOrder: gameState.playerOrder,
     });
   });
+
+  socket.on("smearedRoll", ({ round, result }) => {
+    console.log(`[SMEARED] Received roll for round ${round}, result ${result} from socket ${socket.id}`);
+    const roomID = socketToGameMap[socket.id];
+    const player = findPlayerBySocketID(socket.id, roomID, games);
+    if (!player) {
+      console.log("[SMEARED] Player not found.");
+      return;
+    }
+
+    if (!player.effectState.smearedRolls) {
+      player.effectState.smearedRolls = [];
+    }
+
+    console.log("[SMEARED] Current rolls:", player.effectState.smearedRolls);
+
+    if (player.effectState.smearedRolls.some(r => r.round === round)) {
+      console.log(`[SMEARED] Duplicate roll detected for round ${round}, skipping`);
+      return;
+    }
+
+    player.effectState.smearedRolls.push({ round, result });
+    console.log(`[SMEARED] Emitting updateSmearedRolls to socket ${socket.id}`);
+    io.to(socket.id).emit("updateSmearedRolls", player.effectState.smearedRolls);
+  });
+
+
+
 
 
 

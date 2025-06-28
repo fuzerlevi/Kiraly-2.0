@@ -70,6 +70,10 @@ const Game = () => {
 
   } = useGameContext();
 
+  
+
+  
+
   const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
     <div className="turn-order-panel">
       <h3  className="turn-order-title">Ki jön?</h3>
@@ -101,6 +105,8 @@ const Game = () => {
 
   const { roomID } = useParams();
   const [mySocketID, setMySocketID] = useState(null);
+
+  const myPlayer = players.find((player) => player.socketID === mySocketID);
 
   // Cards
   const [allCardMetadata, setAllCardMetadata] = useState([]);
@@ -152,7 +158,7 @@ const Game = () => {
   const [ouijaCardOptions, setOuijaCardOptions] = useState([]);
   const [selectedOuijaID, setSelectedOuijaID] = useState(null);
 
-  const myPlayer = players.find((player) => player.socketID === mySocketID);
+  
   const isHost = myPlayer?.isHost;
   const myCards = myPlayer?.cardsDrawn || [];
 
@@ -202,10 +208,15 @@ const Game = () => {
 
   const [isChoosingScaryFace, setIsChoosingScaryFace] = useState(false);
 
+  const [isSmearedModalOpen, setIsSmearedModalOpen] = useState(false);
+  const [smearedRollHistory, setSmearedRollHistory] = useState([]); // [{ round: 1, result: 4 }]
+
+
+  
+
+
 
   // Fibonacci
-  const hasFibonacciJoker = myPlayer?.joker?.id === 116;
-
   const [isFibonacciModalOpen, setIsFibonacciModalOpen] = useState(false);
   const [fibInput, setFibInput] = useState('');
   const [fibResult, setFibResult] = useState([]);
@@ -220,17 +231,13 @@ const Game = () => {
     return result;
   }
 
-
-
-
-
-  
-
-
-
-
-
-
+  useEffect(() => {
+      if (myPlayer?.name && !socket.connected) {
+        console.log("[SOCKET] Setting auth and connecting with playerName:", myPlayer.name);
+        socket.auth = { playerName: myPlayer.name };
+        socket.connect();
+      }
+    }, [myPlayer?.name]);
 
   useEffect(() => {
     if (!socket.connected) {
@@ -943,10 +950,6 @@ const Game = () => {
     });
   }, [myPlayer]);
 
-
-
-
-
   useEffect(() => {
     socket.on("triggerPlanetXShuffle", ({ roomID }) => {
       setPlanetXActive(true); // triggers special shuffle UI
@@ -957,7 +960,19 @@ const Game = () => {
     };
   }, []);
 
- 
+  useEffect(() => {
+    socket.on("updateSmearedRolls", (rolls) => {
+      console.log("[CLIENT] Received smeared rolls:", rolls);
+      setSmearedRollHistory(rolls);
+    });
+
+    return () => {
+      socket.off("updateSmearedRolls");
+    };
+  }, [socket]);
+
+
+  
 
 
 
@@ -1703,6 +1718,54 @@ const Game = () => {
         </div>
       )}
 
+      {isSmearedModalOpen && (
+        <div className="smeared-modal-overlay" onClick={() => setIsSmearedModalOpen(false)}>
+          <div className="smeared-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="smeared-history">
+              <h3>Roll History</h3>
+              {smearedRollHistory.length === 0 ? (
+                <p>No rolls yet.</p>
+              ) : (
+                <>
+                  <ul>
+                    {smearedRollHistory.map(entry => (
+                      <li key={entry.round}>Round {entry.round} - {entry.result}</li>
+                    ))}
+                  </ul>
+
+                  <hr className="smeared-divider" />
+
+                  <div className="smeared-sum">
+                    {smearedRollHistory.reduce((sum, e) => sum + e.result, 0)}/50
+                  </div>
+                </>
+              )}
+            </div>
+
+
+            <div className="smeared-roll-buttons">
+            {(() => {
+              const unrolledRounds = Array.from({ length: roundNumber }, (_, i) => i + 1)
+                .filter(round => !smearedRollHistory.some(entry => entry.round === round));
+              const nextUnrolledRound = unrolledRounds[0];
+              return nextUnrolledRound ? (
+                <button
+                  onClick={() => {
+                    const result = Math.floor(Math.random() * 6) + 1;
+                    socket.emit("smearedRoll", { round: nextUnrolledRound, result });
+                  }}
+                  className="smeared-roll-button"
+                >
+                  Roll Round {nextUnrolledRound}
+                </button>
+              ) : null;
+            })()}
+          </div>
+          </div>
+        </div>
+      )}
+
+
       
 
       {myPlayer?.joker?.id === 116 && (
@@ -2115,6 +2178,17 @@ const Game = () => {
                     Use
                   </button>
                 )}
+
+                {/* Floating Use button for Smeared Joker */}
+                {myPlayer.joker.id === 130  && (
+                  <button
+                    className="smeared-floating-button"
+                    onClick={() => setIsSmearedModalOpen(true)}
+                  >
+                    Roll
+                  </button>
+                  )}
+
               </div>
             ) : (
               <div className="joker-card-placeholder" />

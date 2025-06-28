@@ -68,7 +68,12 @@ const CreateGameForm = () => {
       return;
     }
 
+    // ✅ Inject playerName into socket auth before connect
+    socket.auth = { playerName: name };
+    if (!socket.connected) socket.connect();
+
     const user = { name, isHost: true, gender };
+
     socket.emit('createGameRoom', user, (response) => {
       if (response.success) {
         const roomID = response.gameID;
@@ -80,7 +85,10 @@ const CreateGameForm = () => {
     });
   };
 
+
   const handleJoinSubmit = (event) => {
+    socket.auth = { playerName: name };
+    if (!socket.connected) socket.connect();
     event.preventDefault();
     if (name.trim() === '' || gameID.trim() === '' || gender.trim() === '') {
       setErrorMessage('Please enter a valid name, game code, and select a gender.');
