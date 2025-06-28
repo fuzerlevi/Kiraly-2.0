@@ -926,7 +926,7 @@ const Game = () => {
 
     // Merry Andy (Joker ID 149)
     players.forEach((p) => {
-      if (p.jokers?.some(card => card.id === 149)) {
+      if (p.joker?.id === 149) {
         const eq = drinkEquation[p.name] || { multipliers: 1, flats: 0 };
         const baseAmount = players.length * 3;
         const total = Math.max(0, baseAmount * eq.multipliers + eq.flats);
