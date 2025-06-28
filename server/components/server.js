@@ -80,6 +80,41 @@ function updateStarEffect(roomID, games) {
   io.to(roomID).emit("updateDrinkEquation", drinkEq);
 }
 
+function updateBullEffect(roomID, games) {
+  const gameState = games[roomID];
+  if (!gameState) return;
+
+  const graph = gameState.brothersGraph || {};
+  const players = Object.values(gameState.players || {});
+  const drinkEq = gameState.drinkEquation || {};
+
+  // Reset all players to their baseFlats if set
+  players.forEach(p => {
+    const base = p.baseFlats ?? 0;
+    if (!drinkEq[p.name]) drinkEq[p.name] = { flats: 0, multipliers: 1 };
+    drinkEq[p.name].flats = base;
+  });
+
+  // For each Bull holder, boost the players they have listed as brothers
+  players.forEach((bullHolder) => {
+    if (bullHolder.joker?.id === 127) {
+      const bullName = bullHolder.name;
+      const brothers = graph[bullName] || [];
+
+      brothers.forEach((broName) => {
+        if (!drinkEq[broName]) drinkEq[broName] = { flats: 0, multipliers: 1 };
+        drinkEq[broName].flats += 3;
+      });
+
+      console.log(`[BULL] ${bullName} has brothers: ${brothers.join(", ")}`);
+    }
+  });
+
+  io.to(roomID).emit("updateDrinkEquation", drinkEq);
+}
+
+
+
  const buildShuffledDeck = (players) => {
     const allCards = require("./Cards");
     const playerCount = players.length;
@@ -393,7 +428,7 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 105), // smear
-      Cards.find(card => card.id === 109), // jolly
+      Cards.find(card => card.id === 127), // jolly
       Cards.find(card => card.id === 100), // star
       Cards.find(card => card.id === 54), // aura
       Cards.find(card => card.id === 97), // temp
@@ -630,6 +665,16 @@ io.on('connection', (socket) => {
           io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
         }
       }
+
+      // THE BULL
+      if (drawnCard.id === 127) {
+        const eq = gameState.drinkEquation[currentPlayer.name];
+        if (!eq) gameState.drinkEquation[currentPlayer.name] = { flats: 0, multipliers: 1 };
+        currentPlayer.baseFlats = gameState.drinkEquation[currentPlayer.name].flats;
+
+        updateBullEffect(roomID, games); // ⬅️ Run immediately when drawn
+      }
+
 
       // Emit updated game state
       io.to(roomID).emit("updateGameState", {
@@ -976,6 +1021,21 @@ io.on('connection', (socket) => {
         console.log(`[STAR] ${currentPlayer.name} drew ${drawnCard.name}, triggering STAR glow.`);
       }
     }
+
+    // 🐂 BULL Joker glow
+    const bullGlowTriggerIDs = [9, 22, 35, 48, 54, 89];
+    if (bullGlowTriggerIDs.includes(drawnCard.id)) {
+      if (currentPlayer.joker?.id === 127) {
+        if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+        if (!gameState.glowingJokerIDs.includes(127)) {
+          gameState.glowingJokerIDs.push(127); // ✅ Persist glow across reconnects
+        }
+
+        io.to(currentPlayer.socketID).emit("jokerGlow", { jokerID: 127 });
+        console.log(`[BULL] ${currentPlayer.name} drew ${drawnCard.name}, triggering BULL glow.`);
+      }
+    }
+
 
     // JOLLY JOKER glow
     const jollyJokerTriggerIDs = [8, 21, 34, 47, 56, 60];
@@ -1519,6 +1579,8 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateBrothersGraph", cloneGraph(gameState.brothersGraph));
 
     updateStarEffect(roomID, games);
+    updateBullEffect(roomID, games);
+
 
 
     console.log(`[BROTHERS] Re-added ${sourceName} → ${targetName}`);
@@ -1550,6 +1612,8 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateBrothersGraph", gameState.brothersGraph);
 
     updateStarEffect(roomID, games);
+    updateBullEffect(roomID, games);
+
   });
 
   socket.on('addLoverConnection', ({ roomID, sourceName, targetName }) => {
@@ -1581,6 +1645,8 @@ io.on('connection', (socket) => {
     io.to(roomID).emit("updateLoversGraph", cloneGraph(gameState.loversGraph));
 
     updateStarEffect(roomID, games);
+    updateBullEffect(roomID, games);
+
 
     // Update local state
     console.log("[Updated loversGraph]", gameState.loversGraph);
