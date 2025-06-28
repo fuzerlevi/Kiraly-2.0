@@ -428,44 +428,18 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 105), // joker
-      Cards.find(card => card.id === 105), // scholar
-
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 53),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 54),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 55),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 56),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 57),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 58),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 59),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 60),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 61),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 62),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 63),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 64),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 65),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 66),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 67),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 68),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 69),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 70),
+      Cards.find(card => card.id === 120), // constellation
+      Cards.find(card => card.id === 106), // joker
+      Cards.find(card => card.id === 71), // x
+      Cards.find(card => card.id === 72), // x
+      Cards.find(card => card.id === 11),
+      Cards.find(card => card.id === 11),
+      Cards.find(card => card.id === 11),
+      Cards.find(card => card.id === 11),
+      Cards.find(card => card.id === 11),
+      Cards.find(card => card.id === 11),
+      Cards.find(card => card.id === 11),
+      
 
 
             
@@ -883,15 +857,20 @@ io.on('connection', (socket) => {
       const currentIndex = playerList.findIndex(p => p.name === currentPlayer.name);
 
       playerList.forEach((player, i) => {
+        if (player.joker?.id === 120) return; // 🚫 Skip Constellation Joker
+
         const distance = (i - currentIndex + playerList.length) % playerList.length;
+
         if (!gameState.drinkEquation[player.name]) {
           gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
         }
+
         gameState.drinkEquation[player.name].flats += distance;
       });
 
       io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
     }
+
 
 
     // 🌌 If this is a PLANET card, activate it
@@ -972,9 +951,9 @@ io.on('connection', (socket) => {
         }
         io.to(roomID).emit("planetGlow", { planetName: "Venus" });
 
-        // 💃 Boost flats for girls
+        // 💃 Boost flats for girls (unless they are the Constellation Joker)
         for (const player of Object.values(gameState.players)) {
-          if (player.team === "girl") {
+          if (player.team === "girl" && player.joker?.id !== 120) {
             const name = player.name;
             if (gameState.drinkEquation[name]) {
               gameState.drinkEquation[name].flats += 1;
@@ -985,6 +964,7 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
       }
     }
+
 
 
     const jackIDs = [11, 24, 37, 50];
@@ -996,9 +976,9 @@ io.on('connection', (socket) => {
         }
         io.to(roomID).emit("planetGlow", { planetName: "Jupiter" });
 
-        // 💪 Boost flats for boys
+        // 💪 Boost flats for boys (unless they are the Constellation Joker)
         for (const player of Object.values(gameState.players)) {
-          if (player.team === "boy") {
+          if (player.team === "boy" && player.joker?.id !== 120) {
             const name = player.name;
             if (gameState.drinkEquation[name]) {
               gameState.drinkEquation[name].flats += 1;
@@ -1009,6 +989,7 @@ io.on('connection', (socket) => {
         io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
       }
     }
+
 
     // 🌡️ Temperance TAROT glow on Ace draw
     if (aceIDs.includes(drawnCard.id)) {
@@ -1118,6 +1099,16 @@ io.on('connection', (socket) => {
         console.log(`[HIKER] ${player.name} drew ${drawnCard.name}, increasing ingredient count to ${player.effectState.hikerCount}`);
       }
     }
+
+    // 🌌 CONSTELLATION Joker glow on planet draw
+    if (drawnCard.id >= 71 && drawnCard.id <= 82) {
+      for (const player of Object.values(gameState.players)) {
+        if (player.joker?.id === 120) {
+          io.to(player.socketID).emit("jokerGlow", { jokerID: 120 });
+        }
+      }
+    }
+
 
 
 
@@ -1935,6 +1926,8 @@ io.on('connection', (socket) => {
     const allCards = [];
 
     for (const player of Object.values(gameState.players)) {
+      if (player.joker?.id === 120) continue; // 🚫 Skip Constellation Joker
+
       const nonPlanetCards = player.cardsDrawn.filter(c => c.cardType !== "PLANET");
       const toShuffle = nonPlanetCards.map(card => ({
         ...card,
@@ -1954,10 +1947,8 @@ io.on('connection', (socket) => {
 
     console.log(`[PLANET X] Shuffled ${allCards.length} cards from all players into the deck`);
 
-    // Broadcast updated game state to all clients
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
-
       players: { ...gameState.players },
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: cloneGraph(gameState.brothersGraph),
@@ -1967,20 +1958,18 @@ io.on('connection', (socket) => {
       kingsRemaining: gameState.kingsRemaining,
       lastDrawnCard: null,
       activePlanets: gameState.activePlanets,
-
       roundNumber: gameState.roundNumber,
       isJokerRound: gameState.isJokerRound,
       playerOrder: gameState.playerOrder,
     });
 
-
-    // 🔧 Find the player who triggered it
+    // 🔧 Notify triggering player
     const triggeringPlayer = Object.values(gameState.players).find(p => p.name === playerName);
     if (triggeringPlayer) {
       io.to(triggeringPlayer.socketID).emit("planetXShuffleComplete");
     }
 
-    // Reset planetXActive flag for everyone
+    // 🔄 Reset flags and glow
     for (const player of Object.values(gameState.players)) {
       player.effectState.isPlanetXActive = false;
     }
@@ -1988,6 +1977,7 @@ io.on('connection', (socket) => {
     gameState.glowingPlanets = [];
     io.to(roomID).emit("clearPlanetGlow");
   });
+
 
   socket.on("chooseLover", ({ roomID, sourceName, targetName }) => {
     const gameState = games[roomID];
