@@ -393,41 +393,25 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 105), // smear
-      Cards.find(card => card.id === 149), // andy
-      Cards.find(card => card.id === 2), // 2 of spades
+      Cards.find(card => card.id === 109), // jolly
+      Cards.find(card => card.id === 97), // temp
+      Cards.find(card => card.id === 8), // 8
+      Cards.find(card => card.id === 8), // 8
+      Cards.find(card => card.id === 8), // 8
+      Cards.find(card => card.id === 8), // 8
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 13), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 12), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 1), // ace of pades
+      Cards.find(card => card.id === 12), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades
       Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
-      Cards.find(card => card.id === 1), // ace of pades
+      
 
       // Cards.find(card => card.id === 9), // blood brother
       // Cards.find(card => card.id === 65), // ouija
@@ -1015,6 +999,30 @@ io.on('connection', (socket) => {
       });
     }
 
+    // Hiker Joker glow trigger
+    const player = findPlayerBySocketID(socket.id, roomID, games);
+    if (!player) return;
+    console.log(`[HIKER GLOW] Player found: ${player.name}`);
+
+    if (player.joker?.id === 138) {
+      console.log(`[HIKER GLOW] ${player.name} has Hiker`);
+      const hikerGlowIDs = [11, 12, 13, 24, 25, 26, 37, 38, 39, 50, 51, 52];
+      if (hikerGlowIDs.includes(drawnCard.id)) {
+        player.effectState.hikerCount = (player.effectState.hikerCount || 0) + 1;
+
+        // ✅ Add tracking
+        if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+        if (!gameState.glowingJokerIDs.includes(138)) {
+          gameState.glowingJokerIDs.push(138); // ✅ Track glow for sync
+        }
+
+        io.to(player.socketID).emit("jokerGlow", { jokerID: 138 });
+        console.log(`[HIKER] ${player.name} drew ${drawnCard.name}, increasing ingredient count to ${player.effectState.hikerCount}`);
+      }
+    }
+
+
+
 
     console.log("[SCARY FACE] Full player state before glow check:");
     Object.entries(gameState.players).forEach(([socketID, player]) => {
@@ -1022,27 +1030,20 @@ io.on('connection', (socket) => {
     });
 
     
-    // 🃏 Scary Face Joker glow logic
-    const scaryFaceTriggerID = drawnCard.id;
-    const playerNames = gameState.playerOrder || [];
-    playerNames.forEach((name) => {
-      const playerEntry = Object.entries(gameState.players).find(
-        ([, p]) => p.name === name
-      );
-      if (!playerEntry) return;
+    // 🃏 Scary Face Joker glow logic (only for the drawing player)
+    if (!player) return;
 
-      const [socketID, p] = playerEntry;
-      const targetID = p.effectState?.scaryFaceTargetID;
-      const isMatch = targetID === drawnCard.id;
+    const targetID = player.effectState?.scaryFaceTargetID;
+    const isMatch = targetID === drawnCard.id;
 
-      if (p.joker?.id === 135 && isMatch) {
-        if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
-        if (!gameState.glowingJokerIDs.includes(135)) {
-          gameState.glowingJokerIDs.push(135);
-        }
-        io.to(socketID).emit("jokerGlow", { jokerID: 135 });
+    if (player.joker?.id === 135 && isMatch) {
+      if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+      if (!gameState.glowingJokerIDs.includes(135)) {
+        gameState.glowingJokerIDs.push(135); // ✅ Track for reconnects
       }
-    });
+      io.to(player.socketID).emit("jokerGlow", { jokerID: 135 });
+    }
+
 
 
 
@@ -1410,11 +1411,14 @@ io.on('connection', (socket) => {
     });
 
 
-    gameState.glowingPlanets = []; // ✅ Clear tracked glows
+    gameState.glowingPlanets = []; // ✅ Clear tracked PLANET glows
     io.to(roomID).emit("clearPlanetGlow");
 
-    gameState.glowingTarots = []; // ✅ Clear tracked glows
+    gameState.glowingTarotIDs = []; // ✅ Clear tracked TAROT glows
     io.to(roomID).emit("clearTarotGlow");
+
+    gameState.glowingJokerIDs = []; // ✅ Clear tracked JOKER glows
+    io.to(roomID).emit("clearJokerGlow");
 
   });
 

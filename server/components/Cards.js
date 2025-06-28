@@ -162,7 +162,7 @@ const Cards = [
   { id: 146, cardType: "JOKER", name: "Hacker", effect: "tbd", color: "", src: "/CardImages/JOKER/hacker.png", source: "" },
   { id: 147, cardType: "JOKER", name: "Madness", effect: "tbd", color: "", src: "/CardImages/JOKER/madness.png", source: "" },
   { id: 148, cardType: "JOKER", name: "Business Card", effect: "tbd", color: "", src: "/CardImages/JOKER/business card.png", source: "" },
-  { id: 149, cardType: "JOKER", name: "Merry Andy", effect: "tbd", color: "", src: "/CardImages/JOKER/merry andy.png", source: "" },
+  { id: 149, cardType: "JOKER", name: "Merry Andy", effect: "Ha nem ivott az adott körben, akkor iszik 3x annyi kortyot ahány játékos van a játékban", color: "", src: "/CardImages/JOKER/merry andy.png", source: "" },
   { id: 150, cardType: "JOKER", name: "To The Moon", effect: "Mielőtt iszik, feldob egy érmét. Ha fejet dob, a kapott kortyok -100%-át kell innia, ha írást, a +100%-át", color: "", src: "/CardImages/JOKER/to the moon.png", source: "" },
 
 

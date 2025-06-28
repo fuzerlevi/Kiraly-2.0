@@ -101,6 +101,10 @@ const Game = () => {
     window.__tarotGlowIntervals = {};
   }
 
+  if (!window.__jokerGlowIntervals) {
+    window.__jokerGlowIntervals = {};
+  }
+
 
 
   const { roomID } = useParams();
@@ -938,6 +942,22 @@ const Game = () => {
         });
       }
     });
+
+    // Hiker (Joker ID 138)
+    players.forEach((p) => {
+      if (p.joker?.id === 138) {
+        console.log(`[HIKER ENDROUND] ${p.name} has Hiker. Current count: ${p.effectState.hikerCount || 0}`);
+        const count = (p.effectState.hikerCount || 0) + 1;
+
+
+        entries.push({
+          name: "Hiker",
+          text: `${p.name} következő itala ${count} alapanyagból kell hogy készüljön`,
+          icon: "/CardImages/JOKER/hiker.png"
+        });
+      }
+    });
+
 
 
         
