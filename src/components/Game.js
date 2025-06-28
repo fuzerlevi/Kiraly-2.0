@@ -1619,7 +1619,8 @@ const Game = () => {
                   .filter((p) => {
                     const currentLovers = loversGraph?.[myPlayer.name] || [];
                     const isTargetHermit = p.tarots?.some((t) => t.id === 92);
-                    return p.name !== myPlayer.name && !currentLovers.includes(p.name) && !isTargetHermit;
+                    const isTargetBlackboard = (p.joker?.id === 119);
+                    return p.name !== myPlayer.name && !currentLovers.includes(p.name) && !isTargetHermit && !isTargetBlackboard;
                   })
                   .map((p) => (
                     <option key={p.socketID} value={p.name}>
