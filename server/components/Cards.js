@@ -150,7 +150,7 @@ const Cards = [
   { id: 134, cardType: "JOKER", name: "To Do List", effect: "Minden italában minimum 3 alapanyagnak kell lennie", color: "", src: "/CardImages/JOKER/to do list.png", source: "" },
   { id: 135, cardType: "JOKER", name: "Scary Face", effect: "A játék elején választania kell egy francia kártyát, amit ha ő húz fel, iszik egy felest", color: "", src: "/CardImages/JOKER/scary face.png", source: "" },
   { id: 136, cardType: "JOKER", name: "Egg", effect: "tbd", color: "", src: "/CardImages/JOKER/egg.png", source: "" },
-  { id: 137, cardType: "JOKER", name: "Runner", effect: "", color: "", src: "/CardImages/JOKER/runner.png", source: "" },
+  { id: 137, cardType: "JOKER", name: "Runner", effect: "Minden körben amikor először iszik, továbbad -1 kortynyit egy általa választott játékosnak, aki miután megitta, szintén továbbad -1 kortynyit, amíg a kortyok száma el nem éri a nullát", color: "", src: "/CardImages/JOKER/runner.png", source: "" },
   { id: 138, cardType: "JOKER", name: "Hiker", effect: "Minden itala 1 alapanyagból kell hogy készüljön, ha felhúz QUEEN, JACK, vagy KING kártyákat, akkor a következő italának 1-el több alapanyagból kell készülnie", color: "", src: "/CardImages/JOKER/hiker.png", source: "" },
   { id: 139, cardType: "JOKER", name: "Burglar", effect: "tbd", color: "", src: "/CardImages/JOKER/burglar.png", source: "" },
   { id: 140, cardType: "JOKER", name: "Credit Card", effect: "tbd", color: "", src: "/CardImages/JOKER/credit card.png", source: "" },
