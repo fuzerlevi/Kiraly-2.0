@@ -115,37 +115,91 @@ function updateBullEffect(roomID, games) {
 
 
 
- const buildShuffledDeck = (players) => {
-    const allCards = require("./Cards");
-    const playerCount = players.length;
+const buildShuffledDeck = (players) => {
+  const allCards = require("./Cards");
+  const playerCount = players.length;
 
-    // Separate card types
-    const frenchAndSpectral = allCards.filter(
-      (card) => card.cardType === "French" || card.cardType === "SPECTRAL"
-    );
+  // Separate card types
+  const frenchAndSpectral = allCards.filter(
+    (card) => card.cardType === "French" || card.cardType === "SPECTRAL"
+  );
 
-    const planetCards = allCards.filter((card) => card.cardType === "PLANET");
-    const tarotCards = allCards.filter((card) => card.cardType === "TAROT");
-    const jokerCards = allCards.filter((card) => card.cardType === "JOKER");
+  const planetCards = allCards.filter((card) => card.cardType === "PLANET");
+  const tarotCards = allCards.filter((card) => card.cardType === "TAROT");
+  const jokerCards = allCards.filter((card) => card.cardType === "JOKER");
 
-    // Random selection
-    const selectedPlanets = shuffleArray(planetCards).slice(0, 2);
-    const selectedTarots = shuffleArray(tarotCards).slice(0, playerCount);
-    const selectedJokers = shuffleArray(jokerCards).slice(0, playerCount);
+  // Random selection
+  const selectedPlanets = shuffleArray(planetCards).slice(0, 2);
+  const selectedTarots = shuffleArray(tarotCards).slice(0, playerCount);
+  const selectedJokers = shuffleArray(jokerCards).slice(0, playerCount);
 
-    // Build and shuffle main deck
-    const mainDeck = shuffleArray([
-      ...frenchAndSpectral,
-      ...selectedPlanets,
-      ...selectedTarots,
-    ]);
+  // Build and shuffle main deck
+  const mainDeck = shuffleArray([
+    ...frenchAndSpectral,
+    ...selectedPlanets,
+    ...selectedTarots,
+  ]);
 
-    // Jokers go on top
-    const finalDeck = [...selectedJokers, ...mainDeck];
-    return finalDeck;
-  };
+  // Jokers go on top
+  const finalDeck = [...selectedJokers, ...mainDeck];
+  return finalDeck;
+};
 
-  const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+const allCards = require("./Cards");
+
+const buildLimitedShuffledDeck = (players) => {
+  const playerCount = players.length;
+
+  // ID exclusion sets
+  const excludedTarotIDs = new Set([84, 85, 99, 101, 102, 104]);
+  const excludedJokerIDs = new Set([
+    114, 115, 117, 121, 125, 128, 136,
+    139, 140, 142, 143, 144, 145, 146, 147, 148
+  ]);
+
+  // Base pools
+  const frenchAndSpectral = allCards.filter(
+    (card) =>
+      (card.cardType === "French" || card.cardType === "SPECTRAL")
+  );
+
+  const planetCards = allCards.filter(
+    (card) => card.cardType === "PLANET" && card.id !== 76 // exclude Earth
+  );
+
+  const tarotCards = allCards.filter(
+    (card) => card.cardType === "TAROT" && !excludedTarotIDs.has(card.id)
+  );
+
+  const jokerCards = allCards.filter(
+    (card) => card.cardType === "JOKER" && !excludedJokerIDs.has(card.id)
+  );
+
+  // Random selections
+  const selectedPlanets = shuffleArray(planetCards).slice(0, 2);
+  const selectedTarots = shuffleArray(tarotCards).slice(0, playerCount);
+  const selectedJokers = shuffleArray(jokerCards).slice(0, playerCount);
+
+  // Shuffle French + Spectral + Planets + Tarots
+  const mainDeck = shuffleArray([
+    ...frenchAndSpectral,
+    ...selectedPlanets,
+    ...selectedTarots,
+  ]);
+
+  // Jokers go on top
+  return [...selectedJokers, ...mainDeck];
+};
+
+
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 
 
@@ -197,9 +251,9 @@ const createPlayerState = (socketID) => ({
 });
 
 io.on('connection', (socket) => {
-    console.log(`Socket ${socket.id} connected.`);
+  console.log(`Socket ${socket.id} connected.`);
 
-    socket.on("createGameRoom", (user, callback) => {
+  socket.on("createGameRoom", (user, callback) => {
     const gameID = crypto.randomBytes(3).toString('hex');
     const gameState = createGameState(gameID);
 
@@ -424,28 +478,12 @@ io.on('connection', (socket) => {
 
     // SHUFFLED DECK
     // const deck = buildShuffledDeck(Object.values(playerList));
+
+    // LIMITED SHUFFLED DECK
+    const deck = buildLimitedShuffledDeck(Object.values(playerList));
     
     // TEST DECK
-    const deck = [
-      Cards.find(card => card.id === 105), // joker
-      Cards.find(card => card.id === 120), // constellation
-      Cards.find(card => card.id === 106), // joker
-      Cards.find(card => card.id === 71), // x
-      Cards.find(card => card.id === 72), // x
-      Cards.find(card => card.id === 11),
-      Cards.find(card => card.id === 11),
-      Cards.find(card => card.id === 11),
-      Cards.find(card => card.id === 11),
-      Cards.find(card => card.id === 11),
-      Cards.find(card => card.id === 11),
-      Cards.find(card => card.id === 11),
-      
-
-
-            
-
-      
-
+    // const deck = [
       // Cards.find(card => card.id === 9), // blood brother
       // Cards.find(card => card.id === 65), // ouija
       // Cards.find(card => card.id === 69), // trance
@@ -455,7 +493,7 @@ io.on('connection', (socket) => {
       // Cards.find(card => card.id === 54), // aura
       // Cards.find(card => card.id === 68), // talisman
       // Cards.find(card => card.id === 63), // Incantation
-    ];
+    // ];
 
     gameState.deck = deck;
     const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
@@ -549,7 +587,7 @@ io.on('connection', (socket) => {
         socket.emit("triggerArthurChoosePath", { roomID, playerName: player.name });
       }
 
-      if (player.effectState?.smearedRolls) {
+      if (player?.effectState?.smearedRolls) {
         io.to(socket.id).emit("updateSmearedRolls", player.effectState.smearedRolls);
       }
 
