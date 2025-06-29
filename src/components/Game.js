@@ -2116,128 +2116,129 @@ const Game = () => {
       </div>
 
       <div className="tarot-panel">
-        {/* Left column: main tarot slot + title + see-all button */}
-        <div className="tarot-panel-column">
-          <h3 className="tarot-panel-title">Tarots</h3>
+        <div className="tarot-panel-inner">
+          {/* Left column: main tarot slot + title + see-all button */}
+          <div className="tarot-panel-column">
+            <h3 className="tarot-panel-title">Tarots</h3>
 
-          <div className="tarot-slot">
-            {activeTarots.length > 0 ? (
-              <img
-                key={`${activeTarots[0].name}-${tarotGlowKeys[activeTarots[0]?.id] ?? 0}`}
-                src={activeTarots[0].src}
-                alt={activeTarots[0].name}
-                className={`tarot-card-image ${tarotGlowKeys[activeTarots[0]?.id] !== undefined ? "tarot-glow" : ""}`}
-                onClick={(e) => {
-                  setSelectedTarot(activeTarots[0]);
-                  const rect = e.target.getBoundingClientRect();
-                  setTooltipPosition({
-                    top: rect.top + window.scrollY,
-                    left: rect.right + 10,
-                  });
-                }}
-                style={{ cursor: "pointer" }}
-              />
-            ) : (
-              <div className="tarot-card-placeholder" />
+            <div className="tarot-slot">
+              {activeTarots.length > 0 ? (
+                <img
+                  key={`${activeTarots[0].name}-${tarotGlowKeys[activeTarots[0]?.id] ?? 0}`}
+                  src={activeTarots[0].src}
+                  alt={activeTarots[0].name}
+                  className={`tarot-card-image ${tarotGlowKeys[activeTarots[0]?.id] !== undefined ? "tarot-glow" : ""}`}
+                  onClick={(e) => {
+                    setSelectedTarot(activeTarots[0]);
+                    const rect = e.target.getBoundingClientRect();
+                    setTooltipPosition({
+                      top: rect.top + window.scrollY,
+                      left: rect.right + 10,
+                    });
+                  }}
+                  style={{ cursor: "pointer" }}
+                />
+              ) : (
+                <div className="tarot-card-placeholder" />
+              )}
+            </div>
+
+            {activeTarots.length > 1 && (
+              <button
+                key={`see-all-${seeAllGlowKey}`}
+                className={`see-all-tarots-button ${
+                  activeTarots.slice(1).some(t => tarotGlowKeys[t.id] !== undefined) ? "see-all-glow" : ""
+                }`}
+                onClick={() => setSeeAllTarotsOpen(!seeAllTarotsOpen)}
+              >
+                See All
+              </button>
             )}
+
           </div>
 
-          {activeTarots.length > 1 && (
-            <button
-              key={`see-all-${seeAllGlowKey}`}
-              className={`see-all-tarots-button ${
-                activeTarots.slice(1).some(t => tarotGlowKeys[t.id] !== undefined) ? "see-all-glow" : ""
-              }`}
-              onClick={() => setSeeAllTarotsOpen(!seeAllTarotsOpen)}
-            >
-              See All
-            </button>
+          {/* Right side: remaining tarots */}
+          {seeAllTarotsOpen && (
+            <div className="tarot-panel-row">
+              {activeTarots.slice(1).map((tarot) => (
+                <img
+                  key={`${tarot.name}-${tarotGlowKeys[tarot.id] ?? 0}`}
+                  src={tarot.src}
+                  alt={tarot.name}
+                  className={`tarot-card-image-smaller ${tarotGlowKeys[tarot.id] !== undefined ? "tarot-glow" : ""}`}
+                  onClick={(e) => {
+                    setSelectedTarot(tarot);
+                    const rect = e.target.getBoundingClientRect();
+                    setTooltipPosition({
+                      top: rect.top + window.scrollY,
+                      left: rect.right + 10,
+                    });
+                  }}
+                />
+              ))}
+
+            </div>
           )}
 
+          {/* Floating tooltip box for TAROT info */}
+          {selectedTarot && (
+            <div
+              className="tarot-info-box"
+              style={{
+                top: tooltipPosition.top,
+                left: tooltipPosition.left,
+              }}
+            >
+              <strong>{selectedTarot.name}:</strong>{" "}
+              {selectedTarot.effect || "No effect."}
+            </div>
+          )}
+
+          {onlyOneTarotPopup && (
+            <div className="tarot-popup-overlay" onClick={() => setOnlyOneTarotPopup(false)}>
+              <div className="tarot-popup-modal" onClick={e => e.stopPropagation()}>
+                <h3>There can only be one</h3>
+                <p>The Tarot card <strong>{onlyOneTarotName}</strong> is already in play.</p>
+                <button onClick={() => setOnlyOneTarotPopup(false)}>OK</button>
+              </div>
+            </div>
+          )}
+
+          {showBlackboardPopup && (
+            <div className="popup-overlay">
+              <div className="popup">
+                <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
+                  Blackboard can't have Tarots.
+                </p>
+                <button
+                  className="ok-button"
+                  onClick={() => setShowBlackboardPopup(false)}
+                >
+                  Ok
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showScholarPopup && (
+            <div className="popup-overlay">
+              <div className="popup">
+                <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
+                  Scholars are immune to Spectral cards.
+                </p>
+                <button
+                  className="ok-button"
+                  onClick={() => setShowScholarPopup(false)}
+                >
+                  Ok
+                </button>
+              </div>
+            </div>
+          )}
+
+
+
         </div>
-
-        {/* Right side: remaining tarots */}
-        {seeAllTarotsOpen && (
-          <div className="tarot-panel-row">
-            {activeTarots.slice(1).map((tarot) => (
-              <img
-                key={`${tarot.name}-${tarotGlowKeys[tarot.id] ?? 0}`}
-                src={tarot.src}
-                alt={tarot.name}
-                className={`tarot-card-image-smaller ${tarotGlowKeys[tarot.id] !== undefined ? "tarot-glow" : ""}`}
-                onClick={(e) => {
-                  setSelectedTarot(tarot);
-                  const rect = e.target.getBoundingClientRect();
-                  setTooltipPosition({
-                    top: rect.top + window.scrollY,
-                    left: rect.right + 10,
-                  });
-                }}
-              />
-            ))}
-
-          </div>
-        )}
-
-        {/* Floating tooltip box for TAROT info */}
-        {selectedTarot && (
-          <div
-            className="tarot-info-box"
-            style={{
-              top: tooltipPosition.top,
-              left: tooltipPosition.left,
-            }}
-          >
-            <strong>{selectedTarot.name}:</strong>{" "}
-            {selectedTarot.effect || "No effect."}
-          </div>
-        )}
-
-        {onlyOneTarotPopup && (
-          <div className="tarot-popup-overlay" onClick={() => setOnlyOneTarotPopup(false)}>
-            <div className="tarot-popup-modal" onClick={e => e.stopPropagation()}>
-              <h3>There can only be one</h3>
-              <p>The Tarot card <strong>{onlyOneTarotName}</strong> is already in play.</p>
-              <button onClick={() => setOnlyOneTarotPopup(false)}>OK</button>
-            </div>
-          </div>
-        )}
-
-        {showBlackboardPopup && (
-          <div className="popup-overlay">
-            <div className="popup">
-              <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
-                Blackboard can't have Tarots.
-              </p>
-              <button
-                className="ok-button"
-                onClick={() => setShowBlackboardPopup(false)}
-              >
-                Ok
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showScholarPopup && (
-          <div className="popup-overlay">
-            <div className="popup">
-              <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
-                Scholars are immune to Spectral cards.
-              </p>
-              <button
-                className="ok-button"
-                onClick={() => setShowScholarPopup(false)}
-              >
-                Ok
-              </button>
-            </div>
-          </div>
-        )}
-
-
-
-
       </div>
 
       {/* === Joker Panel === */}

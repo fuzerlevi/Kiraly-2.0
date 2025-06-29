@@ -14,7 +14,6 @@
 /* Title Styling */
 .turn-order-title {
   font-size: 18px;
-  font-weight: bold;
   text-align: center;
   margin-bottom: 8px;
   color: #000000;
@@ -34,7 +33,6 @@
   text-align: center;
   font-size: 16px;
   color: #3E3F5B;
-  font-weight: bold;
 }
 
 /* Current Player Highlight */
@@ -58,7 +56,6 @@
 .game-title {
   margin-top: 30px;
   font-size: 32px;
-  font-weight: bold;
 }
 
 .turn-message {
@@ -126,14 +123,14 @@
 /* My Cards Section (Bottom Box) */
 .my-cards-container {
   position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 1vh;
+  left: 1vh;
+  
   display: flex;
   align-items: center; /* Align normally */
   justify-content: center;
   width: 80%;
-  height: 150px;
+  height: 12vh;
   max-width: 500px;
   overflow: hidden;
   background: white;
@@ -144,7 +141,7 @@
 
 /* Individual Cards */
 .my-card {
-  height: 120px;
+  height: 10vh;
   transition: transform 0.2s ease-in-out;
   margin-top: 15px; /* 👈 Move the cards down */
   margin-left: 4px;
@@ -526,45 +523,44 @@
 
 .planet-panel {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 150px;
-  padding: 10px;
+  top: 10vh;
+  left: 1vh;
+  width: 11.05vh;
+  padding: 1vh;
   border: 2px solid #888;
   border-radius: 10px;
   background-color: rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 2vh;
 }
 
 .planet-panel-title {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 0.6rem;
   text-align: center;
-  margin-bottom: 8px;
   color: #000000;
 }
 
 .planet-slot {
-  width: 100px;
-  height: 140px;
+  width: 8vh;
+  height: 10vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  
 }
 
 .planet-card-image {
-  width: 100%;
+  padding-bottom: 1vh;
+  width: 8.9vh;
   height: auto;
-  border: 2px solid #aaa;
-  border-radius: 6px;
 }
 
 .planet-card-placeholder {
   width: 100%;
-  height: 140px;
+  height: 11vh;
+  margin-bottom: 1vh;
   background-color: rgba(255, 255, 255, 0.9);
   border: 2px dashed #555;
   border-radius: 6px;
@@ -584,88 +580,86 @@
 
 .planet-info-box {
   position: absolute;
-  left: 110px;
-  top: 10px;
-  width: 300px;
+  left: 9.4vh;
+  top: 0vh;
+  width: 20vh;
   background-color: white;
   border: 2px solid black;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 0.7vh 1vh;
   text-align: center;
-  font-size: 13px;
+  font-size: 0.5rem;
   z-index: 10;
 }
 
 
 .tarot-panel {
   position: absolute;
-  top: 440px;
-  left: 20px;
-  padding: 10px;
-  
+  top: 40vh;
+  left: 1vh;
+  padding: 0.8vh;
+  width: auto; /* or a fixed max if needed */
   border: 2px solid #888;
   border-radius: 10px;
   background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  flex-direction: row; /* <-- changed from column */
-  align-items: flex-start;
-  gap: 12px;
 }
 
-.tarot-panel-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.tarot-panel-row {
+.tarot-panel-inner {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 2vh;
+  
 }
 
-
-
 .tarot-panel-title {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 0.6rem;
   text-align: center;
-  margin-bottom: 8px;
   color: #000000;
 }
 
 .tarot-slot {
-  width: 100px;
-  height: 140px;
+  width: 8vh;
+  height: 10vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .tarot-card-image {
-  width: 120px;
+  padding-bottom: 1vh;
+  width: 8.9vh;
   height: auto;
-  border: 2px solid #aaa;
-  border-radius: 6px;
-  position:relative;
 }
 
 .tarot-card-image-smaller {
-  width: 120px;
+  position: relative;
+  top: 1.85vh;
+  left: -2vh;
+  padding-bottom: 1vh;
+  width: 8.9vh;
   height: auto;
-  border: 2px solid #aaa;
-  border-radius: 6px;
-  position:relative;
-  top: 30px;
+}
+
+.tarot-panel-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1vh
+}
+
+.tarot-panel-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 
 
 .tarot-card-placeholder {
   width: 100%;
-  height: 140px;
+  height: 11vh;
+  margin-bottom: 1vh;
   background-color: rgba(255, 255, 255, 0.9);
   border: 2px dashed #555;
   border-radius: 6px;
@@ -681,28 +675,24 @@
 }
 
 .tarot-info-box {
-  position: fixed; /* <-- This is key */
-  background: #eee;
-  color: #111;
-  padding: 10px;
+  position: fixed;
+  
+  width: 20vh;
+  background-color: white;
+  border: 2px solid black;
   border-radius: 8px;
-  max-width: 300px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-  z-index: 1002;
+  padding: 0.7vh 1vh;
+  text-align: center;
+  font-size: 0.5rem;
+  z-index: 10;
 }
 
-
-
-
-
 .see-all-tarots-button {
-  margin-top: 4px;
-  padding: 4px 10px;
   background-color: #ffcc00;
   color: black;
-  font-size: 13px;
-  border: 3px solid #2f3542;
-  border-radius: 10px;
+  font-size: 0.5rem;
+  border: 1.5px solid #2f3542;
+  border-radius: 3px;
   cursor: pointer;
 }
 
@@ -761,17 +751,17 @@
 
 .joker-panel {
   position: absolute;
-  top: 695px;
-  left: 20px;
-  padding: 10px;
-  
+  top: 60vh;
+  left: 1vh;
+  width: 11.05vh;
+  padding: 1vh;
   border: 2px solid #888;
   border-radius: 10px;
   background-color: rgba(255, 255, 255, 0.9);
   display: flex;
   flex-direction: row; /* <-- changed from column */
   align-items: flex-start;
-  gap: 12px;
+  gap: 2vh;
 }
 
 .joker-panel-column {
@@ -789,27 +779,32 @@
 }
 
 .joker-panel-title {
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 0.6rem;
   text-align: center;
-  margin-bottom: 8px;
   color: #000000;
 }
 
 .joker-slot {
-  width: 100px;
-  height: 140px;
+  width: 8vh;
+  height: 10vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .joker-card-image {
-  width: 120px;
+  padding-bottom: 1vh;
+  width: 8.9vh;
   height: auto;
-  border: 2px solid #aaa;
+}
+
+.joker-card-placeholder {
+  width: 100%;
+  height: 11vh;
+  margin-bottom: 1vh;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px dashed #555;
   border-radius: 6px;
-  position: relative;
 }
 
 .joker-info-box-overlay {
@@ -822,14 +817,17 @@
 }
 
 .joker-info-box {
-  position: fixed; /* <-- This is key */
-  background: #eee;
-  color: #111;
-  padding: 10px;
+  position: fixed;
+  left: 9.4vh;
+  top: 0vh;
+  width: 20vh;
+  background-color: white;
+  border: 2px solid black;
   border-radius: 8px;
-  max-width: 300px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-  z-index: 1002;
+  padding: 0.7vh 1vh;
+  text-align: center;
+  font-size: 0.5rem;
+  z-index: 10;
 }
 
 .joker-glow {
@@ -866,7 +864,6 @@
   border: none;
   padding: 12px 20px;
   border-radius: 10px;
-  font-weight: bold;
   color: #000;
   margin-top: 12px;
   cursor: pointer;
@@ -931,7 +928,6 @@
 
 .fibonacci-title {
   font-size: 1.5rem;
-  font-weight: bold;
   margin-bottom: 1rem;
 }
 
@@ -972,7 +968,6 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-weight: bold;
 }
 
 
@@ -1062,7 +1057,6 @@
 
 .smeared-title {
   font-size: 20px;
-  font-weight: bold;
   margin-bottom: 10px;
   text-align: center;
 }
@@ -1074,7 +1068,6 @@
 .smeared-history h3 {
   font-size: 16pt;
   margin-bottom: 8px;
-  font-weight: bold;
 }
 
 .smeared-history ul {
@@ -1085,7 +1078,6 @@
 }
 
 .smeared-sum {
-  font-weight: bold;
   margin-top: 8px;
 }
 
@@ -1118,7 +1110,6 @@
 }
 
 .smeared-sum {
-  font-weight: bold;
   font-size: 14px;
   text-align: right;
 }

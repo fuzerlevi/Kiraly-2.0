@@ -251,9 +251,9 @@ const createPlayerState = (socketID) => ({
 });
 
 io.on('connection', (socket) => {
-  console.log(`Socket ${socket.id} connected.`);
+    console.log(`Socket ${socket.id} connected.`);
 
-  socket.on("createGameRoom", (user, callback) => {
+    socket.on("createGameRoom", (user, callback) => {
     const gameID = crypto.randomBytes(3).toString('hex');
     const gameState = createGameState(gameID);
 
@@ -480,20 +480,25 @@ io.on('connection', (socket) => {
     // const deck = buildShuffledDeck(Object.values(playerList));
 
     // LIMITED SHUFFLED DECK
-    const deck = buildLimitedShuffledDeck(Object.values(playerList));
+    // const deck = buildLimitedShuffledDeck(Object.values(playerList));
     
     // TEST DECK
-    // const deck = [
-      // Cards.find(card => card.id === 9), // blood brother
-      // Cards.find(card => card.id === 65), // ouija
-      // Cards.find(card => card.id === 69), // trance
-      // Cards.find(card => card.id === 57), // deja vu
-      // Cards.find(card => card.id === 64), // medium
-      // Cards.find(card => card.id === 66), // sigil
-      // Cards.find(card => card.id === 54), // aura
-      // Cards.find(card => card.id === 68), // talisman
-      // Cards.find(card => card.id === 63), // Incantation
-    // ];
+    const deck = [
+      Cards.find(card => card.id === 105), // joker
+      Cards.find(card => card.id === 71), // eris
+      Cards.find(card => card.id === 72), // ceres
+      Cards.find(card => card.id === 83), // fool
+      Cards.find(card => card.id === 84), // fool
+      Cards.find(card => card.id === 85), // fool
+      Cards.find(card => card.id === 90), // fool
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+    ];
 
     gameState.deck = deck;
     const kingsInDeck = deck.filter(card => kingIDs.includes(card.id)).length;
