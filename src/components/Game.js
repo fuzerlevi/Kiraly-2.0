@@ -1379,7 +1379,7 @@ const Game = () => {
         onClick={() => setEndOfRoundOpen(true)}
         title="End of Round Actions"
       >
-        <img src="/Icons/endofround.png" alt="End of Round" className="dicebag-icon" />
+        <img src="/Icons/endofround.png" alt="End of Round" className="endofround-icon" />
       </button>
 
 
@@ -2076,12 +2076,21 @@ const Game = () => {
         })}
       </div>
 
-      <div className="king-counter">
-        <img
-          src={`/CardImages/kingCounters/kingCounter${Math.min(kingsRemaining, 10)}.png`}
-          className="king-counter-image"
-        />
+      <div className="deck-info-box">
+        <div>
+          Deck:
+        </div>
+        <div className="floating-info-row">
+          <img src="/CardImages/cardbacks/BlackBack.png" alt="Deck" className="info-icon" />
+          <span> {deck.length}x</span>
+        </div>
+        <div className="floating-info-row">
+          <img src="/CardImages/clubs/13KingOfClubs.png" alt="Kings" className="info-icon" />
+          <span> {kingsRemaining}x</span>
+        </div>
       </div>
+
+
 
       <div className="planet-panel">
         <h3 className="planet-panel-title">Planets</h3>
