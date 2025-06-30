@@ -1433,8 +1433,8 @@ const Game = () => {
 
       {d6Open && (
         <div className="d20-modal-overlay">
-          <div className="d20-modal">
-            <button className="d20-close-button" onClick={closeD6}>×</button>
+          <div className="d6-modal">
+            <button className="d6-close-button" onClick={closeD6}>×</button>
             {d6Result === null ? (
               <button className="d20-roll-button pixel-font" onClick={rollD6}>
                 Roll
@@ -1446,7 +1446,6 @@ const Game = () => {
                   alt={`Rolled ${d6Result}`}
                   className="d20-gif"
                 />
-                <div className="d20-result-overlay">{d6Result}</div>
               </div>
             )}
           </div>

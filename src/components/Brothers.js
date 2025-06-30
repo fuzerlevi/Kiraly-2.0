@@ -138,7 +138,7 @@ const Brothers = () => {
               <text
                 key={player.name}
                 x={x}
-                y={y}
+                y={y - 35}
                 className="brothers-player-name"
                 textAnchor="middle"
                 alignmentBaseline="middle"

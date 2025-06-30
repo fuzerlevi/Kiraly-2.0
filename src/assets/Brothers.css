@@ -14,22 +14,21 @@
 .brothers-modal {
   position: relative; /* Ensure relative positioning for the button */
   background: white;
-  padding: 24px;
+  padding: 3vh;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 1001;
-  max-width: 700px;
-  max-height: 90vh;
-  overflow-y: auto;
+  width: 80vw;
+  max-height: 60vh;
 }
 
 .brothers-close-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 0vh;
+  right: 0vh;
   background: transparent;
   border: none;
-  font-size: 28px;
+  font-size: 1.2rem;
   font-weight: bold;
   cursor: pointer;
   z-index: 1002;
@@ -40,47 +39,46 @@
 .brothers-container {
   background-color: white;
   border-radius: 12px;
-  width: fit-content;
-  max-width: 90vw;
+  width: 68vw;
+  height: 42vh;
 }
 
 
 .brothers-layout {
-  margin-bottom: 16px;
+  margin-bottom: 2vh;
+  height: 30vh;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .brothers-svg {
   background-color: #f9fafb;
   border: 1px solid #ccc;
   border-radius: 8px;
+  height: 30vh;
+  font-size: 1.5rem;
 }
 
 
 .brothers-controls-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  max-width: 600px;
+  gap: 1vh;
+  width: 50vw;
   align-items: center;
+  font-size: 0.5rem;
+  margin-left: 9vw;
 }
 
 .brothers-adder,
 .brothers-remover {
   display: flex;
-  gap: 8px;
+  gap: 2vh;
   justify-content: center;
   align-items: center;
-  width: 100%;
-}
-
-.brothers-select {
-  height: 36px;
-  font-size: 16px;
-  padding: 0 8px;
-  min-width: 100px;
+  width: 60vw;
+  
 }
 
 .remove-btn {
