@@ -111,6 +111,19 @@
   display: block;
 }
 
+.d6-gif-container {
+  position: relative;
+  display: inline-block;
+  margin-top: 2vh;
+}
+
+/* D20 GIF display */
+.d6-gif {
+  width: 50vw;
+  height: auto;
+  display: block;
+}
+
 /* Overlayed result number */
 .d20-result-overlay {
   position: absolute;

@@ -205,6 +205,13 @@ const Game = () => {
   const isChoosingArthurPath = myPlayer?.effectState?.isChoosingArthurPath;
   const [showResultText, setShowResultText] = useState(false);
 
+  const [businessCardModalOpen, setBusinessCardModalOpen] = useState(false);
+  const isChoosingBusinessCard = myPlayer?.effectState?.isChoosingBusinessCard;
+  const [selectedOpponent, setSelectedOpponent] = useState("");
+  const [selectedWinner, setSelectedWinner] = useState("");
+  const [businessCardResult, setBusinessCardResult] = useState("");
+
+
   const [staticEndOfRoundEntries, setStaticEndOfRoundEntries] = useState([]);
 
   const [scaryFaceModalOpen, setScaryFaceModalOpen] = useState(false);
@@ -217,6 +224,8 @@ const Game = () => {
 
   const [showBlackboardPopup, setShowBlackboardPopup] = useState(false);
   const [showScholarPopup, setShowScholarPopup] = useState(false);
+
+
 
 
 
@@ -239,6 +248,8 @@ const Game = () => {
     }
     return result;
   }
+
+  
 
   useEffect(() => {
       if (myPlayer?.name && !socket.connected) {
@@ -977,6 +988,17 @@ const Game = () => {
       }
     });
 
+    // 🃏 Smeared Joker end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 130) {
+        entries.push({
+          name: "Smeared Joker",
+          text: `${p.name} dobjon a Smeared Jokerrel`,
+          icon: "/CardImages/JOKER/smeared joker.png"
+        });
+      }
+    });
+
 
 
         
@@ -1143,7 +1165,7 @@ const Game = () => {
     setD6Result(result);
   };
 
-  const containerWidth = 600;
+  const containerWidth = 350;
   const cardWidth = 100;
   const totalCards = myCards.length;
   let spacing = cardWidth;
@@ -1345,6 +1367,12 @@ const Game = () => {
                     Choose Path
                   </button>
                 );
+                } else if (isChoosingBusinessCard) {
+                  return (
+                    <button className="floating-button" onClick={() => setBusinessCardModalOpen(true)}>
+                      Tap
+                    </button>
+                  );
                 } else if (isChoosingScaryFace) {
                   return (
                     <button className="floating-button" onClick={() => setScaryFaceModalOpen(true)}>
@@ -1440,11 +1468,11 @@ const Game = () => {
                 Roll
               </button>
             ) : (
-              <div className="d20-gif-container">
+              <div className="d6-gif-container">
                 <img
                   src={`/rollgifs/diceroll${d6Result}.gif`}
                   alt={`Rolled ${d6Result}`}
-                  className="d20-gif"
+                  className="d6-gif"
                 />
               </div>
             )}
@@ -1552,7 +1580,7 @@ const Game = () => {
       {brotherModalOpen && (
         <div className="brother-modal-overlay">
           <div className="brother-modal">
-            <h3>Pick a brother</h3>
+            <h3 className="pick-a-brother">Pick a brother</h3>
             {isHermit ? (
               <p style={{ color: "#888", marginBottom: "1em" }}>A Hermit can't have brothers :(</p>
             ) : (
@@ -1735,6 +1763,100 @@ const Game = () => {
         </div>
       )}
 
+      {businessCardModalOpen && (
+        <div className="businesscard-modal-overlay">
+          <div className="businesscard-modal-backdrop">
+            <div className="businesscard-modal-content">
+              <h2 className="businesscard-modal-title">Let's see Paul Allen's drink</h2>
+
+              {!businessCardResult ? (
+                <>
+                  <p>Opponent:</p>
+                  <select
+                    className="opp-select"
+                    value={selectedOpponent}
+                    onChange={(e) => {
+                      setSelectedOpponent(e.target.value);
+                      setSelectedWinner(""); // Reset if opponent changes
+                    }}
+                  >
+                    <option value="">Select opponent</option>
+                    {players
+                      .filter((p) => p.name !== myPlayer.name)
+                      .map((p) => (
+                        <option key={p.name} value={p.name}>
+                          {p.name}
+                        </option>
+                      ))}
+                  </select>
+
+                  {selectedOpponent && (
+                    <>
+                      <p>Who won?</p>
+                      <select
+                        value={selectedWinner}
+                        onChange={(e) => setSelectedWinner(e.target.value)}
+                      >
+                        <option value="">Select winner</option>
+                        <option value={selectedOpponent}>{selectedOpponent}</option>
+                        <option value={myPlayer.name}>{myPlayer.name}</option>
+                      </select>
+                    </>
+                  )}
+
+                  {selectedOpponent && selectedWinner && (
+                    <button
+                      className="businesscard-modal-button"
+                      onClick={() => {
+                        socket.emit("businessCardChoiceMade", {
+                          roomID,
+                          playerName: myPlayer.name,
+                          opponentName: selectedOpponent,
+                          winnerName: selectedWinner,
+                        });
+                        setBusinessCardResult(
+                          selectedWinner === myPlayer.name
+                            ? [
+                                "Paul Allen egy senki hozzád képest.",
+                                `Mostantól -2-t iszol és ${selectedOpponent} a tesód. Még a Dorsia-ba is sikerült asztalt foglalnod.`,
+                              ]
+                            : [
+                                "Paul Allen-nek sajnos mérföldekkel jobb névjegykártyája volt.",
+                                `Mostantól +2-t iszol, és ${selectedWinner} tesója vagy. És még a Dorsia-ba sem sikerült asztalt foglalnod...`,
+                              ]
+                        );
+                      }}
+                    >
+                      Confirm
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="businesscard-result-text">
+                    {businessCardResult[0]}<br /><br />
+                    {businessCardResult[1]}
+                  </p>
+                  <button
+                    className="businesscard-modal-button"
+                    onClick={() => {
+                      setBusinessCardModalOpen(false);
+                      setSelectedOpponent("");
+                      setSelectedWinner("");
+                      setBusinessCardResult("");
+                    }}
+                  >
+                    OK
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
       {scaryFaceModalOpen && (
         <div className="brother-modal-overlay">
           <div className="brother-modal">
@@ -1815,7 +1937,7 @@ const Game = () => {
                     }}
                     className="smeared-roll-button"
                   >
-                    Roll Round {nextUnrolledRound}
+                    Roll (Round {nextUnrolledRound})
                   </button>
                 ) : null;
               })()}
@@ -1934,8 +2056,8 @@ const Game = () => {
       )}
 
       {mediumModalOpen && (
-        <div className="brother-modal-overlay">
-          <div className="brother-modal">
+        <div className="medium-modal-overlay">
+          <div className="medium-modal">
             <h3>Choose a card</h3>
 
             {/* Color Selector */}
@@ -1946,7 +2068,7 @@ const Game = () => {
                 // Reset selected card when color changes
                 setSelectedCardID(e.target.value === "Black" ? 1 : 14);
               }}
-              className="brother-dropdown"
+              className="medium-dropdown"
               style={{ marginBottom: "10px" }}
             >
               <option value="Black">Black</option>
@@ -1957,7 +2079,7 @@ const Game = () => {
             <select
               value={selectedCardID}
               onChange={(e) => setSelectedCardID(Number(e.target.value))}
-              className="brother-dropdown"
+              className="medium-dropdown"
             >
               {allCardMetadata
                 .filter(card => {
@@ -1972,8 +2094,8 @@ const Game = () => {
                 ))}
             </select>
 
-            <p style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>
-              Note: 3 copies of the chosen card will be shuffled into the deck.
+            <p style={{ marginTop: "2vh", fontSize: "0.8rem", color: "#555" }}>
+              Note: 3 copies of the chosen card will be shuffled into the deck
             </p>
 
             <button
@@ -1999,13 +2121,13 @@ const Game = () => {
 
 
       {ouijaModalOpen && (
-        <div className="brother-modal-overlay">
-          <div className="brother-modal">
-            <h3>Choose a card to replay</h3>
+        <div className="ouija-modal-overlay">
+          <div className="ouija-modal">
+            <h3 className="ouija-title" >Choose a card to replay</h3>
             <select
               value={selectedOuijaID}
               onChange={(e) => setSelectedOuijaID(Number(e.target.value))}
-              className="brother-dropdown"
+              className="ouija-dropdown"
             >
               <option value="">- Select a card -</option>
               {ouijaCardOptions
@@ -2047,19 +2169,6 @@ const Game = () => {
 
       <div className="my-cards-container">
         {myCards.map((card, index) => {
-          const containerWidth = 500;
-          const cardWidth = 80;
-          const baseSpacing = cardWidth;
-          const overlapThreshold =
-            totalCards > Math.floor(containerWidth / cardWidth);
-
-          const spacing = overlapThreshold
-            ? Math.min(
-                baseSpacing,
-                (containerWidth - cardWidth) / (totalCards - 1)
-              )
-            : baseSpacing;
-
           return (
             <img
               key={index}
@@ -2068,12 +2177,14 @@ const Game = () => {
               className="my-card"
               style={{
                 position: "absolute",
-                left: `${index * spacing}px`,
+                left: `calc(${index * spacing}px)`,
+                zIndex: index,
               }}
             />
           );
         })}
       </div>
+
 
       <div className="deck-info-box">
         <div>
@@ -2215,8 +2326,8 @@ const Game = () => {
           {showBlackboardPopup && (
             <div className="popup-overlay">
               <div className="popup">
-                <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
-                  Blackboard can't have Tarots.
+                <p style={{ fontSize: "1rem", fontWeight: "bold", marginBottom: "1rem" }}>
+                  TAROT blocked by Blackboard
                 </p>
                 <button
                   className="ok-button"
@@ -2231,8 +2342,8 @@ const Game = () => {
           {showScholarPopup && (
             <div className="popup-overlay">
               <div className="popup">
-                <p style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "1rem" }}>
-                  Scholars are immune to Spectral cards.
+                <p style={{ fontSize: "0.9rem", fontWeight: "bold", marginBottom: "1rem" }}>
+                  SPECTRAL blocked by Scholar
                 </p>
                 <button
                   className="ok-button"

@@ -55,7 +55,7 @@ const CreateGameForm = () => {
       animate={{ rotate: 360, scale: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 17 }}
     >
-      Király <span className="joker-edition-text">Joker Edition</span>
+      Király <br /><span className="joker-edition-text">Joker Edition</span>
     </motion.div>
   );
 

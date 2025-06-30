@@ -154,7 +154,7 @@ const buildLimitedShuffledDeck = (players) => {
   const excludedTarotIDs = new Set([84, 85, 99, 101, 102, 104]);
   const excludedJokerIDs = new Set([
     114, 115, 117, 121, 125, 128, 136,
-    139, 140, 142, 143, 144, 145, 146, 147, 148
+    139, 140, 142, 143, 144, 145, 147
   ]);
 
   // Base pools
@@ -484,22 +484,13 @@ io.on('connection', (socket) => {
     
     // TEST DECK
     const deck = [
-      Cards.find(card => card.id === 105), // scary
-      Cards.find(card => card.id === 106), // scary
-      Cards.find(card => card.id === 109), // scary
-      Cards.find(card => card.id === 111), // scary
-      Cards.find(card => card.id === 112), // scary
-      Cards.find(card => card.id === 124), // scary
-      Cards.find(card => card.id === 126), // scary
-      Cards.find(card => card.id === 75), // venus
-      Cards.find(card => card.id === 78), // jupiter
-      Cards.find(card => card.id === 83), // ace
-      Cards.find(card => card.id === 93), // ace
-      Cards.find(card => card.id === 103), // ace
-      Cards.find(card => card.id === 95), // ace
+
+      Cards.find(card => card.id === 148), // b card
+      Cards.find(card => card.id === 11), // ace
+      Cards.find(card => card.id === 12), // ace
+      Cards.find(card => card.id === 13), // ace
       Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
+      
     ];
 
     gameState.deck = deck;
@@ -565,6 +556,7 @@ io.on('connection', (socket) => {
         isJokerRound: gameState.isJokerRound,
         playerOrder: gameState.playerOrder,
         isChoosingArthurPath: gameState.isChoosingArthurPath,
+        isChoosingBusinessCard: gameState.isChoosingBusinessCard,
       });
 
 
@@ -593,6 +585,11 @@ io.on('connection', (socket) => {
       if (player?.effectState?.isChoosingArthurPath) {
         socket.emit("triggerArthurChoosePath", { roomID, playerName: player.name });
       }
+
+      if (player?.effectState?.isChoosingBusinessCard) {
+        socket.emit("triggerChooseBusinessCard", { roomID, playerName: player.name });
+      }
+     
 
       if (player?.effectState?.smearedRolls) {
         io.to(socket.id).emit("updateSmearedRolls", player.effectState.smearedRolls);
@@ -683,6 +680,19 @@ io.on('connection', (socket) => {
 
         console.log(`[ARTHUR] isChoosingArthurPath set to true for ${currentPlayer.name}`);
       }
+
+      // Business Card
+      if (drawnCard.id === 148) {
+        currentPlayer.effectState.isChoosingBusinessCard = true;
+
+        socket.emit("triggerChooseBusinessCard", {
+          roomID,
+          playerName: currentPlayer.name,
+        });
+
+        console.log(`[BUSINESS CARD] isChoosingBusinessCard set to true for ${currentPlayer.name}`);
+      }
+
 
       // Scary Face
       if (drawnCard.id === 135) {
@@ -1543,6 +1553,7 @@ io.on('connection', (socket) => {
       playerOrder: gameState.playerOrder,
 
       isChoosingArthurPath: gameState.isChoosingArthurPath,
+      isChoosingBusinessCard: gameState.isChoosingBusinessCard,
 
       isChoosingMediumCard: currentPlayer.effectState?.isChoosingMediumCard ?? false,
       isChoosingOuijaCard: currentPlayer.effectState?.isChoosingOuijaCard ?? false,
@@ -2089,6 +2100,68 @@ io.on('connection', (socket) => {
     });
 
   });
+
+  socket.on("businessCardChoiceMade", ({ roomID, playerName, opponentName, winnerName }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    const player = Object.values(gameState.players).find(p => p.name === playerName);
+    const opponent = Object.values(gameState.players).find(p => p.name === opponentName);
+    const winner = Object.values(gameState.players).find(p => p.name === winnerName);
+    const loser = winnerName === playerName ? opponent : player;
+
+    if (!player || !opponent || !winner || !loser) return;
+
+    player.effectState.isChoosingBusinessCard = false;
+
+    // Adjust drink equation for the Business Card player
+    gameState.drinkEquation[player.name] = gameState.drinkEquation[player.name] || { flats: 0, multipliers: 1 };
+    gameState.drinkEquation[player.name].flats += (winnerName === playerName) ? -2 : 2;
+
+    // 🔁 Emit drink equation update
+    io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+
+
+
+    // add loser as brother to winner
+    gameState.brothersGraph[winner.name] = gameState.brothersGraph[winner.name] || [];
+    if (!gameState.brothersGraph[winner.name].includes(loser.name)) {
+      gameState.brothersGraph[winner.name].push(loser.name);
+    }
+
+    // Feedback message
+    const text = winnerName === playerName
+      ? `Mostantól -2-t iszol és ${loser.name} a tesód.`
+      : `Mostantól +2-t iszol, és ${winner.name} tesója vagy.`;
+
+    const entries = [{
+      name: "Business Card",
+      text,
+      icon: "/CardImages/JOKER/businesscard.png"
+    }];
+
+    io.to(roomID).emit("endOfRoundEntries", entries);
+
+    // Sync state
+    io.to(roomID).emit("updateGameState", {
+      deck: gameState.deck,
+      players: { ...gameState.players },
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: cloneGraph(gameState.brothersGraph),
+      loversGraph: cloneGraph(gameState.loversGraph),
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      kingsRemaining: gameState.kingsRemaining,
+      lastDrawnCard: gameState.lastDrawnCard,
+      activePlanets: gameState.activePlanets,
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
+      playerOrder: gameState.playerOrder,
+    });
+
+    console.log(`[BUSINESS CARD] ${player.name} chose opponent ${opponentName}, winner: ${winnerName}`);
+  });
+
 
   socket.on("scaryFaceCardChosen", ({ roomID, playerName, chosenCardID }) => {
     const gameState = games[roomID];
