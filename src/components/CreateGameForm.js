@@ -55,9 +55,10 @@ const CreateGameForm = () => {
       animate={{ rotate: 360, scale: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 17 }}
     >
-      Király 2.0
+      Király <span className="joker-edition-text">Joker Edition</span>
     </motion.div>
   );
+
 
   const handleHostSubmit = (event) => {
     event.preventDefault();
@@ -185,7 +186,7 @@ const CreateGameForm = () => {
             </Form.Group>
 
             <Button className="mb-3 create-game-form-button pixel-font" type="submit">HOST</Button>
-            <Button className="mb-3 back-game-form-button pixel-font" onClick={() => setShowForm(null)}>← Back</Button>
+            <Button className="mb-3 back-game-form-button pixel-font" onClick={() => setShowForm(null)}>Back</Button>
           </Form>
         )}
 
@@ -230,7 +231,7 @@ const CreateGameForm = () => {
             </Form.Group>
 
             <Button className="mb-3 btn join-game-form-button pixel-font" type="submit">JOIN VIA CODE</Button>
-            <Button className="mb-3 back-game-form-button pixel-font" onClick={() => setShowForm(null)}>← Back</Button>
+            <Button className="mb-3 back-game-form-button pixel-font" onClick={() => setShowForm(null)}>Back</Button>
           </Form>
         )}
 

@@ -1913,7 +1913,7 @@ const Game = () => {
         <div className="rules-modal-overlay">
           <div className="rules-modal">
             <button className="rules-close-button" onClick={() => setRulesModalOpen(false)}>×</button>
-            <h3>Rules</h3>
+            <h3 className="rules-modal-title">Rules</h3>
             {isHost ? (
               <textarea
                 value={rulesText}

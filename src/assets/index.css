@@ -5,6 +5,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  overscroll-behavior-y: none; /* Disables pull-to-refresh */
+  touch-action: none;          /* Disables default gestures */
+  overflow-y: hidden;          /* Prevents scrolling */
 }
 
 code {
@@ -16,4 +20,15 @@ code {
   font-family: 'Press Start 2P', monospace;
   font-size: 15px;
   line-height: 3;
+}
+
+* {
+  user-select: none;
+  -webkit-user-select: none; /* Safari/Chrome */
+  -ms-user-select: none;     /* IE/Edge */
+}
+
+img {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-drag: none;     /* Chrome/Safari image drag */
 }

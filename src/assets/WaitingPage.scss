@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: center;
   height: 90vh;
+  
 }
   
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -16,6 +17,7 @@
 body {
   font-family: 'Press Start 2P', sans-serif;
   text-align:center;
+  
 }
 
 .pixel-font {
@@ -41,7 +43,18 @@ body {
   border: 1px solid #ddd;
   border-radius: 10px;
   display: flex;
+  
 }
+
+.waiting-text {
+  position: relative;
+  padding: 10px;
+  background: #fff;
+  display: flex;
+  font-size: 1.2rem;
+}
+
+
 
 .copy-text text {
   padding: 10px;
@@ -49,6 +62,7 @@ body {
   color: #555;
   border: none;
   outline: none;
+  
 }
 
 .copy-text button {
@@ -56,14 +70,14 @@ body {
 }
 
 .start-game-button {
-  padding: 10px 20px;
-  font-size: 20px;
+  padding: 1.5vh 2vw;
+  font-size: 1.1rem;
   background-color: #2ed573;
   color: white;
   border: none;
   border-radius: 5px;
-  margin-bottom: 20px;
-  width: 13%;
+  margin-bottom: 1vh;
+  width: 40vw;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 }

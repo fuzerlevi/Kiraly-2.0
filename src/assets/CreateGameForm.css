@@ -2,13 +2,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 75vw;
 }
 
 .create-game-form-title {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: bold;
-  margin-bottom: 30px;
+  margin-bottom: 3vh;
   font-family: "Helvetica", "sans-serif";
+  line-height: 3vh;
+  padding-bottom: 8vh;
+}
+
+.joker-edition-text {
+  color: #351c75;
+  font-size: 0.4em;
+  
+  /* or whatever styles you want */
 }
 
 .create-game-form-input-container {
@@ -18,7 +28,7 @@
 }
 
 .create-game-form-label {
-  font-size: 1.2rem;
+  font-size: 0.8rem;
   margin-bottom: 5px;
   font-weight: bold;
   color: grey;
@@ -27,7 +37,17 @@
 .create-game-form-input {
   display: flex;
   padding: 10px;
-  font-size: 1rem;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+}
+
+
+
+.create-game-form-select {
+  display: flex;
+  font-size: 0.8rem;
   border: none;
   border-radius: 5px;
   background-color: #f2f2f2;
@@ -35,7 +55,7 @@
 
 .create-game-form-button {
   padding: 10px 20px;
-  font-size: 20px;
+  font-size: 1rem;
   background-color: #2ed573;
   color: white;
   border: none;
@@ -52,7 +72,7 @@
 
 .join-game-form-button {
   padding: 10px 20px;
-  font-size: 20px;
+  font-size: 1rem;
   background-color:#5352ed;
   color: white;
   border: none;
@@ -69,7 +89,7 @@
 
 .help-game-form-button {
   padding: 10px 20px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   background-color: #ff4757;
   color: white;
   border: none;
@@ -240,7 +260,7 @@
 /* Back button - Same as other buttons but with a different color */
 .back-game-form-button {
   padding: 10px 20px;
-  font-size: 20px;
+  font-size: 1rem;
   background-color: #2f3542; /* A distinct but matching color */
   color: white;
   border: none;

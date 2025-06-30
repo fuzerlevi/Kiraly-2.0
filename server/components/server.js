@@ -484,18 +484,19 @@ io.on('connection', (socket) => {
     
     // TEST DECK
     const deck = [
-      Cards.find(card => card.id === 135), // scary
-      Cards.find(card => card.id === 71), // eris
-      Cards.find(card => card.id === 72), // ceres
-      Cards.find(card => card.id === 97), // 1111
-      Cards.find(card => card.id === 1), // 1
-      Cards.find(card => card.id === 84), // fool
-      Cards.find(card => card.id === 85), // fool
-      Cards.find(card => card.id === 90), // fool
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 105), // scary
+      Cards.find(card => card.id === 106), // scary
+      Cards.find(card => card.id === 109), // scary
+      Cards.find(card => card.id === 111), // scary
+      Cards.find(card => card.id === 112), // scary
+      Cards.find(card => card.id === 124), // scary
+      Cards.find(card => card.id === 126), // scary
+      Cards.find(card => card.id === 75), // venus
+      Cards.find(card => card.id === 78), // jupiter
+      Cards.find(card => card.id === 83), // ace
+      Cards.find(card => card.id === 93), // ace
+      Cards.find(card => card.id === 103), // ace
+      Cards.find(card => card.id === 95), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace

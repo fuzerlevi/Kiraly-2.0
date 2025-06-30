@@ -84,7 +84,7 @@ const WaitingPage = () => {
       transition={{ duration: 1 }}
     >
       <Container className="waiting-page-container vh-100 vw-100 d-flex align-items-center justify-content-center">
-        <h2 className="mt-md-3 ms-2 me-2 mb-2">WAITING FOR OTHER PLAYERS...</h2>
+        <h2 className="waiting-text">WAITING FOR OTHER PLAYERS...</h2>
 
         <div className="flickity-container mt-2 mt-md-4 mb-2 mb-md-4">
           <div className="hand">

@@ -14,34 +14,49 @@
 .drink-equation-modal {
   position: relative;
   background: white;
-  padding: 24px;
+  padding: 2vh;
   border-radius: 12px;
-  max-width: 700px;
-  max-height: 90vh;
-  overflow-y: auto;
+  width: 90vw;
+  height: 37vh;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-size: 0.5rem;
 }
 
 .drink-equation-close-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 1vh;
+  right: 1vh;
   background: transparent;
   border: none;
-  font-size: 28px;
+  font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
   color: #333;
 }
 
 .drink-equation-table {
-  width: 100%;
+  margin-top: 3vh;
+  width: 70vw;
   border-collapse: separate;
-  border-spacing: 30px 12px; /* horizontal and vertical spacing */
+  border-spacing: 2vw 0.5vh; /* horizontal and vertical spacing */
 }
 
 .drink-equation-table th,
 .drink-equation-table td {
   text-align: center;
   color: black;
+}
+
+
+.equation-cell-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vw;
+}
+
+.equation-value {
+  display: inline-block;
+  width: 6vw;
+  text-align: center;
 }

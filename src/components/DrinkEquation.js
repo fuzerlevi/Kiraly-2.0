@@ -64,28 +64,30 @@ const DrinkEquation = () => {
                 <td>{player.name}</td>
 
                 <td>
-                  {isHost && (
-                    <button onClick={() => adjustValue(player.name, "multipliers", -0.5)}>-</button>
-                  )}
-                  <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
-                    {entry.multipliers}
-                  </span>
-                  {isHost && (
-                    <button onClick={() => adjustValue(player.name, "multipliers", 0.5)}>+</button>
-                  )}
+                  <div className="equation-cell-wrapper">
+                    {isHost && (
+                      <button onClick={() => adjustValue(player.name, "multipliers", -0.5)}>-</button>
+                    )}
+                    <span className="equation-value">{entry.multipliers}</span>
+                    {isHost && (
+                      <button onClick={() => adjustValue(player.name, "multipliers", 0.5)}>+</button>
+                    )}
+                  </div>
                 </td>
 
+
                 <td>
-                  {isHost && (
-                    <button onClick={() => adjustValue(player.name, "flats", -1)}>-</button>
-                  )}
-                  <span style={{ display: "inline-block", width: "70px", textAlign: "center" }}>
-                    {entry.flats}
-                  </span>
-                  {isHost && (
-                    <button onClick={() => adjustValue(player.name, "flats", 1)}>+</button>
-                  )}
+                  <div className="equation-cell-wrapper">
+                    {isHost && (
+                      <button onClick={() => adjustValue(player.name, "flats", -1)}>-</button>
+                    )}
+                    <span className="equation-value">{entry.flats}</span>
+                    {isHost && (
+                      <button onClick={() => adjustValue(player.name, "flats", 1)}>+</button>
+                    )}
+                  </div>
                 </td>
+
 
                 <td>{computedSips[player.name] ?? "-"}</td>
               </tr>
