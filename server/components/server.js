@@ -487,7 +487,8 @@ io.on('connection', (socket) => {
       Cards.find(card => card.id === 105), // joker
       Cards.find(card => card.id === 71), // eris
       Cards.find(card => card.id === 72), // ceres
-      Cards.find(card => card.id === 83), // fool
+      Cards.find(card => card.id === 97), // 1111
+      Cards.find(card => card.id === 1), // 1
       Cards.find(card => card.id === 84), // fool
       Cards.find(card => card.id === 85), // fool
       Cards.find(card => card.id === 90), // fool

@@ -92,8 +92,7 @@
 }
 
 .effect-text {
-  font-size: 14px;
-  
+  font-size: 0.5rem;
   margin-top: 10px;
   line-height: 1.6;
   word-wrap: break-word;
@@ -545,7 +544,7 @@
 
 .planet-panel {
   position: absolute;
-  top: 13vh;
+  top: 12vh;
   left: 1vh;
   width: 10vh;
   padding: 1vh;
@@ -572,12 +571,15 @@
   justify-content: center;
   align-items: center;
   
+  
 }
 
 .planet-card-image {
-  padding-bottom: 1vh;
-  width: 8.9vh;
-  height: auto;
+  width: 8vh;
+  height: 11vh;
+  border-radius: 6px;
+  margin-bottom: 1vh;
+  
 }
 
 .planet-card-placeholder {
@@ -599,6 +601,7 @@
 
 .planet-glow {
   animation: glowLoop 2s ease-in-out;
+  
 }
 
 .planet-info-box {
@@ -618,7 +621,7 @@
 
 .tarot-panel {
   position: absolute;
-  top: 43vh;
+  top: 42vh;
   left: 1vh;
   padding: 0.8vh;
   width: auto; /* or a fixed max if needed */
@@ -644,15 +647,18 @@
 
 .tarot-slot {
   width: 8vh;
-  height: 10vh;
+  height: 11vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-bottom: 1vh;
 }
 
 .tarot-card-image {
-  padding-bottom: 1vh;
-  width: 8.9vh;
+  
+  border-radius: 6px;
+  width: 8vh;
+  height: 11vh;
   height: auto;
 }
 
