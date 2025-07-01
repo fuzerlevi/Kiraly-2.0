@@ -486,9 +486,22 @@ io.on('connection', (socket) => {
     const deck = [
 
       Cards.find(card => card.id === 146), // hacka
-      Cards.find(card => card.id === 53), // ace
-      Cards.find(card => card.id === 71), // ace
-      Cards.find(card => card.id === 83), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
@@ -2263,46 +2276,57 @@ io.on('connection', (socket) => {
   });
 
   socket.on("hackerRoll", ({ round, roll }) => {
-  console.log(`[HACKER] Received roll for round ${round}, result ${roll} from socket ${socket.id}`);
-  const roomID = socketToGameMap[socket.id];
-  const player = findPlayerBySocketID(socket.id, roomID, games);
-  if (!player) {
-    console.log("[HACKER] Player not found.");
-    return;
-  }
+    console.log(`[HACKER] Received roll for round ${round}, result ${roll} from socket ${socket.id}`);
+    const roomID = socketToGameMap[socket.id];
+    const player = findPlayerBySocketID(socket.id, roomID, games);
+    if (!player) {
+      console.log("[HACKER] Player not found.");
+      return;
+    }
 
-  if (!player.effectState.hackerRolls) {
-    player.effectState.hackerRolls = [];
-  }
+    if (!player.effectState.hackerRolls) {
+      player.effectState.hackerRolls = [];
+    }
 
-  const alreadyRolled = player.effectState.hackerRolls.some(r => r.round === round);
+    const alreadyRolled = player.effectState.hackerRolls.some(r => r.round === round);
     if (alreadyRolled) {
       console.log(`[HACKER] Duplicate roll detected for round ${round}, skipping`);
       return;
     }
 
-    let logEntry = { round, result: "Nothing" };
+    let logEntry = { round, result: "NO_ACTION" };
 
     if (roll === 20) {
-      logEntry.result = "SUCCESSFUL HACK";
+      logEntry.result = "SUCCESSFUL_HACK: 1x SPIKE";
     } else if (roll <= 10) {
-      const sipAmount = Math.floor(Math.random() * 6) + 10; // 10–20 inclusive
-      logEntry.result = `ERROR - ${sipAmount} korty`;
-      player.effectState.hackerErrorSum = (player.effectState.hackerErrorSum || 0) + sipAmount;
+      const sipAmount = Math.floor(Math.random() * 11) + 5; // 5–15
+      const oldSum = player.effectState.hackerErrorSum || 0;
+      const newSum = oldSum + sipAmount;
+      player.effectState.hackerErrorSum = newSum;
 
-      // Check for SUPER HACK threshold
-      let goal = player.effectState.hackerGoal || 50;
-      if (player.effectState.hackerErrorSum >= goal) {
-        logEntry.result = "SUPER HACK";
+      const goal = player.effectState.hackerGoal || 50;
+
+      if (newSum >= goal) {
         player.effectState.hackerGoal = goal + 50;
+        logEntry.result = `SUPERHACK: 3x SPIKE`;
+      } else {
+        logEntry.result = `ERROR: ${sipAmount} korty`;
       }
+
+      logEntry.sipAmount = sipAmount; // always store sipAmount
     }
 
     player.effectState.hackerRolls.push(logEntry);
+    io.to(socket.id).emit("updateHackerErrorSum", {
+      name: player.name,
+      hackerErrorSum: player.effectState.hackerErrorSum,
+    });
+
 
     console.log(`[HACKER] Emitting updateHackerRolls to socket ${socket.id}`);
     io.to(socket.id).emit("updateHackerRolls", player.effectState.hackerRolls);
   });
+
 
 
 

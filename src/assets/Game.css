@@ -1316,7 +1316,8 @@
 }
 
 .hacker-modal {
-  background: #ffffff;
+  background: black;
+  color: #ffffff;
   border-radius: 12px;
   padding: 4vh;
   width: 80vw;
@@ -1335,21 +1336,21 @@
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: #888;
+  color: #ccc;
 }
 
 .hacker-close-button:hover {
-  color: #000;
+  color: #fff;
 }
 
 .hacker-history {
   margin-bottom: 20px;
-  
 }
 
 .hacker-history h3 {
   font-size: 1.3rem;
   margin-bottom: 2vh;
+  color: #ffffff;
 }
 
 .hacker-history ul {
@@ -1357,11 +1358,15 @@
   text-align: left;
   padding-left: 0;
   padding-top: 1vh;
-  font-size: 0.7rem;
+  font-size: 0.5rem;
+  color: #ffffff;
 }
 
 .hacker-sum {
   margin-top: 8px;
+  font-size: 0.8rem;
+  text-align: right;
+  color: #ffffff;
 }
 
 .hacker-roll-buttons {
@@ -1373,7 +1378,7 @@
 
 .hacker-roll-button {
   padding: 1.5vh;
-  background-color: #000000;
+  background-color: #565656;
   color: #ffffff;
   border: none;
   border-radius: 6px;
@@ -1381,20 +1386,44 @@
   font-size: 0.9rem;
 }
 
-.hacker-roll-button:hover {
-  background-color: #333333;
-}
-
 .hacker-divider {
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 2px solid #ffffff;
   margin: 10px 0;
 }
 
-.hacker-sum {
-  font-size: 14px;
-  text-align: right;
+.hacker-ok-button {
+  margin-top: 20px;
+  padding: 8px 16px;
+  background-color: #f1c232;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  color: black;
 }
+
+
+
+.hacker-log-error {
+  color: #cc0000;
+  font-weight: bold;
+}
+
+.hacker-log-noaction {
+  color: #888888;
+}
+
+.hacker-log-super {
+  color: #f1c232;
+  font-weight: bold;
+}
+
+.hacker-log-success {
+  color: #00cc66;
+  font-weight: bold;
+}
+
 
 
 

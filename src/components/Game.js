@@ -224,6 +224,8 @@ const Game = () => {
 
   const [isHackerModalOpen, setIsHackerModalOpen] = useState(false);
   const [hackerRollHistory, setHackerRollHistory] = useState([]); // [{ round: 1, result: "ERROR - 12 korty" }]
+  const [superHackAcknowledged, setSuperHackAcknowledged] = useState(true);
+
 
 
   const [showBlackboardPopup, setShowBlackboardPopup] = useState(false);
@@ -1029,7 +1031,7 @@ const Game = () => {
         entries.push({
           name: "Hacker",
           type: "JOKER",
-          text: `${p.name} hackel xd`,
+          text: `${p.name} hackel egyet`,
           icon: "/CardImages/JOKER/hacker.png"
         });
       }
@@ -1094,6 +1096,39 @@ const Game = () => {
       socket.off("updateHackerRolls");
     };
   }, [socket]);
+
+  useEffect(() => {
+    socket.on("updateHackerErrorSum", ({ name, hackerErrorSum }) => {
+      setPlayers(prev =>
+        prev.map(player =>
+          player.name === name
+            ? {
+                ...player,
+                effectState: {
+                  ...player.effectState,
+                  hackerErrorSum,
+                },
+              }
+            : player
+        )
+      );
+    });
+
+    return () => {
+      socket.off("updateHackerErrorSum");
+    };
+  }, [socket, setPlayers]);
+
+  useEffect(() => {
+    const latest = hackerRollHistory[hackerRollHistory.length - 1];
+    if (latest?.result === "SUPER HACK") {
+      setSuperHackAcknowledged(false);
+    }
+  }, [hackerRollHistory]);
+
+
+
+
 
 
 
@@ -2058,12 +2093,28 @@ const Game = () => {
             <div className="hacker-history">
               <h3>Hack History</h3>
               {hackerRollHistory.length === 0 ? (
-                <p>No hacks yet.</p>
+                <p>ERROR_404</p>
               ) : (
                 <>
                   <ul>
                     {hackerRollHistory.map(entry => (
-                      <li key={entry.round}>Round {entry.round} - {entry.result}</li>
+                      <li
+                        key={entry.round}
+                        className={
+                          entry.result.includes("ERROR")
+                            ? "hacker-log-error"
+                            : entry.result.includes("NO_ACTION")
+                            ? "hacker-log-noaction"
+                            : entry.result.includes("SUPERHACK")
+                            ? "hacker-log-super"
+                            : entry.result.includes("SUCCESSFUL_HACK")
+                            ? "hacker-log-success"
+                            : ""
+                        }
+                      >
+                        #{entry.round} {entry.result}
+                      </li>
+
                     ))}
                   </ul>
 
@@ -2072,14 +2123,14 @@ const Game = () => {
                   <div className="hacker-sum" style={{
                     color:
                       (myPlayer.effectState?.hackerErrorSum || 0) >= (myPlayer.effectState?.hackerGoal || 50)
-                        ? "green"
+                        ? "#00cc66"
                         : "inherit",
                     fontWeight:
                       (myPlayer.effectState?.hackerErrorSum || 0) >= (myPlayer.effectState?.hackerGoal || 50)
                         ? "bold"
                         : "normal"
                   }}>
-                    SUPER HACK PROGRESS: {(myPlayer.effectState?.hackerErrorSum || 0)}/{myPlayer.effectState?.hackerGoal || 50}
+                    SUPERHACK PROGRESS: {(myPlayer.effectState?.hackerErrorSum || 0)}/{myPlayer.effectState?.hackerGoal || 50}
                   </div>
                 </>
               )}
@@ -2090,7 +2141,24 @@ const Game = () => {
                 const unrolledRounds = Array.from({ length: roundNumber }, (_, i) => i + 1)
                   .filter(round => !hackerRollHistory.some(entry => entry.round === round));
                 const nextUnrolledRound = unrolledRounds[0];
-                return nextUnrolledRound ? (
+
+                const latest = hackerRollHistory[hackerRollHistory.length - 1];
+                const justHadSuperHack = latest?.result === "SUPERHACK";
+
+                if (justHadSuperHack && !superHackAcknowledged) {
+                  return (
+                    <button
+                      className="hacker-ok-button"
+                      onClick={() => {
+                        setSuperHackAcknowledged(true);
+                      }}
+                    >
+                      OK
+                    </button>
+                  );
+                }
+
+                return nextUnrolledRound && superHackAcknowledged ? (
                   <button
                     onClick={() => {
                       const roll = Math.floor(Math.random() * 20) + 1;
@@ -2102,6 +2170,7 @@ const Game = () => {
                   </button>
                 ) : null;
               })()}
+
             </div>
           </div>
         </div>
