@@ -113,7 +113,7 @@ const Brothers = () => {
               const toIndex = players.findIndex((x) => x.name === brotherName);
               if (toIndex === -1) return null;
               const to = playerPositions[toIndex];
-              const { x1, y1, x2, y2 } = shortenLine(from.x, from.y - 35, to.x, to.y - 35, 60);
+              const { x1, y1, x2, y2 } = shortenLine(from.x, from.y - 35, to.x, to.y - 35, 65);
               return (
                 <line
                   key={`${i}-${toIndex}`}
@@ -140,7 +140,7 @@ const Brothers = () => {
               const to = playerPositions[toIndex];
               const hasBrotherBack = brothersGraph?.[loverName]?.includes(player.name);
 
-              const { x1, y1, x2, y2 } = shortenLine(from.x, from.y - 35, to.x, to.y - 35, 60);
+              const { x1, y1, x2, y2 } = shortenLine(from.x, from.y - 35, to.x, to.y - 35, 65);
               const loverArrow = (
                 <line
                   key={`lover-${i}-${toIndex}`}
@@ -154,7 +154,7 @@ const Brothers = () => {
                 />
               );
 
-              const back = shortenLine(to.x, to.y - 35, from.x, from.y - 35, 40);
+              const back = shortenLine(to.x, to.y - 35, from.x, from.y - 35, 45);
               const brotherBackArrow = hasBrotherBack ? (
                 <line
                   key={`brotherBack-${toIndex}-${i}`}
