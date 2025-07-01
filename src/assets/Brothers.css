@@ -20,6 +20,7 @@
   z-index: 1001;
   width: 80vw;
   max-height: 60vh;
+  
 }
 
 .brothers-close-button {
@@ -41,6 +42,7 @@
   border-radius: 12px;
   width: 68vw;
   height: 42vh;
+  
 }
 
 
@@ -50,6 +52,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  
 }
 
 .brothers-svg {
@@ -58,6 +61,13 @@
   border-radius: 8px;
   height: 30vh;
   font-size: 1.5rem;
+}
+
+
+
+.brothers-player-name {
+  font-size: 1rem;
+  
 }
 
 
@@ -87,4 +97,22 @@
 
 .remove-btn:hover {
   background-color: #b91c1c;
+}
+
+
+.boy-name {
+  fill: white;
+  stroke: #0000ff;
+  stroke-width: 2px;
+  paint-order: stroke;
+  stroke-linejoin: round;
+  
+}
+
+.girl-name {
+  fill: white;
+  stroke: #ff00ff;
+  stroke-width: 2px;
+  paint-order: stroke;
+  stroke-linejoin: round;
 }

@@ -222,6 +222,10 @@ const Game = () => {
   const [isSmearedModalOpen, setIsSmearedModalOpen] = useState(false);
   const [smearedRollHistory, setSmearedRollHistory] = useState([]); // [{ round: 1, result: 4 }]
 
+  const [isHackerModalOpen, setIsHackerModalOpen] = useState(false);
+  const [hackerRollHistory, setHackerRollHistory] = useState([]); // [{ round: 1, result: "ERROR - 12 korty" }]
+
+
   const [showBlackboardPopup, setShowBlackboardPopup] = useState(false);
   const [showScholarPopup, setShowScholarPopup] = useState(false);
 
@@ -993,8 +997,19 @@ const Game = () => {
       if (p.joker?.id === 130) {
         entries.push({
           name: "Smeared Joker",
-          text: `${p.name} dobjon a Smeared Jokerrel`,
+          text: `${p.name} dob a Smeared Jokerrel`,
           icon: "/CardImages/JOKER/smeared joker.png"
+        });
+      }
+    });
+
+    // 🃏 Hacker end-of-round entry
+    players.forEach((p) => {
+      if (p.joker?.id === 146) {
+        entries.push({
+          name: "Hacker",
+          text: `${p.name} hackel xd`,
+          icon: "/CardImages/JOKER/hacker.png"
         });
       }
     });
@@ -1047,6 +1062,18 @@ const Game = () => {
       socket.off("updateSmearedRolls");
     };
   }, [socket]);
+
+  useEffect(() => {
+    socket.on("updateHackerRolls", (rolls) => {
+      console.log("[CLIENT] Received hacker rolls:", rolls);
+      setHackerRollHistory(rolls);
+    });
+
+    return () => {
+      socket.off("updateHackerRolls");
+    };
+  }, [socket]);
+
 
 
   
@@ -1522,7 +1549,23 @@ const Game = () => {
                 {endOfRoundEntries.map(({ name, text, icon }, idx) => (
                   <li key={idx} className="endofround-list-item">
                     {icon && <img src={icon} alt={name} className="endofround-icon-image" />}
-                    <div className="endofround-text"><strong>{name}:</strong> {text}</div>
+                    <div className="endofround-text">
+                      <strong>{name}:</strong>{" "}
+                      {text.split(" ").map((word, i) => {
+                        const matchedPlayer = players.find(p => p.name === word);
+                        if (matchedPlayer) {
+                          return (
+                            <span
+                              key={i}
+                              className={`player-name ${matchedPlayer.team === 'boy' ? 'boy-name' : 'girl-name'}`}
+                            >
+                              {word}
+                            </span>
+                          );
+                        }
+                        return <span key={i}> {word} </span>;
+                      })}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -1945,6 +1988,62 @@ const Game = () => {
           </div>
         </div>
       )}
+
+      {isHackerModalOpen && (
+        <div className="hacker-modal-overlay" onClick={() => setIsHackerModalOpen(false)}>
+          <div className="hacker-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="hacker-history">
+              <h3>Hack History</h3>
+              {hackerRollHistory.length === 0 ? (
+                <p>No hacks yet.</p>
+              ) : (
+                <>
+                  <ul>
+                    {hackerRollHistory.map(entry => (
+                      <li key={entry.round}>Round {entry.round} - {entry.result}</li>
+                    ))}
+                  </ul>
+
+                  <hr className="hacker-divider" />
+
+                  <div className="hacker-sum" style={{
+                    color:
+                      (myPlayer.effectState?.hackerErrorSum || 0) >= (myPlayer.effectState?.hackerGoal || 50)
+                        ? "green"
+                        : "inherit",
+                    fontWeight:
+                      (myPlayer.effectState?.hackerErrorSum || 0) >= (myPlayer.effectState?.hackerGoal || 50)
+                        ? "bold"
+                        : "normal"
+                  }}>
+                    SUPER HACK PROGRESS: {(myPlayer.effectState?.hackerErrorSum || 0)}/{myPlayer.effectState?.hackerGoal || 50}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="hacker-roll-buttons">
+              {(() => {
+                const unrolledRounds = Array.from({ length: roundNumber }, (_, i) => i + 1)
+                  .filter(round => !hackerRollHistory.some(entry => entry.round === round));
+                const nextUnrolledRound = unrolledRounds[0];
+                return nextUnrolledRound ? (
+                  <button
+                    onClick={() => {
+                      const roll = Math.floor(Math.random() * 20) + 1;
+                      socket.emit("hackerRoll", { round: nextUnrolledRound, roll });
+                    }}
+                    className="hacker-roll-button"
+                  >
+                    Hack (Round {nextUnrolledRound})
+                  </button>
+                ) : null;
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
 
 
 
@@ -2402,7 +2501,17 @@ const Game = () => {
                   >
                     Roll
                   </button>
-                  )}
+                )}
+
+                {myPlayer.joker?.id === 146 && (
+                  <button
+                    className="smeared-floating-button"
+                    onClick={() => setIsHackerModalOpen(true)}
+                  >
+                    Hack
+                  </button>
+                )}
+
 
               </div>
             ) : (
