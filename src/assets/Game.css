@@ -445,6 +445,8 @@
   color: #111;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
   transition: background 0.2s ease;
+  text-align: left;
+  line-height: 1.5vh;
 }
 
 .endofround-text {
@@ -624,7 +626,7 @@
 
 .planet-panel {
   position: absolute;
-  top: 12vh;
+  top: 10vh;
   left: 1vh;
   width: 10vh;
   padding: 1vh;
@@ -639,7 +641,7 @@
 }
 
 .planet-panel-title {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   text-align: center;
   color: #000000;
 }
@@ -701,7 +703,7 @@
 
 .tarot-panel {
   position: absolute;
-  top: 42vh;
+  top: 41vh;
   left: 1vh;
   padding: 0.8vh;
   width: auto; /* or a fixed max if needed */
@@ -862,7 +864,7 @@
 
 .joker-panel {
   position: absolute;
-  top: 63vh;
+  top: 62vh;
   left: 1vh;
   width: 10vh;
   padding: 1vh;
@@ -1431,7 +1433,7 @@
 
 .player-name {
   color: white;
-  padding: 0.5vw 0.5vw;
+  padding: 0.8vw 0.8vw;
   border-radius: 4px;
 }
 
@@ -1441,4 +1443,47 @@
 
 .girl-name {
   background-color: #ff00ff;
+}
+
+
+.red-french-name {
+  color: white;
+  padding: 0.8vw 0.8vw;
+  border-radius: 4px;
+  background-color: #cc0000;
+}
+
+.black-french-name {
+  color: white;
+  padding: 0.8vw 0.8vw;
+  border-radius: 4px;
+  background-color: black;
+}
+
+.joker-name {
+  color: white;
+  padding: 0.8vw 0.8vw;
+  border-radius: 4px;
+  background-color: #351c75;
+}
+
+.tarot-name {
+  color: black;
+  padding: 0.8vw 0.8vw;
+  border-radius: 4px;
+  background-color: #f1c232;
+}
+
+.planet-name {
+  color: white;
+  padding: 0.8vw 0.8vw;
+  border-radius: 4px;
+  background-color: #45818e;
+}
+
+.spectral-name {
+  color: white;
+  padding: 0.8vw 0.8vw;
+  border-radius: 4px;
+  background-color: #1c4587;
 }

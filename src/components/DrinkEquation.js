@@ -61,7 +61,15 @@ const DrinkEquation = () => {
             const entry = drinkEquation[player.name] || { flats: 0, multipliers: 1 };
             return (
               <tr key={player.name}>
-                <td>{player.name}</td>
+                <td>
+                  <span
+                    className={`player-name ${
+                      player.team === "boy" ? "boy-name" : "girl-name"
+                    }`}
+                  >
+                    {player.name}
+                  </span>
+                </td>
 
                 <td>
                   <div className="equation-cell-wrapper">
@@ -75,7 +83,6 @@ const DrinkEquation = () => {
                   </div>
                 </td>
 
-
                 <td>
                   <div className="equation-cell-wrapper">
                     {isHost && (
@@ -88,12 +95,12 @@ const DrinkEquation = () => {
                   </div>
                 </td>
 
-
                 <td>{computedSips[player.name] ?? "-"}</td>
               </tr>
             );
           })}
         </tbody>
+
       </table>
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "24px", marginLeft: "33px" }}>

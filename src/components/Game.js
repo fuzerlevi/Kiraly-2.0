@@ -783,6 +783,7 @@ const Game = () => {
     if (activePlanets.some(card => card.name === "Uranus")) {
       entries.push({
         name: "Uranus",
+        type: "PLANET",
         text: "Ha valaki kockával dob, annyit iszik, amilyen számot dobott",
         icon: "/CardImages/PLANET/uranus.png"
       });
@@ -790,6 +791,7 @@ const Game = () => {
     if (activePlanets.some(card => card.name === "Venus")) {
       entries.push({
         name: "Venus",
+        type: "PLANET",
         text: "Minden lány iszik 1-et",
         icon: "/CardImages/PLANET/venus.png"
       });
@@ -797,6 +799,7 @@ const Game = () => {
     if (activePlanets.some(card => card.name === "Jupiter")) {
       entries.push({
         name: "Jupiter",
+        type: "PLANET",
         text: "Minden fiú iszik 1-et",
         icon: "/CardImages/PLANET/jupiter.png"
       });
@@ -807,6 +810,7 @@ const Game = () => {
       if (p.tarots?.some(card => card.id === 93)) {
         entries.push({
           name: "Wheel of Fortune",
+          type: "TAROT",
           text: `${p.name} dobjon egyet a D20-al, az effekt kijátszódik`,
           icon: "/CardImages/TAROT/wheel of fortune.png"
         });
@@ -820,6 +824,7 @@ const Game = () => {
         const sips = Math.round((3 * (eq?.multipliers || 1)) + (eq?.flats || 0));
         entries.push({
           name: "Hanged Man",
+          type: "TAROT",
           text: `${p.name} iszik ${sips} kortyot`,
           icon: "/CardImages/TAROT/hanged man.png"
       });
@@ -833,6 +838,7 @@ const Game = () => {
 
         entries.push({
           name: "Fool",
+          type: "TAROT",
           text: `${p.name} feldob egy érmét, ha fejet dob, iszik ${result} kortyot`,
           icon: "/CardImages/TAROT/fool.png"
         });
@@ -844,6 +850,7 @@ const Game = () => {
       if (p.tarots?.some(card => card.id === 103)) {
         entries.push({
           name: "Judgement",
+          type: "TAROT",
           text: `Ha ${p.name} ivott ebben a körben, kioszthat 5 kortyot`,
           icon: "/CardImages/TAROT/judgement.png"
         });
@@ -857,6 +864,7 @@ const Game = () => {
       if (p.joker?.id === 109) {
         entries.push({
           name: "Jolly Joker",
+          type: "JOKER",
           text: `Ha bárki kockával dob, ${p.name} kioszt 1 kortyot`,
           icon: "/CardImages/JOKER/jolly joker.png",
         });
@@ -867,6 +875,7 @@ const Game = () => {
       if (p.joker?.id === 105) {
         entries.push({
           name: "Joker",
+          type: "JOKER",
           text: `${p.name} dob egy D20-al, ha 20-ast dob, kioszt egy egész italt`,
           icon: "/CardImages/JOKER/joker.png",
         });
@@ -878,6 +887,7 @@ const Game = () => {
       if (p.joker?.id === 106) {
         entries.push({
           name: "Greedy Joker",
+          type: "JOKER",
           text: `Ha a körben ${p.name} itta a legtöbbet, kioszt 10 kortyot, ha a legkevesebbet, akkor iszik 5-öt `,
           icon: "/CardImages/JOKER/greedy joker.png",
         });
@@ -889,6 +899,7 @@ const Game = () => {
       if (p.joker?.id === 110) {
         entries.push({
           name: "Mad Joker",
+          type: "JOKER",
           text: `Ha ${p.name} a körben 5-nél több kortyot ivott, iszik még 5-öt és kioszt 10-et, akármilyen felosztásban`,
           icon: "/CardImages/JOKER/mad joker.png"
         });
@@ -900,6 +911,7 @@ const Game = () => {
       if (p.joker?.id === 111) {
         entries.push({
           name: "Crazy Joker",
+          type: "JOKER",
           text: `${p.name} dob egy D6-al, ha 6-ot dob, valaki italába rakhat akármit, ha mást, iszik 3-at`,
           icon: "/CardImages/JOKER/crazy joker.png"
         });
@@ -911,6 +923,7 @@ const Game = () => {
       if (p.joker?.id === 112) {
         entries.push({
           name: "Devious Joker",
+          type: "JOKER",
           text: `${p.name} dob egy D20-al, majd annyi kortyot kioszt valakinek ahányat dobott`,
           icon: "/CardImages/JOKER/devious joker.png"
         });
@@ -922,6 +935,7 @@ const Game = () => {
       if (p.joker?.id === 124) {
         entries.push({
           name: "The Baron",
+          type: "JOKER",
           text: `${p.name} dob egy D6-al, ha 6-ost dob, egy általa válaszott játékos iszik helyette a következő kör végéig, ha 1-est, iszik 5-öt`,
           icon: "/CardImages/JOKER/the baron.png"
         });
@@ -933,6 +947,7 @@ const Game = () => {
       if (p.joker?.id === 131) {
         entries.push({
           name: "Brainstorm",
+          type: "JOKER",
           text: `${p.name} dob egy D20-al, ha 20-ast dob, kitalálhat egy új szabályt`,
           icon: "/CardImages/JOKER/brainstorm.png"
         });
@@ -944,6 +959,7 @@ const Game = () => {
       if (p.joker?.id === 132) {
         entries.push({
           name: "Burnt Joker",
+          type: "JOKER",
           text: `${p.name} feldob egy érmét, ha fej, annyit iszik ahányadik kör van, ha írás, annyit kioszt`,
           icon: "/CardImages/JOKER/burnt joker.png"
         });
@@ -957,6 +973,7 @@ const Game = () => {
         const sips = Math.round((3 * (eq?.multipliers || 1)) + (eq?.flats || 0));
         entries.push({
           name: "The Drunkard",
+          type: "JOKER",
           text: `${p.name} iszik ${sips} kortyot`,
           icon: "/CardImages/JOKER/the drunkard.png"
       });
@@ -971,6 +988,7 @@ const Game = () => {
 
         entries.push({
           name: "Merry Andy",
+          type: "JOKER",
           text: `Ha ${p.name} nem ivott ebben a körben, akkor iszik ${total} kortyot`,
           icon: "/CardImages/JOKER/merry andy.png"
         });
@@ -986,6 +1004,7 @@ const Game = () => {
 
         entries.push({
           name: "Hiker",
+          type: "JOKER",
           text: `${p.name} következő itala ${count} alapanyagból kell hogy készüljön`,
           icon: "/CardImages/JOKER/hiker.png"
         });
@@ -997,6 +1016,7 @@ const Game = () => {
       if (p.joker?.id === 130) {
         entries.push({
           name: "Smeared Joker",
+          type: "JOKER",
           text: `${p.name} dob a Smeared Jokerrel`,
           icon: "/CardImages/JOKER/smeared joker.png"
         });
@@ -1008,6 +1028,7 @@ const Game = () => {
       if (p.joker?.id === 146) {
         entries.push({
           name: "Hacker",
+          type: "JOKER",
           text: `${p.name} hackel xd`,
           icon: "/CardImages/JOKER/hacker.png"
         });
@@ -1248,7 +1269,34 @@ const Game = () => {
         {cardDrawn ? (
           <>
             <p className="card-text">
-              {currentPlayerName} drew {cardDrawn.name}!
+              <span
+                className={`player-name ${
+                  players.find(p => p.name === currentPlayerName)?.team === "boy"
+                    ? "boy-name"
+                    : "girl-name"
+                }`}
+              >
+                {currentPlayerName}
+              </span>{" "}
+              drew{" "}
+              <span
+                className={
+                  cardDrawn.cardType === "PLANET"
+                    ? "planet-name"
+                    : cardDrawn.cardType === "TAROT"
+                    ? "tarot-name"
+                    : cardDrawn.cardType === "JOKER"
+                    ? "joker-name"
+                    : cardDrawn.cardType === "SPECTRAL"
+                    ? "spectral-name"
+                    : cardDrawn.color === "red"
+                    ? "red-french-name"
+                    : "black-french-name"
+                }
+              >
+                {cardDrawn.name}
+              </span>
+              !
             </p>
             <img
               src={cardDrawn.src}
@@ -1546,11 +1594,26 @@ const Game = () => {
               <p className="endofround-empty-text">No end-of-round effects are currently active.</p>
             ) : (
               <ul className="endofround-list">
-                {endOfRoundEntries.map(({ name, text, icon }, idx) => (
+                {endOfRoundEntries.map(({ name, type, text, icon }, idx) => (
                   <li key={idx} className="endofround-list-item">
                     {icon && <img src={icon} alt={name} className="endofround-icon-image" />}
                     <div className="endofround-text">
-                      <strong>{name}:</strong>{" "}
+                      <strong>
+                        <span
+                          className={
+                            type === "PLANET"
+                              ? "planet-name"
+                              : type === "TAROT"
+                              ? "tarot-name"
+                              : type === "JOKER"
+                              ? "joker-name"
+                              : ""
+                          }
+                        >
+                          {name}
+                        </span>
+                        :
+                      </strong>{" "}
                       {text.split(" ").map((word, i) => {
                         const matchedPlayer = players.find(p => p.name === word);
                         if (matchedPlayer) {
@@ -1569,11 +1632,11 @@ const Game = () => {
                   </li>
                 ))}
               </ul>
-
             )}
           </div>
         </div>
       )}
+
 
 
 
@@ -2302,7 +2365,7 @@ const Game = () => {
 
 
       <div className="planet-panel">
-        <h3 className="planet-panel-title">Planets</h3>
+        <h3 className="planet-panel-title planet-name">Planets</h3>
         {[0, 1].map((slot) => {
           const planet = activePlanets[slot];
           return (
@@ -2337,7 +2400,7 @@ const Game = () => {
         <div className="tarot-panel-inner">
           {/* Left column: main tarot slot + title + see-all button */}
           <div className="tarot-panel-column">
-            <h3 className="tarot-panel-title">Tarots</h3>
+            <h3 className="tarot-panel-title tarot-name">Tarots</h3>
 
             <div className="tarot-slot">
               {activeTarots.length > 0 ? (
@@ -2462,7 +2525,7 @@ const Game = () => {
       {/* === Joker Panel === */}
       <div className="joker-panel">
         <div className="joker-panel-column">
-          <h3 className="joker-panel-title">Joker</h3>
+          <h3 className="joker-panel-title joker-name">Joker</h3>
 
           <div className="joker-slot">
             {myPlayer?.joker ? (
