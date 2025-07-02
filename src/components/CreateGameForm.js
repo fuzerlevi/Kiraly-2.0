@@ -24,7 +24,7 @@ const CreateGameForm = () => {
     socket.on('createRoomResponse', (response) => {
       if (response.success) {
         const roomID = response.gameID;
-        navigate(`/waiting/${roomID}`, { state: { name, gender } });
+        navigate(`/waiting/${roomID}`, { state: { name, gender, isHost: true } });
       } else {
         console.error(response.error);
       }
@@ -33,7 +33,7 @@ const CreateGameForm = () => {
     socket.on('joinRoomResponse', (response) => {
       if (response.success) {
         const roomID = response.gameID;
-        navigate(`/waiting/${roomID}`, { state: { name, gender } });
+        navigate(`/waiting/${roomID}`, { state: { name, gender, isHost: false } });
       } else {
         setErrorMessage('Game room does not exist.');
         setShowErrorMessage(true);
@@ -59,9 +59,15 @@ const CreateGameForm = () => {
     </motion.div>
   );
 
+  const storePlayerData = (name, gender, isHost) => {
+    localStorage.setItem("playerName", name);
+    localStorage.setItem("playerGender", gender);
+    localStorage.setItem("isHost", isHost.toString());
+  };
 
-  const handleHostSubmit = (event) => {
+  const handleHostSubmit = async (event) => {
     event.preventDefault();
+
     if (name.trim() === '' || gender.trim() === '') {
       setErrorMessage('Please enter a valid name and select a gender.');
       setShowErrorMessage(true);
@@ -69,34 +75,46 @@ const CreateGameForm = () => {
       return;
     }
 
-    // ✅ Inject playerName into socket auth before connect
+    if (socket.connected) socket.disconnect();
     socket.auth = { playerName: name };
-    if (!socket.connected) socket.connect();
+    socket.connect();
 
-    const user = { name, isHost: true, gender };
+    setTimeout(() => {
+      const user = { name, isHost: true, gender };
+      storePlayerData(name, gender, true);
 
-    socket.emit('createGameRoom', user, (response) => {
-      if (response.success) {
-        const roomID = response.gameID;
-        navigate(`/waiting/${roomID}`, { state: { name, gender, isHost: true } });
-      } else {
-        setErrorMessage('Failed to create a game room.');
-        console.error(response.error);
-      }
-    });
+      socket.emit('createGameRoom', user, (response) => {
+        if (response.success) {
+          const roomID = response.gameID;
+
+          // 🔥 Host must join their own room to be added as a player
+          socket.emit('joinGameRoom', {
+            gameID: roomID,
+            user: { name, gender, isHost: true }
+          });
+
+          navigate(`/waiting/${roomID}`, { state: { name, gender, isHost: true } });
+        } else {
+          setErrorMessage('Failed to create a game room.');
+          console.error(response.error);
+        }
+      });
+    }, 100);
   };
 
 
   const handleJoinSubmit = (event) => {
-    socket.auth = { playerName: name };
-    if (!socket.connected) socket.connect();
     event.preventDefault();
+
     if (name.trim() === '' || gameID.trim() === '' || gender.trim() === '') {
       setErrorMessage('Please enter a valid name, game code, and select a gender.');
       setShowErrorMessage(true);
       setTimeout(() => { setShowErrorMessage(false); }, 2500);
       return;
     }
+
+    socket.auth = { playerName: name };
+    if (!socket.connected) socket.connect();
 
     socket.emit('checkGameStatus', { gameID }, (response) => {
       if (!response || response.error) {
@@ -105,30 +123,31 @@ const CreateGameForm = () => {
         return;
       }
 
-      if (response.hasStarted) {
-        socket.emit('joinGameRoom', { gameID, playerName: name, playerGender: gender }, (res) => {
-          if (res.success) {
-            navigate(`/game/${gameID}`);
-          } else {
-            setErrorMessage('Failed to rejoin game.');
-            setShowErrorMessage(true);
-            console.error(res.error);
-          }
-        });
-      } else {
-        const user = { name, isHost: false, gender };
-        socket.emit('joinGameRoom', { gameID, user }, (res) => {
-          if (res.success) {
-            navigate(`/waiting/${gameID}`, { state: { name, gender, isHost: false } });
-          } else {
-            setErrorMessage('Game code does not exist.');
-            setShowErrorMessage(true);
-            console.error(res.error);
-          }
-        });
-      }
+      const user = { name, isHost: false, gender };
+      const playerData = { gameID, user };
+
+      // ✅ Save to localStorage ONLY for this client
+      storePlayerData(name, gender, false);
+
+      socket.once('joinRoomResponse', (res) => {
+        if (res.success) {
+          const targetPath = response.hasStarted
+            ? `/game/${gameID}`
+            : `/waiting/${gameID}`;
+          navigate(targetPath, { state: { name, gender, isHost: false } });
+        } else {
+          setErrorMessage('Failed to join game.');
+          setShowErrorMessage(true);
+          console.error(res.error);
+        }
+      });
+
+      socket.emit('joinGameRoom', playerData);
     });
   };
+
+
+
 
   return (
     <Container className="create-game-form-container vh-100 d-flex align-items-center justify-content-center pixel-font">

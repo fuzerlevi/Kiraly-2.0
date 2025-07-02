@@ -1,81 +1,122 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Container, Button } from 'react-bootstrap';
 
 import '../assets/WaitingPage.scss';
 
 import socket from '../socket.js';
-import { useGameContext } from '../components/GameContext'; // Import the custom hook
+import { useGameContext } from '../components/GameContext';
 
 const WaitingPage = () => {
   const navigate = useNavigate();
-  const { roomID } = useParams();
   const location = useLocation();
-  const { name, gender, isHost } = location.state; // Destructure both correctly
-
-  const { players, setPlayers, setDeck, setCurrentPlayerName  } = useGameContext();
+  const { roomID } = useParams();
 
   const [showCopyMessage, setShowCopyMessage] = useState(false);
   const timeoutRef = useRef(null);
 
+  const [localName, setLocalName] = useState('');
+  const [localGender, setLocalGender] = useState('');
+  const [localIsHost, setLocalIsHost] = useState(false);
+
+  const { players, setPlayers, setDeck, setCurrentPlayerName } = useGameContext();
+
   useEffect(() => {
-    // Emitting the join event with player name and room ID
-    socket.emit('joinGameRoom', { gameID: roomID, playerName: name, playerGender: gender });
-
-    // Listen for updated player list from the server
     socket.on('updatePlayers', (updatedPlayers) => {
-      const updatedPlayersWithArrays = updatedPlayers.map(player => ({
-        ...player,
-        cardsDrawn: [] 
-      }));
-      setPlayers(updatedPlayersWithArrays);
-    });
-
-    // Listen for when the game starts
-    socket.on('gameStarted', ({ roomID, players: updatedPlayers, deck, whosTurnIsIt }) => {
-      const updatedPlayersWithArrays = updatedPlayers.map(player => ({
+      const playersWithCards = updatedPlayers.map(player => ({
         ...player,
         cardsDrawn: []
       }));
-    
-      setPlayers(updatedPlayersWithArrays);
-      setCurrentPlayerName(updatedPlayersWithArrays[whosTurnIsIt]?.name || null);
+      setPlayers(playersWithCards);
+    });
+
+    socket.on('gameStarted', ({ roomID, players: updatedPlayers, deck, whosTurnIsIt }) => {
+      const playersWithCards = updatedPlayers.map(player => ({
+        ...player,
+        cardsDrawn: []
+      }));
+
+      setPlayers(playersWithCards);
+      setCurrentPlayerName(whosTurnIsIt); // whosTurnIsIt is a name, not index
       setDeck(deck);
-    
+
       console.log("Navigating to game page");
       navigate(`/game/${roomID}`);
     });
-    
 
     return () => {
-      socket.off('updatePlayers'); // Cleanup the listener
-      socket.off('gameStarted');   // Cleanup the listener
+      socket.off('updatePlayers');
+      socket.off('gameStarted');
     };
-  }, [name, gender, roomID, setPlayers, setDeck, navigate]); // Only rerun if dependencies change
+  }, [setPlayers, setDeck, setCurrentPlayerName, navigate]);
 
-  // Separate useEffect to log player updates
   useEffect(() => {
-    console.log("Updated players state:", players);
-  }, [players]);
+    const fallbackName = location.state?.name || localStorage.getItem("playerName");
+    const fallbackGender = location.state?.gender || localStorage.getItem("playerGender");
+    const fallbackIsHost =
+      (location.state?.isHost === true || location.state?.isHost === "true") ||
+      localStorage.getItem("isHost") === "true";
 
-  const handleCopy = () => {
-    if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current);
+    setLocalName(fallbackName);
+    setLocalGender(fallbackGender);
+    setLocalIsHost(fallbackIsHost);
+
+    if (fallbackName && roomID) {
+      socket.auth = { playerName: fallbackName };
+      if (!socket.connected) socket.connect();
+
+      // Same pattern as Game.js
+      socket.emit("joinGamePage", { roomID });
     }
-    setShowCopyMessage(true);
-    setTimeout(() => {
-      setShowCopyMessage(false);
-    }, 2500);
+  }, [location.state, roomID]);
+
+  const handleCopyRoomID = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(roomID)
+        .then(() => {
+          setShowCopyMessage(true);
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => setShowCopyMessage(false), 2500);
+        })
+        .catch((err) => {
+          console.error("Clipboard API failed:", err);
+          fallbackCopy(roomID);
+        });
+    } else {
+      fallbackCopy(roomID);
+    }
   };
 
-  // Start the game (only accessible by host)
+  const fallbackCopy = (text) => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";  // Prevent scrolling to bottom of page
+    textarea.style.opacity = 0;
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      document.execCommand("copy");
+      setShowCopyMessage(true);
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setShowCopyMessage(false), 2500);
+    } catch (err) {
+      console.error("Fallback copy failed:", err);
+    }
+
+    document.body.removeChild(textarea);
+  };
+
+
   const startGame = () => {
-    // Emit event to start the game
-    console.log('Start Game clicked, emitting event...');
     socket.emit('startGame', { roomID });
   };
+
+  console.log("Client's name:", localName);
+  console.log("Players array:", players);
+  console.log("Is host?", players.find(p => p.name === localName)?.isHost);
 
   return (
     <motion.div
@@ -96,9 +137,7 @@ const WaitingPage = () => {
 
         <div className="copy-text">
           <div className="text">Code: {roomID}</div>
-          <CopyToClipboard text={`${roomID}`} onCopy={handleCopy}>
-            <button><i className="fa fa-clone"></i></button>
-          </CopyToClipboard>
+          <button onClick={handleCopyRoomID}><i className="fa fa-clone"></i></button>
         </div>
 
         {showCopyMessage && (
@@ -107,7 +146,6 @@ const WaitingPage = () => {
           </div>
         )}
 
-        {/* Current Players Section */}
         <div className="current-players mt-4">
           <h5>Current Players:</h5>
           <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
@@ -119,8 +157,7 @@ const WaitingPage = () => {
           </ul>
         </div>
 
-        {/* Start Game Button (Only for Host) */}
-        {players[0]?.name === name && (
+        {players.find(p => p.name === localName)?.isHost && (
           <Button onClick={startGame} className="mt-3 start-game-button" variant="primary">
             Start Game
           </Button>

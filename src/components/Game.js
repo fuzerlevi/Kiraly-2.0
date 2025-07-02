@@ -9,6 +9,8 @@ import D20 from "../D20.js";
 import Brothers from "./Brothers";
 import DrinkEquation from "./DrinkEquation";
 import cardEffects from "./cardEffects";
+import { useNavigate } from 'react-router-dom';
+
 
 
 
@@ -71,6 +73,7 @@ const Game = () => {
   } = useGameContext();
 
   
+  const navigate = useNavigate();
 
   
 
@@ -255,29 +258,27 @@ const Game = () => {
     return result;
   }
 
-  
-
   useEffect(() => {
-      if (myPlayer?.name && !socket.connected) {
-        console.log("[SOCKET] Setting auth and connecting with playerName:", myPlayer.name);
-        socket.auth = { playerName: myPlayer.name };
-        socket.connect();
-      }
-    }, [myPlayer?.name]);
+    const playerName = localStorage.getItem("playerName");
 
-  useEffect(() => {
+    if (playerName) {
+      socket.auth = { playerName };
+    }
+
     if (!socket.connected) {
       socket.connect();
     }
-    
 
     socket.emit("getAllCardMetadata", (metadata) => {
       setAllCardMetadata(metadata);
     });
 
-
     setMySocketID(socket.id);
-    socket.emit("joinGamePage", { roomID });
+
+    // Emit joinGamePage only if we have credentials
+    if (roomID && playerName) {
+      socket.emit("joinGamePage", { roomID });
+    }
 
     socket.on("updateRulesText", (text) => {
       setRulesText(text);
@@ -1125,6 +1126,29 @@ const Game = () => {
       setSuperHackAcknowledged(false);
     }
   }, [hackerRollHistory]);
+
+  useEffect(() => {
+    socket.on("forceReconnect", ({ reason }) => {
+      console.warn("Rejected from game:", reason);
+      navigate("/", { replace: true });
+    });
+
+    return () => {
+      socket.off("forceReconnect");
+    };
+  }, [navigate]);
+
+  useEffect(() => {
+    const playerName = localStorage.getItem("playerName");
+    if (socket.connected && roomID && playerName) {
+      socket.auth = { playerName };
+      socket.emit("joinGamePage", { roomID });
+    }
+  }, [socket.connected, roomID]);
+
+
+
+
 
 
 

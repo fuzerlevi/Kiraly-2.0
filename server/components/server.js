@@ -253,6 +253,7 @@ const createPlayerState = (socketID) => ({
 io.on('connection', (socket) => {
     console.log(`Socket ${socket.id} connected.`);
 
+
     socket.on("createGameRoom", (user, callback) => {
     const gameID = crypto.randomBytes(3).toString('hex');
     const gameState = createGameState(gameID);
@@ -300,19 +301,11 @@ io.on('connection', (socket) => {
       return;
     }
 
-    let playerName, playerGender, isHost;
-    if (data.user) {
-      playerName = data.user.name;
-      playerGender = data.user.gender;
-      isHost = data.user.isHost;
-    } else {
-      // Fallback for reconnecting players
-      playerName = data.playerName;
-      playerGender = data.playerGender;
-      isHost = Object.keys(gameState.players).length === 0;
-    }
+    const playerName = data.user?.name;
+    const playerGender = data.user?.gender;
+    const isHost = data.user?.isHost;
 
-    // Check if this player already existed (reconnection case)
+    // Check for existing player (reconnection case)
     const existingSocketID = Object.keys(gameState.players).find(
       sid =>
         gameState.players[sid].name === playerName &&
@@ -320,6 +313,7 @@ io.on('connection', (socket) => {
     );
 
     if (existingSocketID) {
+      // ✅ Reconnection
       const oldPlayer = gameState.players[existingSocketID];
       oldPlayer.socketID = socket.id;
 
@@ -337,44 +331,51 @@ io.on('connection', (socket) => {
 
       console.log(`Player ${playerName} reconnected with new socket ${socket.id}`);
     } else {
-      // Fresh join
-      gameState.players[socket.id] = {
+      // ✅ New player joining
+      if (gameState.hasStarted) {
+        socket.emit("joinRoomResponse", { success: false, error: "Game already started." });
+        return;
+      }
+
+      if (!playerName || !playerGender) {
+        socket.emit("joinRoomResponse", { success: false, error: "Missing name or gender." });
+        return;
+      }
+
+      const nameTaken = Object.values(gameState.players).some(p => p.name === playerName);
+      if (nameTaken) {
+        socket.emit("joinRoomResponse", { success: false, error: "Name already taken." });
+        return;
+      }
+
+      const newPlayer = {
         ...createPlayerState(socket.id),
         name: playerName,
         team: playerGender,
         isHost,
-        socketID: socket.id,
       };
 
-      if (!gameState.playerOrder.includes(playerName)) {
-        gameState.playerOrder.push(playerName);
-      }
-
-      if (!gameState.drinkEquation[playerName]) {
-        gameState.drinkEquation[playerName] = {
-          flats: 0,
-          multipliers: 1
-        };
-      }
-
+      gameState.players[socket.id] = newPlayer;
+      gameState.playerOrder.push(playerName);
+      gameState.drinkEquation[playerName] = { flats: 0, multipliers: 1 };
       socketToGameMap[socket.id] = gameID;
+
+      console.log(`Player ${playerName} joined room ${gameID}`);
     }
 
     socket.join(gameID);
 
-    const player = Object.values(gameState.players).find(p => p.socketID === socket.id);
+    const player = gameState.players[socket.id];
 
-    // Notify everyone with updated player list
-    io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
-
+    setTimeout(() => {
+      io.to(gameID).emit("updatePlayers", Object.values(gameState.players));
+    }, 100);
 
     const currentPlayer = Object.values(gameState.players).find(p => p.name === gameState.currentPlayerName);
     const lastDrawnCard = currentPlayer?.cardsDrawn?.slice(-1)[0] || null;
 
-    // Refresh full game state for everyone (safety)
     io.to(gameID).emit("updateGameState", {
       deck: gameState.deck,
-
       players: { ...gameState.players },
       currentPlayerName: gameState.currentPlayerName,
       brothersGraph: gameState.brothersGraph,
@@ -391,7 +392,6 @@ io.on('connection', (socket) => {
       playerOrder: gameState.playerOrder,
     });
 
-    
     if (player?.effectState?.isChoosingMediumCard) {
       socket.emit("triggerMediumChooseCard", { roomID: gameID, playerName: player.name });
     }
@@ -404,7 +404,7 @@ io.on('connection', (socket) => {
     if (player?.effectState?.isChoosingLover) {
       socket.emit("chooseLoverPopup", { roomID: gameID, playerName: player.name });
     }
-    if (player?.effectState?.hasActiveDejaVu ) {
+    if (player?.effectState?.hasActiveDejaVu) {
       socket.emit("triggerDejaVu", { roomID: gameID, playerName: player.name });
     }
     if (player?.effectState?.isChoosingOuijaCard) {
@@ -414,30 +414,24 @@ io.on('connection', (socket) => {
         cardsDrawn: player.cardsDrawn || [],
       });
     }
-    
     if (player?.effectState?.sigilDrawsRemaining > 0) {
       socket.emit("triggerSigilDraw", {
         roomID: gameID,
         playerName: player.name,
-        sigilDrawsRemaining: player.effectState.sigilDrawsRemaining
+        sigilDrawsRemaining: player.effectState.sigilDrawsRemaining,
       });
     }
-
     if (player?.effectState?.incantationDrawsRemaining > 0) {
       socket.emit("triggerIncantationDraw", {
         roomID: gameID,
         playerName: player.name,
-        incantationDrawsRemaining: player.effectState.incantationDrawsRemaining
+        incantationDrawsRemaining: player.effectState.incantationDrawsRemaining,
       });
     }
-    const roomID = gameID; // define roomID from the already existing gameID variable
-
     if (player?.effectState?.isPlanetXActive) {
-      socket.emit("triggerPlanetXShuffle", { roomID });
+      socket.emit("triggerPlanetXShuffle", { roomID: gameID });
     }
 
-
-    // RECONNECTION EMIT
     if (gameState.hasStarted) {
       io.to(gameID).emit("playerReconnected", { playerName });
       socket.emit("gameStarted", {
@@ -449,19 +443,12 @@ io.on('connection', (socket) => {
       });
     }
 
-    // Also restore rules text and drink equation for the reconnecting client
     socket.emit("updateRulesText", gameState.rulesText);
     socket.emit("updateDrinkEquation", gameState.drinkEquation);
     socket.emit("updateEarthDrawPending", gameState.isEarthDrawPending);
-
     socket.emit("updateLoversGraph", gameState.loversGraph);
-
-
-
-    // Response back to the reconnected player
     socket.emit("joinRoomResponse", { gameID, success: true });
     socket.emit("updateEndOfRound", gameState.isEndOfRound);
-
   });
 
   socket.on("startGame", ({ roomID }) => {
@@ -557,7 +544,10 @@ io.on('connection', (socket) => {
       if (player) {
         // Remove old entry if necessary
         const oldKey = Object.keys(gameState.players).find(k => gameState.players[k].name === playerName);
-        if (oldKey) delete gameState.players[oldKey];
+        if (oldKey && oldKey !== socket.id) {
+          delete gameState.players[oldKey];
+        }
+
 
         // Reassign
         player.socketID = socket.id;
@@ -677,6 +667,9 @@ io.on('connection', (socket) => {
       socket.emit("updateEarthDrawPending", gameState.isEarthDrawPending);
     }
   });
+
+
+
 
 
   socket.on('drawCard', ({ roomID }) => {
@@ -2328,6 +2321,13 @@ io.on('connection', (socket) => {
   });
 
 
+  setTimeout(() => {
+    const known = socketToGameMap[socket.id];
+    if (!known) {
+      console.warn(`[ZOMBIE TIMEOUT] Socket ${socket.id} never emitted 'joinGamePage' — forcing reconnect.`);
+      socket.emit("forceReconnect", { reason: "Zombie socket with no room mapping." });
+    }
+  }, 750);
 
 
 
