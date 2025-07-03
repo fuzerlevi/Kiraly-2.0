@@ -472,17 +472,17 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
 
-      Cards.find(card => card.id === 146), // hacka
+      Cards.find(card => card.id === 105), // joker
+      Cards.find(card => card.id === 63), // ace
+      Cards.find(card => card.id === 71), // ace
+      Cards.find(card => card.id === 72), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 63), // ace
+      Cards.find(card => card.id === 83), // ace
+      Cards.find(card => card.id === 86), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
@@ -902,12 +902,6 @@ io.on('connection', (socket) => {
 
       // 🔁 Emit updated state so client sees flag change
       io.to(roomID).emit("updateGameState", getUpdatedGameState(gameState));
-    }
-
-    // Decrement incantationDrawsRemaining if the drawn card is a PLANET and incantation is active
-    if (drawnCard.cardType === "PLANET" && currentPlayer.effectState.incantationDrawsRemaining > 0) {
-      currentPlayer.effectState.incantationDrawsRemaining--;
-      console.log(`[INCANTATION] Decremented due to PLANET card. Remaining: ${currentPlayer.effectState.incantationDrawsRemaining}`);
     }
 
 
