@@ -1516,3 +1516,15 @@
   border-radius: 4px;
   background-color: #1c4587;
 }
+
+
+.fullscreen-button {
+  position: absolute;
+  
+  top: 1.3vh;
+  left: 4vh;
+  font-size: 1.7rem;
+  border: none;
+  color: black;
+  background-color:  white;
+}

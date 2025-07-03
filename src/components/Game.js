@@ -75,7 +75,16 @@ const Game = () => {
   
   const navigate = useNavigate();
 
-  
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
 
   const TurnOrderPanel = ({ players = [], currentPlayerName }) => (
     <div className="turn-order-panel">
@@ -1563,6 +1572,13 @@ const Game = () => {
       <button className="dicebag-button" onClick={() => setDiceBagOpen(prev => !prev)} title="Dice Bag">
         <img src="/Icons/dicebag.png" alt="Dice Bag" className="dicebag-icon" />
       </button>
+
+      <button className="fullscreen-button"
+        onClick={toggleFullScreen}
+      >
+        ⛶
+      </button>
+
 
 
 
