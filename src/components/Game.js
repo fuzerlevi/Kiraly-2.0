@@ -243,6 +243,12 @@ const Game = () => {
   const [showBlackboardPopup, setShowBlackboardPopup] = useState(false);
   const [showScholarPopup, setShowScholarPopup] = useState(false);
 
+  const [showDeckDrawnInfo, setShowDeckDrawnInfo] = useState(false);
+
+  const totalDrawn = Object.values(players || {}).reduce(
+    (sum, p) => sum + (p.cardsDrawn?.length || 0),
+    0
+  );
 
 
 
@@ -2457,19 +2463,44 @@ const Game = () => {
       </div>
 
 
-      <div className="deck-info-box">
-        <div>
-          Deck:
-        </div>
+      <div
+        className="deck-info-box"
+        onClick={() => setShowDeckDrawnInfo(prev => !prev)}
+      >
+        <div>Deck:</div>
         <div className="floating-info-row">
-          <img src="/CardImages/cardbacks/BlackBack.png" alt="Deck" className="info-icon" />
+          <img
+            src="/CardImages/cardbacks/BlackBack.png"
+            alt="Deck"
+            className="info-icon"
+          />
           <span> {deck.length}x</span>
         </div>
         <div className="floating-info-row">
-          <img src="/CardImages/clubs/13KingOfClubs.png" alt="Kings" className="info-icon" />
+          <img
+            src="/CardImages/clubs/13KingOfClubs.png"
+            alt="Kings"
+            className="info-icon"
+          />
           <span> {kingsRemaining}x</span>
         </div>
+
+        
       </div>
+      
+      {showDeckDrawnInfo && (
+        <div className="deck-drawn-info-box">
+          <strong>Drawn:</strong>
+          <div className="floating-info-row">
+            <img
+              src="/CardImages/cardbacks/BlackBack.png"
+              alt="Drawn"
+              className="info-icon"
+            />
+            <span> x{totalDrawn}</span>
+          </div>
+        </div>
+      )}
 
 
 

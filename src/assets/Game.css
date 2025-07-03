@@ -1528,3 +1528,17 @@
   color: black;
   background-color:  white;
 }
+
+.deck-drawn-info-box {
+  position: absolute;
+  right: 11.8vh;
+  bottom: 5.9vh;
+  width: 18vh;
+  background-color: white;
+  border: 3px solid black;
+  border-radius: 8px;
+  padding: 0.7vh 1vh;
+  text-align: center;
+  font-size: 0.5rem;
+  z-index: 999;
+}
