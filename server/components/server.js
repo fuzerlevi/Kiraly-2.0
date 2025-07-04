@@ -494,17 +494,14 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
 
-      Cards.find(card => card.id === 127), // bull
-      Cards.find(card => card.id === 123), // vagabond
-      Cards.find(card => card.id === 96), // ace
-      Cards.find(card => card.id === 96), // ace
-      Cards.find(card => card.id === 100), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 105), // bull
+      Cards.find(card => card.id === 13), // ace
+      Cards.find(card => card.id === 65), // ace
+      Cards.find(card => card.id === 13), // ace
+      Cards.find(card => card.id === 13), // ace
+      Cards.find(card => card.id === 13), // ace
+      Cards.find(card => card.id === 13), // ace
+      Cards.find(card => card.id === 13), // ace
       
 
       
@@ -762,7 +759,7 @@ io.on('connection', (socket) => {
         updateBullEffect(roomID, games); // ⬅️ Run immediately when drawn
       }
 
-      recalculateKingsRemaining(gameState);
+      
 
       // Emit updated game state
       io.to(roomID).emit("updateGameState", {
@@ -1416,6 +1413,7 @@ io.on('connection', (socket) => {
       delete drawnCard.Source;
     }
 
+    recalculateKingsRemaining(gameState);
 
     io.to(roomID).emit("cardDrawn", {
       drawnCard,
