@@ -140,6 +140,9 @@ const Game = () => {
   const [d20Open, setD20Open] = useState(false);
   const [rollResult, setRollResult] = useState(null);
   const d20Effect = rollResult ? D20.find(entry => entry.id === rollResult)?.effect : null;
+  const [gifKey, setGifKey] = useState(Date.now());
+  const videoRef = useRef(null);
+  const [videoPaused, setVideoPaused] = useState(false);
 
   // Brothers
   const [brothersOpen, setBrothersOpen] = useState(false);
@@ -250,6 +253,7 @@ const Game = () => {
     0
   );
 
+  
 
 
 
@@ -1271,8 +1275,20 @@ const Game = () => {
   const openD20 = () => {
     setRollResult(null);
     setD20Open(true);
+    setGifKey(Date.now());
   };
-  const closeD20 = () => setD20Open(false);
+  
+  
+  const closeD20 = () => {
+    setD20Open(false);
+    setRollResult(null);
+
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  };
+
   const rollD20 = () => setRollResult(Math.floor(Math.random() * 20) + 1);
 
   const openD6 = () => {
@@ -1651,8 +1667,16 @@ const Game = () => {
               </button>
             ) : (
               <>
-                <div className="d20-gif-container">
-                  <img src="/rollgifs/d20.gif" alt="Rolling D20" className="d20-gif" />
+                <div className="d20-video-container">
+                  <video
+                    key={d20Open ? "open" : "closed"} // forces reload on reopen
+                    ref={videoRef}
+                    src="/rollgifs/d20.mp4"
+                    className="d20-video"
+                    onEnded={() => setVideoPaused(true)}
+                    autoPlay
+                    playsInline
+                  />
                   <div className="d20-result-overlay">{rollResult}</div>
                 </div>
                 {d20Effect && (
@@ -1663,6 +1687,7 @@ const Game = () => {
           </div>
         </div>
       )}
+
 
       {endOfRoundOpen && (
         <div className="endofround-modal-overlay" onClick={() => setEndOfRoundOpen(false)}>

@@ -136,7 +136,7 @@
   border: 3px solid #333;
   border-radius: 10px;
   line-height: 2.3;
-  font-size: 0.6rem;
+  font-size: 0.53rem;
   text-align: left;
   color: #000000;
   height: 12vh;
@@ -676,9 +676,9 @@
 
 
 @keyframes glowLoop {
-  0%   { box-shadow: 0 0 0px orange; }
-  50%  { box-shadow: 0 0 20px 10px orange; }
-  100% { box-shadow: 0 0 0px orange; }
+  0%   { box-shadow: 0 0 0px #45818e; }
+  50%  { box-shadow: 0 0 20px 10px #45818e; }
+  100% { box-shadow: 0 0 0px #45818e; }
 }
 
 .planet-glow {
@@ -737,19 +737,18 @@
 }
 
 .tarot-card-image {
-  
   border-radius: 6px;
   width: 8vh;
-  height: 11vh;
   height: auto;
 }
 
 .tarot-card-image-smaller {
   position: relative;
-  top: 1.85vh;
-  left: -2vh;
+  top: 3.3vh;
+  left: -1vh;
   padding-bottom: 1vh;
-  width: 8.9vh;
+  border-radius: 6px;
+  width: 8vh;
   height: auto;
 }
 
@@ -764,6 +763,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 1vh;
 }
 
 
@@ -810,9 +810,9 @@
 }
 
 @keyframes tarotGlowLoop {
-  0%   { box-shadow: 0 0 0px orange; }
-  50%  { box-shadow: 0 0 20px 10px orange; }
-  100% { box-shadow: 0 0 0px orange; }
+  0%   { box-shadow: 0 0 0px #ffbf00; }
+  50%  { box-shadow: 0 0 20px 10px #ffbf00; }
+  100% { box-shadow: 0 0 0px #ffbf00; }
 }
 
 .see-all-glow {

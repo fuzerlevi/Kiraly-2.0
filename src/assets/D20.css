@@ -111,7 +111,19 @@
   display: block;
 }
 
+.d20-video {
+  width: 60vw;
+  height: auto;
+  display: block;
+}
+
 .d6-gif-container {
+  position: relative;
+  display: inline-block;
+  margin-top: 2vh;
+}
+
+.d6-video-container {
   position: relative;
   display: inline-block;
   margin-top: 2vh;
@@ -127,8 +139,8 @@
 /* Overlayed result number */
 .d20-result-overlay {
   position: absolute;
-  top: 50%; /* Adjust this */
-  left: 54%; /* Adjust this */
+  top: 17.5vh; /* Adjust this */
+  left: 40vw; /* Adjust this */
   transform: translate(-50%, -50%);
   font-size: 45px; /* Adjust size as needed */
   font-weight: bold;

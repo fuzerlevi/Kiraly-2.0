@@ -473,47 +473,16 @@ io.on('connection', (socket) => {
     const deck = [
 
       Cards.find(card => card.id === 105), // joker
-      Cards.find(card => card.id === 63), // ace
-      Cards.find(card => card.id === 71), // ace
-      Cards.find(card => card.id === 72), // ace
+      Cards.find(card => card.id === 88), // ace
+      Cards.find(card => card.id === 10), // ace
+      Cards.find(card => card.id === 81), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 63), // ace
-      Cards.find(card => card.id === 83), // ace
-      Cards.find(card => card.id === 86), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
-      Cards.find(card => card.id === 1), // ace
+      
+
+      
       
     ];
 
