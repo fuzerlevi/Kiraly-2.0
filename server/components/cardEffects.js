@@ -243,14 +243,21 @@ const cardEffects = {
       return;
     }
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      equation.multipliers *= 2;
-      console.log(`[DEATH] Multiplied ${player.name}'s multiplier by 2. Result:`, equation);
+    // Safely init if missing
+    if (!gameState.drinkEquation[player.name]) {
+      gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
     }
+
+    const equation = gameState.drinkEquation[player.name];
+
+    // Multiply current multiplier but preserve existing flats
+    equation.multipliers *= 2;
+
+    console.log(`[DEATH] ${player.name} - multiplier updated to ${equation.multipliers}, flats preserved: ${equation.flats}`);
 
     return { updatedDrinkEquation: true };
   },
+
 
 
 
@@ -264,14 +271,19 @@ const cardEffects = {
       return;
     }
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      equation.flats -= 2;
-      console.log(`[STRENGTH] Subtracted 2 from flats for ${player.name}`, equation);
+    // Ensure equation is initialized
+    if (!gameState.drinkEquation[player.name]) {
+      gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
     }
+
+    const equation = gameState.drinkEquation[player.name];
+    equation.flats -= 2;
+
+    console.log(`[STRENGTH] Subtracted 2 from flats for ${player.name}. Multiplier preserved: ${equation.multipliers}`);
 
     return { updatedDrinkEquation: true };
   },
+
 
 
   86: ({ player, roomID, games }) => {
@@ -283,15 +295,21 @@ const cardEffects = {
       return;
     }
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      const girls = Object.values(gameState.players).filter(p => p.team === "girl").length;
-      equation.flats -= girls;
-      console.log(`[EMPRESS] ${player.name} loses ${girls} from flats (girls count). Result:`, equation);
+    // Ensure equation is initialized
+    if (!gameState.drinkEquation[player.name]) {
+      gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
     }
+
+    const equation = gameState.drinkEquation[player.name];
+    const girls = Object.values(gameState.players).filter(p => p.team === "girl").length;
+
+    equation.flats -= girls;
+
+    console.log(`[EMPRESS] ${player.name} loses ${girls} from flats (girls count). Multiplier preserved: ${equation.multipliers}`);
 
     return { updatedDrinkEquation: true };
   },
+
 
 
 
@@ -304,68 +322,95 @@ const cardEffects = {
       return;
     }
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      const boys = Object.values(gameState.players).filter(p => p.team === "boy").length;
-      equation.flats -= boys;
-      console.log(`[EMPEROR] ${player.name} loses ${boys} from flats (boys count). Result:`, equation);
+    // Ensure equation is initialized
+    if (!gameState.drinkEquation[player.name]) {
+      gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
     }
+
+    const equation = gameState.drinkEquation[player.name];
+    const boys = Object.values(gameState.players).filter(p => p.team === "boy").length;
+
+    equation.flats -= boys;
+
+    console.log(`[EMPEROR] ${player.name} loses ${boys} from flats (boys count). Multiplier preserved: ${equation.multipliers}`);
 
     return { updatedDrinkEquation: true };
   },
+
 
 
   113: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      equation.multipliers = 0.5;
-      console.log(`[HALF JOKER] Multiplier set to 0.5 for ${player.name}`, equation);
+    // Ensure equation is initialized
+    if (!gameState.drinkEquation[player.name]) {
+      gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
     }
+
+    const equation = gameState.drinkEquation[player.name];
+
+    // Preserve existing flats, set multiplier to 0.5
+    equation.multipliers = 0.5;
+
+    console.log(`[HALF JOKER] Set multiplier to 0.5 for ${player.name}. Flats preserved: ${equation.flats}`);
 
     return { updatedDrinkEquation: true };
   },
+
 
   129: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      equation.flats -= 2;
-      console.log(`[THE BARD] Subtracted 2 from flats for ${player.name}`, equation);
+    // Ensure equation is initialized
+    if (!gameState.drinkEquation[player.name]) {
+      gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
     }
+
+    const equation = gameState.drinkEquation[player.name];
+
+    // Subtract 2 from flats, preserve multipliers
+    equation.flats -= 2;
+
+    console.log(`[THE BARD] Subtracted 2 from flats for ${player.name}. Multiplier preserved: ${equation.multipliers}`);
 
     return { updatedDrinkEquation: true };
   },
+
 
   108: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      equation.flats = -8;
-      console.log(`[GLUTTONOUS] Set flats to -8 for ${player.name}`, equation);
-    }
+    const equation = gameState.drinkEquation[player.name] ||= { flats: 0, multipliers: 1 };
+    equation.flats -= 8;
+
+    console.log(`[GLUTTONOUS] Subtracted 8 from flats for ${player.name}. Result:`, equation);
 
     return { updatedDrinkEquation: true };
   },
+
 
   141: ({ player, roomID, games }) => {
     const gameState = games[roomID];
     if (!gameState || !player?.name) return;
 
-    const equation = gameState.drinkEquation[player.name];
-    if (equation) {
-      equation.flats += 7;
-      console.log(`[MR. BONES] Added 7 to flats for ${player.name}`, equation);
+    // Ensure equation is initialized
+    if (!gameState.drinkEquation[player.name]) {
+      gameState.drinkEquation[player.name] = { flats: 0, multipliers: 1 };
     }
+
+    const equation = gameState.drinkEquation[player.name];
+
+    // Add 7 to flats, preserve multipliers
+    equation.flats += 7;
+
+    console.log(`[MR. BONES] Added 7 to flats for ${player.name}. Multiplier preserved: ${equation.multipliers}`);
 
     return { updatedDrinkEquation: true };
   },
+
 
 
 

@@ -66,19 +66,28 @@ function updateStarEffect(roomID, games) {
     const hasStar = p.tarots?.some(card => card.id === 100);
     if (!hasStar) return;
 
-    const currentBrothers = graph[p.name]?.length || 0;
+    const name = p.name;
+    const currentBrothers = graph[name]?.length || 0;
 
-    const baseFlats = p.baseFlats ?? 0; // default to 0 if never set
-    const updatedFlats = baseFlats - currentBrothers;
+    if (!drinkEq[name]) {
+      drinkEq[name] = { flats: 0, multipliers: 1 };
+    }
 
-    if (!drinkEq[p.name]) drinkEq[p.name] = { flats: 0, multipliers: 1 };
-    drinkEq[p.name].flats = updatedFlats;
+    // Remove previous STAR bonus
+    if (p.starBonusFlats !== undefined) {
+      drinkEq[name].flats -= p.starBonusFlats;
+    }
 
-    console.log(`[STAR] ${p.name} has ${currentBrothers} brothers. Setting flats to ${updatedFlats}`);
+    const newBonus = -currentBrothers;
+    drinkEq[name].flats += newBonus;
+    p.starBonusFlats = newBonus;
+
+    console.log(`[STAR] ${name} has ${currentBrothers} brothers → STAR bonus = ${newBonus} → Total flats = ${drinkEq[name].flats}`);
   });
 
   io.to(roomID).emit("updateDrinkEquation", drinkEq);
 }
+
 
 function updateBullEffect(roomID, games) {
   const gameState = games[roomID];
@@ -88,30 +97,43 @@ function updateBullEffect(roomID, games) {
   const players = Object.values(gameState.players || {});
   const drinkEq = gameState.drinkEquation || {};
 
-  // Reset all players to their baseFlats if set
-  players.forEach(p => {
-    const base = p.baseFlats ?? 0;
-    if (!drinkEq[p.name]) drinkEq[p.name] = { flats: 0, multipliers: 1 };
-    drinkEq[p.name].flats = base;
+  // Reset previous Bull bonuses first
+  players.forEach((p) => {
+    if (!drinkEq[p.name]) {
+      drinkEq[p.name] = { flats: 0, multipliers: 1 };
+    }
+
+    // 🧠 Remove previously added +3 Bull bonuses if present
+    if (p.bullBonusFlats) {
+      drinkEq[p.name].flats -= p.bullBonusFlats;
+      p.bullBonusFlats = 0;
+    }
   });
 
-  // For each Bull holder, boost the players they have listed as brothers
+  // Apply Bull bonuses
   players.forEach((bullHolder) => {
     if (bullHolder.joker?.id === 127) {
       const bullName = bullHolder.name;
       const brothers = graph[bullName] || [];
 
       brothers.forEach((broName) => {
-        if (!drinkEq[broName]) drinkEq[broName] = { flats: 0, multipliers: 1 };
-        drinkEq[broName].flats += 3;
-      });
+        const broPlayer = players.find(p => p.name === broName);
+        if (!broPlayer) return;
 
-      console.log(`[BULL] ${bullName} has brothers: ${brothers.join(", ")}`);
+        if (!drinkEq[broName]) drinkEq[broName] = { flats: 0, multipliers: 1 };
+
+        drinkEq[broName].flats += 3;
+        broPlayer.bullBonusFlats = (broPlayer.bullBonusFlats || 0) + 3;
+
+        console.log(`[BULL] ${bullName} gives +3 to ${broName}`);
+      });
     }
   });
 
   io.to(roomID).emit("updateDrinkEquation", drinkEq);
 }
+
+
 
 
 
@@ -472,9 +494,13 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
 
-      Cards.find(card => card.id === 105), // half joker
-      Cards.find(card => card.id === 105), // joker
+      Cards.find(card => card.id === 127), // bull
+      Cards.find(card => card.id === 123), // vagabond
       Cards.find(card => card.id === 96), // ace
+      Cards.find(card => card.id === 96), // ace
+      Cards.find(card => card.id === 100), // ace
+      Cards.find(card => card.id === 1), // ace
+      Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
@@ -1450,15 +1476,14 @@ io.on('connection', (socket) => {
       // 🍽️ Gluttonous Joker effect: increase flats by 1
       Object.values(gameState.players).forEach(p => {
         if (p.joker?.id === 108) {
-          const eq = gameState.drinkEquation[p.name];
-          if (eq) {
-            eq.flats += 1;
-            io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+          gameState.drinkEquation[p.name] ||= { flats: 0, multipliers: 1 };
+          gameState.drinkEquation[p.name].flats += 1;
 
-            console.log(`[GLUTTONOUS] Increased ${p.name}'s flats to ${eq.flats}`);
-          }
+          console.log(`[GLUTTONOUS] Increased ${p.name}'s flats to ${gameState.drinkEquation[p.name].flats}`);
         }
       });
+
+      io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
     }
 
 
@@ -2111,35 +2136,33 @@ io.on('connection', (socket) => {
 
     player.effectState.isChoosingBusinessCard = false;
 
-    // Adjust drink equation for the Business Card player
-    gameState.drinkEquation[player.name] = gameState.drinkEquation[player.name] || { flats: 0, multipliers: 1 };
-    gameState.drinkEquation[player.name].flats += (winnerName === playerName) ? -2 : 2;
+    // 🟡 Adjust drink equation safely
+    const eq = gameState.drinkEquation[player.name] ||= { flats: 0, multipliers: 1 };
+    const delta = winnerName === playerName ? -2 : 2;
+    eq.flats += delta;
 
-    // 🔁 Emit drink equation update
+    console.log(`[BUSINESS CARD] Adjusted ${player.name}'s flats by ${delta}. Result:`, eq);
+
     io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
 
-
-
-    // add loser as brother to winner
-    gameState.brothersGraph[winner.name] = gameState.brothersGraph[winner.name] || [];
+    // 🤝 Add loser as brother to winner
+    gameState.brothersGraph[winner.name] ||= [];
     if (!gameState.brothersGraph[winner.name].includes(loser.name)) {
       gameState.brothersGraph[winner.name].push(loser.name);
     }
 
-    // Feedback message
+    // 📢 Feedback
     const text = winnerName === playerName
       ? `Mostantól -2-t iszol és ${loser.name} a tesód.`
       : `Mostantól +2-t iszol, és ${winner.name} tesója vagy.`;
 
-    const entries = [{
+    io.to(roomID).emit("endOfRoundEntries", [{
       name: "Business Card",
       text,
       icon: "/CardImages/JOKER/businesscard.png"
-    }];
+    }]);
 
-    io.to(roomID).emit("endOfRoundEntries", entries);
-
-    // Sync state
+    // 🔄 Sync full state
     io.to(roomID).emit("updateGameState", {
       deck: gameState.deck,
       players: { ...gameState.players },
@@ -2158,6 +2181,7 @@ io.on('connection', (socket) => {
 
     console.log(`[BUSINESS CARD] ${player.name} chose opponent ${opponentName}, winner: ${winnerName}`);
   });
+
 
 
   socket.on("scaryFaceCardChosen", ({ roomID, playerName, chosenCardID }) => {
