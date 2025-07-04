@@ -472,10 +472,9 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
 
+      Cards.find(card => card.id === 105), // half joker
       Cards.find(card => card.id === 105), // joker
-      Cards.find(card => card.id === 88), // ace
-      Cards.find(card => card.id === 10), // ace
-      Cards.find(card => card.id === 81), // ace
+      Cards.find(card => card.id === 96), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
       Cards.find(card => card.id === 1), // ace
@@ -737,6 +736,7 @@ io.on('connection', (socket) => {
         updateBullEffect(roomID, games); // ⬅️ Run immediately when drawn
       }
 
+      recalculateKingsRemaining(gameState);
 
       // Emit updated game state
       io.to(roomID).emit("updateGameState", {
@@ -1527,6 +1527,7 @@ io.on('connection', (socket) => {
       currentPlayer.effectState.isChoosingOuijaCard = false;
     }
 
+    recalculateKingsRemaining(gameState);
 
     console.log(`Turn ended. Next: ${gameState.currentPlayerName}`);
 

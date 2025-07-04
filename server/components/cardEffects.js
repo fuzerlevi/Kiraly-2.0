@@ -245,12 +245,14 @@ const cardEffects = {
 
     const equation = gameState.drinkEquation[player.name];
     if (equation) {
-      equation.multipliers = 2;
-      console.log(`[DEATH] Doubled multiplier for ${player.name}`, equation);
+      equation.multipliers *= 2;
+      console.log(`[DEATH] Multiplied ${player.name}'s multiplier by 2. Result:`, equation);
     }
 
     return { updatedDrinkEquation: true };
   },
+
+
 
 
   94: ({ player, roomID, games }) => {
