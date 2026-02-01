@@ -2334,11 +2334,19 @@ const Game = () => {
 
 
       {rulesModalOpen && (
-        <div className="rules-modal-overlay">
-          <div className="rules-modal">
-            <button className="rules-close-button" onClick={() => setRulesModalOpen(false)}>×</button>
-            <h3 className="rules-modal-title">Rules</h3>
-            {isHost ? (
+      <div className="rules-modal-overlay">
+        <div className="rules-modal">
+          <button
+            className="rules-close-button"
+            onClick={() => setRulesModalOpen(false)}
+          >
+            ×
+          </button>
+
+          <h3 className="rules-modal-title">Rules</h3>
+
+          {isHost ? (
+            <>
               <textarea
                 value={rulesText}
                 onChange={(e) => {
@@ -2350,12 +2358,24 @@ const Game = () => {
                 className="rules-textarea"
                 rows={10}
               />
-            ) : (
-              <div className="rules-display-box">{rulesText || "No rules set."}</div>
-            )}
-          </div>
+
+              {/* 🔴 ADMIN SKIP TURN */}
+              <button
+                className="admin-skip-button"
+                onClick={() => socket.emit("adminSkipTurn", { roomID })}
+              >
+                ⚠ Skip Turn
+              </button>
+            </>
+          ) : (
+            <div className="rules-display-box">
+              {rulesText || "No rules set."}
+            </div>
+          )}
         </div>
-      )}
+      </div>
+    )}
+
 
       {mediumModalOpen && (
         <div className="medium-modal-overlay">

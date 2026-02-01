@@ -1425,6 +1425,89 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on("adminSkipTurn", ({ roomID }) => {
+    const gameState = games[roomID];
+    if (!gameState) return;
+
+    console.warn(`[ADMIN] Forced skip in room ${roomID}`);
+
+    forceEndTurn(roomID, gameState);
+  });
+
+  function forceEndTurn(roomID, gameState) {
+    const playerOrder =
+      gameState.playerOrder || Object.values(gameState.players).map(p => p.name);
+
+    const currentIndex = playerOrder.indexOf(gameState.currentPlayerName);
+    const nextIndex = (currentIndex + 1) % playerOrder.length;
+    const nextPlayerName = playerOrder[nextIndex];
+
+    // --- Round logic (safe copy of normal behavior)
+    const isEndOfRound = nextIndex === 0 && !gameState.isJokerRound;
+    if (isEndOfRound) {
+      gameState.roundNumber = (gameState.roundNumber || 0) + 1;
+
+      // Gluttonous
+      Object.values(gameState.players).forEach(p => {
+        if (p.joker?.id === 108) {
+          gameState.drinkEquation[p.name] ||= { flats: 0, multipliers: 1 };
+          gameState.drinkEquation[p.name].flats += 1;
+        }
+      });
+
+      io.to(roomID).emit("updateDrinkEquation", gameState.drinkEquation);
+    }
+
+    // --- Force advance
+    gameState.currentPlayerName = nextPlayerName;
+    gameState.lastDrawnCard = null;
+
+    // --- Hard reset all effectState
+    Object.values(gameState.players).forEach(p => {
+      p.effectState = {
+        ...p.effectState,
+        sigilDrawsRemaining: 0,
+        talismanDrawsRemaining: 0,
+        incantationDrawsRemaining: 0,
+        isChoosingBrother: false,
+        isChoosingMediumCard: false,
+        isChoosingOuijaCard: false,
+        isTranceActive: false,
+        hasActiveDejaVu: false,
+        earthClonePending: false,
+      };
+    });
+
+    recalculateKingsRemaining(gameState);
+
+    // --- Sync everyone
+    io.to(roomID).emit("updateGameState", {
+      deck: gameState.deck,
+      players: { ...gameState.players },
+      currentPlayerName: gameState.currentPlayerName,
+      brothersGraph: cloneGraph(gameState.brothersGraph),
+      loversGraph: cloneGraph(gameState.loversGraph),
+      drinkEquation: gameState.drinkEquation,
+      rulesText: gameState.rulesText,
+      kingsRemaining: gameState.kingsRemaining,
+      lastDrawnCard: null,
+      activePlanets: gameState.activePlanets,
+      roundNumber: gameState.roundNumber,
+      isJokerRound: gameState.isJokerRound,
+      playerOrder: gameState.playerOrder,
+    });
+
+    // --- Clear all glows
+    gameState.glowingPlanets = [];
+    gameState.glowingTarotIDs = [];
+    gameState.glowingJokerIDs = [];
+
+    io.to(roomID).emit("clearPlanetGlow");
+    io.to(roomID).emit("clearTarotGlow");
+    io.to(roomID).emit("clearJokerGlow");
+
+    console.warn(`[ADMIN] Turn forcibly advanced → ${nextPlayerName}`);
+  }
 
 
   socket.on('endTurn', ({ roomID }) => {
