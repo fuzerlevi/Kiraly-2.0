@@ -1503,6 +1503,13 @@
   background-color: #f1c232;
 }
 
+.extra-name {
+  color: white;
+  padding: 0.8vw 0.8vw;
+  border-radius: 4px;
+  background-color: #38761d;
+}
+
 .planet-name {
   color: white;
   padding: 0.8vw 0.8vw;

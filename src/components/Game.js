@@ -1375,6 +1375,8 @@ const Game = () => {
                     ? "planet-name"
                     : cardDrawn.cardType === "TAROT"
                     ? "tarot-name"
+                    : cardDrawn.cardType === "EXTRA"
+                    ? "extra-name"
                     : cardDrawn.cardType === "JOKER"
                     ? "joker-name"
                     : cardDrawn.cardType === "SPECTRAL"

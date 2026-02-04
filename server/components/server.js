@@ -193,6 +193,10 @@ const buildLimitedShuffledDeck = (players) => {
     (card) => card.cardType === "TAROT" && !excludedTarotIDs.has(card.id)
   );
 
+  const extraCards = allCards.filter(
+    (card) => card.cardType === "EXTRA"
+  );
+
   const jokerCards = allCards.filter(
     (card) => card.cardType === "JOKER" && !excludedJokerIDs.has(card.id)
   );
@@ -200,13 +204,15 @@ const buildLimitedShuffledDeck = (players) => {
   // Random selections
   const selectedPlanets = shuffleArray(planetCards).slice(0, 2);
   const selectedTarots = shuffleArray(tarotCards).slice(0, playerCount);
+  const selectedExtras = shuffleArray(extraCards).slice(0, playerCount);
   const selectedJokers = shuffleArray(jokerCards).slice(0, playerCount);
 
-  // Shuffle French + Spectral + Planets + Tarots
+  // Shuffle French + Spectral + Planets + Tarots + Extras
   const mainDeck = shuffleArray([
     ...frenchAndSpectral,
     ...selectedPlanets,
     ...selectedTarots,
+    ...selectedExtras,
   ]);
 
   // Jokers go on top
@@ -485,61 +491,61 @@ io.on('connection', (socket) => {
 
     //Toggle between shuffled and preassembled decks
 
-    // SHUFFLED DECK
+    // FULLS HUFFLED DECK
     // const deck = buildShuffledDeck(Object.values(playerList));
 
     // LIMITED SHUFFLED DECK
-    // const deck = buildLimitedShuffledDeck(Object.values(playerList));
+    const deck = buildLimitedShuffledDeck(Object.values(playerList));
     
     // TEST DECK
-    const deck = [
-      Cards.find(card => card.id === 151),
-      Cards.find(card => card.id === 152),
-      Cards.find(card => card.id === 153),
-      Cards.find(card => card.id === 154),
-      Cards.find(card => card.id === 155),
-      Cards.find(card => card.id === 156),
-      Cards.find(card => card.id === 157),
-      Cards.find(card => card.id === 158),
-      Cards.find(card => card.id === 159),
-      Cards.find(card => card.id === 160),
-      Cards.find(card => card.id === 161),
-      Cards.find(card => card.id === 162),
-      Cards.find(card => card.id === 163),
-      Cards.find(card => card.id === 164),
-      Cards.find(card => card.id === 165),
-      Cards.find(card => card.id === 166),
-      Cards.find(card => card.id === 167),
-      Cards.find(card => card.id === 168),
-      Cards.find(card => card.id === 169),
-      Cards.find(card => card.id === 170),
-      Cards.find(card => card.id === 171),
-      Cards.find(card => card.id === 172),
-      Cards.find(card => card.id === 173),
-      Cards.find(card => card.id === 174),
-      Cards.find(card => card.id === 175),
-      Cards.find(card => card.id === 176),
-      Cards.find(card => card.id === 177),
-      Cards.find(card => card.id === 178),
-      Cards.find(card => card.id === 179),
-      Cards.find(card => card.id === 180),
-      Cards.find(card => card.id === 181),
-      Cards.find(card => card.id === 182),
-      Cards.find(card => card.id === 183),
-      Cards.find(card => card.id === 184),
-      Cards.find(card => card.id === 185),
-      Cards.find(card => card.id === 186),
-      Cards.find(card => card.id === 187),
-      Cards.find(card => card.id === 188),
-      Cards.find(card => card.id === 189),
-      Cards.find(card => card.id === 190),
-      Cards.find(card => card.id === 191),
-      Cards.find(card => card.id === 192),
-      Cards.find(card => card.id === 193),
-      Cards.find(card => card.id === 194),
-      Cards.find(card => card.id === 195),
-      Cards.find(card => card.id === 196),
-    ];
+    // const deck = [
+    //   Cards.find(card => card.id === 151),
+    //   Cards.find(card => card.id === 152),
+    //   Cards.find(card => card.id === 153),
+    //   Cards.find(card => card.id === 154),
+    //   Cards.find(card => card.id === 155),
+    //   Cards.find(card => card.id === 156),
+    //   Cards.find(card => card.id === 157),
+    //   Cards.find(card => card.id === 158),
+    //   Cards.find(card => card.id === 159),
+    //   Cards.find(card => card.id === 160),
+    //   Cards.find(card => card.id === 161),
+    //   Cards.find(card => card.id === 162),
+    //   Cards.find(card => card.id === 163),
+    //   Cards.find(card => card.id === 164),
+    //   Cards.find(card => card.id === 165),
+    //   Cards.find(card => card.id === 166),
+    //   Cards.find(card => card.id === 167),
+    //   Cards.find(card => card.id === 168),
+    //   Cards.find(card => card.id === 169),
+    //   Cards.find(card => card.id === 170),
+    //   Cards.find(card => card.id === 171),
+    //   Cards.find(card => card.id === 172),
+    //   Cards.find(card => card.id === 173),
+    //   Cards.find(card => card.id === 174),
+    //   Cards.find(card => card.id === 175),
+    //   Cards.find(card => card.id === 176),
+    //   Cards.find(card => card.id === 177),
+    //   Cards.find(card => card.id === 178),
+    //   Cards.find(card => card.id === 179),
+    //   Cards.find(card => card.id === 180),
+    //   Cards.find(card => card.id === 181),
+    //   Cards.find(card => card.id === 182),
+    //   Cards.find(card => card.id === 183),
+    //   Cards.find(card => card.id === 184),
+    //   Cards.find(card => card.id === 185),
+    //   Cards.find(card => card.id === 186),
+    //   Cards.find(card => card.id === 187),
+    //   Cards.find(card => card.id === 188),
+    //   Cards.find(card => card.id === 189),
+    //   Cards.find(card => card.id === 190),
+    //   Cards.find(card => card.id === 191),
+    //   Cards.find(card => card.id === 192),
+    //   Cards.find(card => card.id === 193),
+    //   Cards.find(card => card.id === 194),
+    //   Cards.find(card => card.id === 195),
+    //   Cards.find(card => card.id === 196),
+    // ];
 
 
     gameState.deck = deck;
