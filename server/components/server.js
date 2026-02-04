@@ -538,6 +538,7 @@ io.on('connection', (socket) => {
       Cards.find(card => card.id === 193),
       Cards.find(card => card.id === 194),
       Cards.find(card => card.id === 195),
+      Cards.find(card => card.id === 196),
     ];
 
 

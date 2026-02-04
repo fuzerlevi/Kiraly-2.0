@@ -210,8 +210,8 @@ const Cards = [
   { id: 192, cardType: "EXTRA", name: "Putin", effect: "-", color: "", src: "/CardImages/EXTRA/putin.png", source: "" },
   { id: 193, cardType: "EXTRA", name: "Future", effect: "Toxic King - Válassz két lányt, aki mostantól a side hoe-d (testvéred).", color: "", src: "/CardImages/EXTRA/future.png", source: "" },
   { id: 194, cardType: "EXTRA", name: "Kenny", effect: "Blacker The Berry - Hasonlítsd össze a skin tone-odat a veled szemben ülő játékossal, akinek világosabb a bőre, az iszik egy shotot.", color: "", src: "/CardImages/EXTRA/kenny.png", source: "" },
-  { id: 195, cardType: "EXTRA", name: "Robert", effect: "Chain Reaction - Dobj fel egy érmét. Ha fej, az enemy team megissza az italát, ha írás, mindenki megissza az italát", color: "", src: "/CardImages/EXTRA/robert.png", source: "" },
-
+  { id: 195, cardType: "EXTRA", name: "Robert", effect: "Chain Reaction - Dobj fel egy érmét. Ha fej, az enemy team megissza az italát, ha írás, mindenki megissza az italát", color: "", src: "/CardImages/EXTRA/oppenheimer.png", source: "" },
+  { id: 196, cardType: "EXTRA", name: "Heisenberg", effect: "Master Chemist - Készíts egy 5 alapanyagból álló shotot a jobb szomszédodnak. 99.1% tiszta...", color: "", src: "/CardImages/EXTRA/heisenberg.png", source: "" },
 
 ];
 
