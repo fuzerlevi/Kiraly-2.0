@@ -206,12 +206,13 @@ const Cards = [
   { id: 188, cardType: "EXTRA", name: "the MAN", effect: "Ha már ki lett húzva: ORBÁN - Isztok egy shotot Vityával, FIDESZ - Igyál 10 kortyot,MENCZER - Igyál egy shotot, TISZA - Hozhatsz egy új szabályt, SEMELYIK - Mindenki iszik 5 kortyot", color: "", src: "/CardImages/EXTRA/mp.png", source: "" },
   { id: 189, cardType: "EXTRA", name: "Diddy", effect: "Diddy Party - Válassz egy játékost, aki mostantól a testvéred. Olajozd fel mindkettőtök italát.", color: "", src: "/CardImages/EXTRA/diddy.png", source: "" },
   { id: 190, cardType: "EXTRA", name: "Charlie Kirk", effect: "Te vagy Charlie Kirk. A veled szemben lévő játékos önt neked egy shotot. Minden fiú iszik 10 kortyot, minden lány sír.", color: "", src: "/CardImages/EXTRA/kirk.png", source: "" },
-  { id: 191, cardType: "EXTRA", name: "Benjamin Netanyahu", effect: "A 3000 Éves Ígéret - Mostantól minden másik játékos +2 kortyot iszik, te pedig annyival kevesebb kortyot iszol ahány játékos van. Ha TRUMP ki lett húzva, akkor hozhatsz egy szabályt. Ha a BIBLIA ki lett húzva, akkor iszol egy felest.", color: "", src: "/CardImages/EXTRA/netanyahu.png", source: "" },
+  { id: 191, cardType: "EXTRA", name: "Benjamin Netanyahu", effect: "A 3000 Éves Ígéret - Mostantól minden másik játékos +2 kortyot iszik, te pedig annyival kevesebb kortyot iszol ahány játékos van. Ha TRUMP ki lett húzva, akkor hozhatsz egy szabályt. Ha a BIBLIA ki lett húzva, akkor iszol egy shotot.", color: "", src: "/CardImages/EXTRA/netanyahu.png", source: "" },
   { id: 192, cardType: "EXTRA", name: "Vladimir Putin", effect: "Rajtad kívül minden fiú iszik egy vodka shotot. Ha ZELENSKY fel lett húzva, mostantól a testvéred. Ha TRUMP fel lett húzva, mostantól a testvéred.", color: "", src: "/CardImages/EXTRA/putin.png", source: "" },
   { id: 193, cardType: "EXTRA", name: "Future", effect: "Toxic King - Válassz két lányt, aki mostantól a side hoe-d (testvéred).", color: "", src: "/CardImages/EXTRA/future.png", source: "" },
   { id: 194, cardType: "EXTRA", name: "Kenny", effect: "Blacker The Berry - Hasonlítsd össze a skin tone-odat a veled szemben ülő játékossal, akinek világosabb a bőre, az iszik egy shotot.", color: "", src: "/CardImages/EXTRA/kenny.png", source: "" },
   { id: 195, cardType: "EXTRA", name: "Oppenheimer", effect: "Chain Reaction - Dobj fel egy érmét. Ha fej, az enemy team megissza az italát, ha írás, mindenki megissza az italát", color: "", src: "/CardImages/EXTRA/oppenheimer.png", source: "" },
   { id: 196, cardType: "EXTRA", name: "Heisenberg", effect: "Master Chemist - Készíts egy 5 alapanyagból álló shotot a jobb szomszédodnak. 99.1% tisztaság...", color: "", src: "/CardImages/EXTRA/heisenberg.png", source: "" },
+  { id: 197, cardType: "EXTRA", name: "DIGITÁLIS POLGÁRI KÖR VÁC", effect: "Mostantól minden Vácon élő polgár egymás testvére (in-game..)", color: "", src: "/CardImages/EXTRA/dpkvac.png", source: "" },
 ];
 
 module.exports = Cards;
