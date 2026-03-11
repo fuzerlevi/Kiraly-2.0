@@ -175,18 +175,17 @@ const buildLimitedShuffledDeck = (players) => {
   // ID exclusion sets
   const excludedTarotIDs = new Set([84, 85, 99, 101, 102, 104]);
   const excludedJokerIDs = new Set([
-    114, 115, 117, 121, 125, 128, 136,
-    139, 140, 142, 143, 144, 145, 147
+    106, 114, 115, 117, 121, 125, 128, 135, 136, 138, 139, 140, 142, 143, 144, 145, 147
   ]);
 
-  // Base pools
-  const frenchAndSpectral = allCards.filter(
-    (card) =>
-      (card.cardType === "French" || card.cardType === "SPECTRAL")
+  // ---------- CARD POOLS ----------
+
+  const spectralCards = allCards.filter(
+    (card) => card.cardType === "SPECTRAL"
   );
 
   const planetCards = allCards.filter(
-    (card) => card.cardType === "PLANET" && card.id !== 76 // exclude Earth
+    (card) => card.cardType === "PLANET" && card.id !== 76
   );
 
   const tarotCards = allCards.filter(
@@ -201,21 +200,46 @@ const buildLimitedShuffledDeck = (players) => {
     (card) => card.cardType === "JOKER" && !excludedJokerIDs.has(card.id)
   );
 
-  // Random selections
+  const frenchCards = allCards.filter(
+    (card) => card.cardType === "French"
+  );
+
+  // ---------- FRENCH SELECTION ----------
+
+  const guaranteedRanks = new Set([1, 2, 7, 8, 9, 10, 13]); // A,2,7,8,9,10,K
+  const fillerRanks = new Set([3, 4, 5, 6, 11, 12]); // 3,4,5,6,J,Q
+
+  const selectedFrench = frenchCards.filter((card) => {
+    const rank = ((card.id - 1) % 13) + 1;
+    const suitIndex = Math.floor((card.id - 1) / 13); // 0=spade,1=heart,2=diamond,3=club
+
+    if (guaranteedRanks.has(rank)) return true;
+
+    // Include spade + heart fillers
+    if (fillerRanks.has(rank) && (suitIndex === 0 || suitIndex === 1)) return true;
+
+    return false;
+  });
+
+  // ---------- RANDOM SELECTIONS ----------
+
+  const selectedSpectrals = shuffleArray(spectralCards).slice(0, 9);
   const selectedPlanets = shuffleArray(planetCards).slice(0, 2);
   const selectedTarots = shuffleArray(tarotCards).slice(0, playerCount);
-  const selectedExtras = shuffleArray(extraCards).slice(0, playerCount);
+  const selectedExtras = shuffleArray(extraCards).slice(0, playerCount * 2);
   const selectedJokers = shuffleArray(jokerCards).slice(0, playerCount);
 
-  // Shuffle French + Spectral + Planets + Tarots + Extras
+  // ---------- MAIN DECK ----------
+
   const mainDeck = shuffleArray([
-    ...frenchAndSpectral,
+    ...selectedFrench,
+    ...selectedSpectrals,
     ...selectedPlanets,
     ...selectedTarots,
-    ...selectedExtras,
+    ...selectedExtras
   ]);
 
-  // Jokers go on top
+  // Jokers on top
   return [...selectedJokers, ...mainDeck];
 };
 

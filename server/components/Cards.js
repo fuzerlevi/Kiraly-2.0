@@ -147,7 +147,7 @@ const Cards = [
   { id: 131, cardType: "JOKER", name: "Brainstorm", effect: "A kör végén dob egy D20-al, ha 20-ast dob, kitalálhat egy új szabályt", color: "", src: "/CardImages/JOKER/brainstorm.png", source: "" },
   { id: 132, cardType: "JOKER", name: "Burnt Joker", effect: "Minden kör végén feldob egy érmét, ha fej, annyit iszik ahányadik kör van, ha írás, annyit kioszt", color: "", src: "/CardImages/JOKER/burnt joker.png", source: "" },
   { id: 133, cardType: "JOKER", name: "Arthur", effect: "A játék elején dob egy 6-os kockával, ha 6-ost dob, kitalálhat egy új szabályt, ha mást, akkor a játék végéig minden kör végén iszik 5 kortyot", color: "", src: "/CardImages/JOKER/arthur.png", source: "" },
-  { id: 134, cardType: "JOKER", name: "To Do List", effect: "Minden italában minimum 3 alapanyagnak kell lennie", color: "", src: "/CardImages/JOKER/to do list.png", source: "" },
+  { id: 134, cardType: "JOKER", name: "To Do List", effect: "Minden italában minimum 5 alapanyagnak kell lennie", color: "", src: "/CardImages/JOKER/to do list.png", source: "" },
   { id: 135, cardType: "JOKER", name: "Scary Face", effect: "A játék elején választania kell egy francia kártyát, amit ha ő húz fel, iszik egy felest", color: "", src: "/CardImages/JOKER/scary face.png", source: "" },
   { id: 136, cardType: "JOKER", name: "Egg", effect: "tbd", color: "", src: "/CardImages/JOKER/egg.png", source: "" },
   { id: 137, cardType: "JOKER", name: "Runner", effect: "Minden körben amikor először iszik, továbbad -1 kortynyit egy általa választott játékosnak, aki miután megitta, szintén továbbad -1 kortynyit, amíg a kortyok száma el nem éri a nullát", color: "", src: "/CardImages/JOKER/runner.png", source: "" },
