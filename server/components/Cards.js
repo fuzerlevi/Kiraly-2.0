@@ -149,7 +149,7 @@ const Cards = [
   { id: 133, cardType: "JOKER", name: "Arthur", effect: "A játék elején dob egy 6-os kockával, ha 6-ost dob, kitalálhat egy új szabályt, ha mást, akkor a játék végéig minden kör végén iszik 5 kortyot", color: "", src: "/CardImages/JOKER/arthur.png", source: "" },
   { id: 134, cardType: "JOKER", name: "To Do List", effect: "Minden italában minimum 5 alapanyagnak kell lennie", color: "", src: "/CardImages/JOKER/to do list.png", source: "" },
   { id: 135, cardType: "JOKER", name: "Scary Face", effect: "A játék elején választania kell egy francia kártyát, amit ha ő húz fel, iszik egy felest", color: "", src: "/CardImages/JOKER/scary face.png", source: "" },
-  { id: 136, cardType: "JOKER", name: "Egg", effect: "tbd", color: "", src: "/CardImages/JOKER/egg.png", source: "" },
+  { id: 136, cardType: "JOKER", name: "Egg", effect: "Minden új italodat valaki megspikeolja (A jobb szomszédod az első, a következő spike-oló pedig mindig az előző spike-oló jobb szomszédja)", color: "", src: "/CardImages/JOKER/egg.png", source: "" },
   { id: 137, cardType: "JOKER", name: "Runner", effect: "Minden körben amikor először iszik, továbbad -1 kortynyit egy általa választott játékosnak, aki miután megitta, szintén továbbad -1 kortynyit, amíg a kortyok száma el nem éri a nullát", color: "", src: "/CardImages/JOKER/runner.png", source: "" },
   { id: 138, cardType: "JOKER", name: "Hiker", effect: "Minden itala 1 alapanyagból kell hogy készüljön, ha felhúz QUEEN, JACK, vagy KING kártyákat, akkor a következő italának 1-el több alapanyagból kell készülnie", color: "", src: "/CardImages/JOKER/hiker.png", source: "" },
   { id: 139, cardType: "JOKER", name: "Burglar", effect: "tbd", color: "", src: "/CardImages/JOKER/burglar.png", source: "" },

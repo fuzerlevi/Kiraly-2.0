@@ -175,7 +175,7 @@ const buildLimitedShuffledDeck = (players) => {
   // ID exclusion sets
   const excludedTarotIDs = new Set([84, 85, 99, 101, 102, 104]);
   const excludedJokerIDs = new Set([
-    106, 114, 115, 117, 121, 125, 128, 135, 136, 138, 139, 140, 143, 144, 145, 147
+    106, 114, 115, 117, 121, 125, 128, 135, 138, 139, 140, 143, 144, 145, 147
   ]);
 
   // ---------- CARD POOLS ----------
@@ -524,7 +524,7 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 300),
-      Cards.find(card => card.id === 142),
+      Cards.find(card => card.id === 136),
       Cards.find(card => card.id === 8),
       Cards.find(card => card.id === 8),
       Cards.find(card => card.id === 10),
@@ -1168,7 +1168,7 @@ io.on('connection', (socket) => {
     }
 
     // CASTLE JOKER glow
-    const castleJokerTriggerIDs = [10, 23, 36, 49];
+    const castleJokerTriggerIDs = [13, 26, 39, 52];
     if (castleJokerTriggerIDs.includes(drawnCard.id)) {
       const players = Object.values(gameState.players || {});
       players.forEach((p) => {

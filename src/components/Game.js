@@ -893,6 +893,18 @@ const Game = () => {
       }
     });
 
+    // Egg (Joker)
+    players.forEach((p) => {
+      if (p.joker?.id === 136) {
+        entries.push({
+          name: "Egg",
+          type: "JOKER",
+          text: `Ne felejtsük el ${p.name}-t spike-olni :)`,
+          icon: "/CardImages/JOKER/egg.png",
+        });
+      }
+    });
+
     // 8ball Joker (Joker)
     players.forEach((p) => {
       if (p.joker?.id === 142) {
