@@ -523,12 +523,14 @@ io.on('connection', (socket) => {
     
     // TEST DECK
     const deck = [
-      Cards.find(card => card.id === 142),
+      Cards.find(card => card.id === 300),
       Cards.find(card => card.id === 119),
       Cards.find(card => card.id === 8),
       Cards.find(card => card.id === 8),
-      Cards.find(card => card.id === 1),
-      Cards.find(card => card.id === 1),
+      Cards.find(card => card.id === 10),
+      Cards.find(card => card.id === 23),
+      Cards.find(card => card.id === 36),
+      Cards.find(card => card.id === 49),
       Cards.find(card => card.id === 1),
     ];
 
@@ -1161,6 +1163,21 @@ io.on('connection', (socket) => {
             gameState.glowingJokerIDs.push(109); // ✅ Track glow for reconnects
           }
           io.to(p.socketID).emit("jokerGlow", { jokerID: 109 });
+        }
+      });
+    }
+
+    // CASTLE JOKER glow
+    const castleJokerTriggerIDs = [10, 23, 36, 49];
+    if (castleJokerTriggerIDs.includes(drawnCard.id)) {
+      const players = Object.values(gameState.players || {});
+      players.forEach((p) => {
+        if (p.joker?.id === 300) {
+          if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+          if (!gameState.glowingJokerIDs.includes(300)) {
+            gameState.glowingJokerIDs.push(300); // ✅ Track glow for reconnects
+          }
+          io.to(p.socketID).emit("jokerGlow", { jokerID: 300 });
         }
       });
     }

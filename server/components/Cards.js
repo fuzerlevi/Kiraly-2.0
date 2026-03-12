@@ -164,7 +164,7 @@ const Cards = [
   { id: 148, cardType: "JOKER", name: "Business Card", effect: "A játék elején választ valakit, akivel mindketten készítenek egy-egy italt, majd egy véletlenszerűen választott játékos értékeli az italokat. A vereség komoly következményekkel jár...", color: "", src: "/CardImages/JOKER/business card.png", source: "" },
   { id: 149, cardType: "JOKER", name: "Merry Andy", effect: "Ha nem ivott az adott körben, akkor iszik 3x annyi kortyot ahány játékos van a játékban", color: "", src: "/CardImages/JOKER/merry andy.png", source: "" },
   { id: 150, cardType: "JOKER", name: "To The Moon", effect: "Mielőtt iszik, feldob egy érmét. Ha fejet dob, a kapott kortyok -100%-át kell innia, ha írást, a +100%-át", color: "", src: "/CardImages/JOKER/to the moon.png", source: "" },
-  { id: 151, cardType: "JOKER", name: "Castle", effect: "Eldöntheti hogy mi kerül a királyba (az alapanyagot és a mennyiséget is)", color: "", src: "/CardImages/JOKER/castle.png", source: "" },
+  { id: 300, cardType: "JOKER", name: "Castle", effect: "Eldöntheti hogy mi kerül a királyba (az alapanyagot és a mennyiséget is)", color: "", src: "/CardImages/JOKER/castle.png", source: "" },
 
   // EXTRA
   { id: 151, cardType: "EXTRA", name: "Orbán Viktor", effect: "15 éve 2/3-al kormányzol, végtelen hatalmad van. Kitalálhatsz akármennyi új szabályt, viszont mindegyik után innod kell egy shotot. Semmi sincs ingyen.", color: "", src: "/CardImages/EXTRA/orban.png", source: "" },
