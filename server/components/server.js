@@ -524,7 +524,7 @@ io.on('connection', (socket) => {
     // TEST DECK
     const deck = [
       Cards.find(card => card.id === 300),
-      Cards.find(card => card.id === 119),
+      Cards.find(card => card.id === 142),
       Cards.find(card => card.id === 8),
       Cards.find(card => card.id === 8),
       Cards.find(card => card.id === 10),

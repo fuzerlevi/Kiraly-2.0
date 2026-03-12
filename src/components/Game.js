@@ -892,6 +892,18 @@ const Game = () => {
         });
       }
     });
+
+    // 8ball Joker (Joker)
+    players.forEach((p) => {
+      if (p.joker?.id === 142) {
+        entries.push({
+          name: "8 Ball",
+          type: "JOKER",
+          text: `Ha ${p.name} kockával dob, 1x rerollolhat`,
+          icon: "/CardImages/JOKER/8 ball.png",
+        });
+      }
+    });
     // Joker (End of Round)
     players.forEach((p) => {
       if (p.joker?.id === 105) {
