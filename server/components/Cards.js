@@ -155,7 +155,7 @@ const Cards = [
   { id: 139, cardType: "JOKER", name: "Burglar", effect: "tbd", color: "", src: "/CardImages/JOKER/burglar.png", source: "" },
   { id: 140, cardType: "JOKER", name: "Credit Card", effect: "tbd", color: "", src: "/CardImages/JOKER/credit card.png", source: "" },
   { id: 141, cardType: "JOKER", name: "Mr. Bones", effect: "+7 kortyot iszik 💀", color: "", src: "/CardImages/JOKER/mr. bones.png", source: "" },
-  { id: 142, cardType: "JOKER", name: "8 Ball", effect: "tbd", color: "", src: "/CardImages/JOKER/8 ball.png", source: "" },
+  { id: 142, cardType: "JOKER", name: "8 Ball", effect: "Ha kockával dob, rerollolhat 1x és utána eldöntheti hogy az első vagy a második dobása legyen érvényes.", color: "", src: "/CardImages/JOKER/8 ball.png", source: "" },
   { id: 143, cardType: "JOKER", name: "Ice Cream", effect: "tbd", color: "", src: "/CardImages/JOKER/ice cream.png", source: "" },
   { id: 144, cardType: "JOKER", name: "Sixth Sense", effect: "tbd", color: "", src: "/CardImages/JOKER/sixth sense.png", source: "" },
   { id: 145, cardType: "JOKER", name: "Banana", effect: "tbd", color: "", src: "/CardImages/JOKER/banana.png", source: "" },
@@ -164,6 +164,7 @@ const Cards = [
   { id: 148, cardType: "JOKER", name: "Business Card", effect: "A játék elején választ valakit, akivel mindketten készítenek egy-egy italt, majd egy véletlenszerűen választott játékos értékeli az italokat. A vereség komoly következményekkel jár...", color: "", src: "/CardImages/JOKER/business card.png", source: "" },
   { id: 149, cardType: "JOKER", name: "Merry Andy", effect: "Ha nem ivott az adott körben, akkor iszik 3x annyi kortyot ahány játékos van a játékban", color: "", src: "/CardImages/JOKER/merry andy.png", source: "" },
   { id: 150, cardType: "JOKER", name: "To The Moon", effect: "Mielőtt iszik, feldob egy érmét. Ha fejet dob, a kapott kortyok -100%-át kell innia, ha írást, a +100%-át", color: "", src: "/CardImages/JOKER/to the moon.png", source: "" },
+  { id: 151, cardType: "JOKER", name: "Castle", effect: "Eldöntheti hogy mi kerül a királyba (az alapanyagot és a mennyiséget is)", color: "", src: "/CardImages/JOKER/castle.png", source: "" },
 
   // EXTRA
   { id: 151, cardType: "EXTRA", name: "Orbán Viktor", effect: "15 éve 2/3-al kormányzol, végtelen hatalmad van. Kitalálhatsz akármennyi új szabályt, viszont mindegyik után innod kell egy shotot. Semmi sincs ingyen.", color: "", src: "/CardImages/EXTRA/orban.png", source: "" },
