@@ -175,7 +175,7 @@ const buildLimitedShuffledDeck = (players) => {
   // ID exclusion sets
   const excludedTarotIDs = new Set([84, 85, 99, 101, 102, 104]);
   const excludedJokerIDs = new Set([
-    106, 114, 115, 117, 121, 125, 128, 135, 138, 139, 140, 143, 144, 145, 147
+    106, 114, 115, 117, 121, 125, 128, 135, 138, 139, 140, 143, 144, 145
   ]);
 
   // ---------- CARD POOLS ----------
@@ -519,20 +519,20 @@ io.on('connection', (socket) => {
     // const deck = buildShuffledDeck(Object.values(playerList));
 
     // LIMITED SHUFFLED DECK
-    // const deck = buildLimitedShuffledDeck(Object.values(playerList));
+    const deck = buildLimitedShuffledDeck(Object.values(playerList));
     
     // TEST DECK
-    const deck = [
-      Cards.find(card => card.id === 300),
-      Cards.find(card => card.id === 136),
-      Cards.find(card => card.id === 8),
-      Cards.find(card => card.id === 8),
-      Cards.find(card => card.id === 10),
-      Cards.find(card => card.id === 23),
-      Cards.find(card => card.id === 36),
-      Cards.find(card => card.id === 49),
-      Cards.find(card => card.id === 1),
-    ];
+    // const deck = [
+    //   Cards.find(card => card.id === 147),
+    //   Cards.find(card => card.id === 136),
+    //   Cards.find(card => card.id === 151),
+    //   Cards.find(card => card.id === 175),
+    //   Cards.find(card => card.id === 10),
+    //   Cards.find(card => card.id === 23),
+    //   Cards.find(card => card.id === 195),
+    //   Cards.find(card => card.id === 193),
+    //   Cards.find(card => card.id === 1),
+    // ];
 
 
     gameState.deck = deck;
@@ -1205,6 +1205,25 @@ io.on('connection', (socket) => {
 
       io.to(currentPlayer.socketID).emit("jokerGlow", { jokerID: 119 });
       console.log(`[BLACKBOARD] ${currentPlayer.name} drew ${drawnCard.name}, triggering BLACKBOARD glow.`);
+    }
+
+    // MADNESS JOKER glow
+    if (drawnCard.cardType === "EXTRA") {
+      const players = Object.values(gameState.players || {});
+
+      players.forEach((p) => {
+        if (p.joker?.id === 147) { // MADNESS joker ID
+          if (!gameState.glowingJokerIDs) gameState.glowingJokerIDs = [];
+
+          if (!gameState.glowingJokerIDs.includes(147)) {
+            gameState.glowingJokerIDs.push(147); // Track glow for reconnects
+          }
+
+          io.to(p.socketID).emit("jokerGlow", { jokerID: 147 });
+
+          console.log(`[MADNESS] ${p.name}'s MADNESS glows because ${drawnCard.name} (EXTRA) was drawn.`);
+        }
+      });
     }
 
 
